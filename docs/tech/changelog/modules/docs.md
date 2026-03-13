@@ -105,3 +105,51 @@
   - `docs/tech/changelog/modules/backend.md`
   - `docs/tech/changelog/modules/docs.md`
 - Notes: 保持 conversations 按日期文件持续追加，模块日志同步归档。
+
+## 2026-03-12 | 2026-03-12-fe-auth-login-integration
+- Summary: 追加当日日志，记录前端登录联调实现（页面、模块、API 客户端与占位路由）及构建验证结果。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-12.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 延续按日期 conversations + 按模块索引的双轨留痕方式。
+
+## 2026-03-13 | 2026-03-13-prd-spec-refactor-full-rq
+- Summary: 完成 PRD 的 Spec Entry 重构，新增 rq 映射与 AC 唯一映射，并补齐 `rq-002` 到 `rq-006` 前后端设计文档；同时对齐 `rq-001` 错误码基线与需求索引状态。
+- Files:
+  - `docs/product/prd/2026-03-12-prd.md`
+  - `docs/tech/design/requirements/index.md`
+  - `docs/tech/design/requirements/rq-001-auth-profile/2026-03-12-rq-001-auth-profile-backend-design.md`
+  - `docs/tech/design/requirements/rq-001-auth-profile/2026-03-12-rq-001-auth-profile-frontend-design.md`
+  - `docs/tech/design/requirements/rq-002-checkins/2026-03-13-rq-002-checkins-backend-design.md`
+  - `docs/tech/design/requirements/rq-002-checkins/2026-03-13-rq-002-checkins-frontend-design.md`
+  - `docs/tech/design/requirements/rq-003-ai-coach/2026-03-13-rq-003-ai-coach-backend-design.md`
+  - `docs/tech/design/requirements/rq-003-ai-coach/2026-03-13-rq-003-ai-coach-frontend-design.md`
+  - `docs/tech/design/requirements/rq-004-stats-trend/2026-03-13-rq-004-stats-trend-backend-design.md`
+  - `docs/tech/design/requirements/rq-004-stats-trend/2026-03-13-rq-004-stats-trend-frontend-design.md`
+  - `docs/tech/design/requirements/rq-005-reminders/2026-03-13-rq-005-reminders-backend-design.md`
+  - `docs/tech/design/requirements/rq-005-reminders/2026-03-13-rq-005-reminders-frontend-design.md`
+  - `docs/tech/design/requirements/rq-006-settings-privacy/2026-03-13-rq-006-settings-privacy-backend-design.md`
+  - `docs/tech/design/requirements/rq-006-settings-privacy/2026-03-13-rq-006-settings-privacy-frontend-design.md`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 该批次变更为文档层重构，可直接进入需求评审与任务排期。
+
+## 2026-03-13 | 2026-03-13-api-contracts-errors-sync
+- Summary: 新增 `docs/api/contracts` 与 `docs/api/errors` 文档，完成从 PRD/RQ 到 API 契约与错误码字典的同步，覆盖 21 个 `/api/v1` 接口并补齐示例请求/响应。
+- Files:
+  - `docs/api/contracts/2026-03-13-api-v1-contracts.md`
+  - `docs/api/errors/2026-03-13-api-error-codes.md`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 该批次为文档层契约固化，后续接口实现需与此文档保持一致并在变更时同步更新。
+
+## 2026-03-13 | 2026-03-13-rq001-auth-profile-sync
+- Summary: 追加当日日志，记录按 `docs/tech/design` 对齐 `rq-001` 的前后端实现落地，并更新需求索引代码状态。
+- Files:
+  - `docs/tech/design/requirements/index.md`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/backend.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本次是文档驱动实现同步，后续 `rq-002` 需在 draft 升级为 approved 后再进入编码。

@@ -79,3 +79,26 @@
   - `docs/tech/changelog/conversations/2026-03-12.md`
   - `docs/tech/changelog/modules/backend.md`
 - Notes: 运行时冒烟验证通过，`POST /api/v1/auth/login` 成功/失败响应均携带非空 `traceId`。
+
+## 2026-03-13 | 2026-03-13-rq001-auth-profile-sync
+- Summary: 按 `rq-001` 设计文档补齐后端实现：新增 profile 读写接口、会话鉴权 Guard、auth_sessions/user_profiles 数据模型与档案完成态规则。
+- Files:
+  - `backend/prisma/schema.prisma`
+  - `backend/src/app.module.ts`
+  - `backend/src/modules/auth/auth.module.ts`
+  - `backend/src/modules/auth/controllers/auth.controller.ts`
+  - `backend/src/modules/auth/repositories/auth.repository.ts`
+  - `backend/src/modules/auth/services/auth.service.ts`
+  - `backend/src/modules/auth/guards/session-auth.guard.ts`
+  - `backend/src/modules/auth/decorators/current-user-id.decorator.ts`
+  - `backend/src/modules/profile/profile.module.ts`
+  - `backend/src/modules/profile/controllers/profile.controller.ts`
+  - `backend/src/modules/profile/services/profile.service.ts`
+  - `backend/src/modules/profile/repositories/profile.repository.ts`
+  - `backend/src/modules/profile/dto/update-profile-request.dto.ts`
+  - `backend/src/modules/profile/dto/user-profile.dto.ts`
+  - `backend/tests/unit/auth.service.spec.ts`
+  - `backend/tests/unit/profile.service.spec.ts`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/backend.md`
+- Notes: `GET/PUT /api/v1/profile` 与登录鉴权链路已联通，`targetWeightKg <= currentWeightKg` 规则由 Service 强制校验。

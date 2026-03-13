@@ -33,3 +33,41 @@
 - Files:
   - `.codex/rules/frontend/coding.md`
 - Notes: 新增禁止项（组件直连 API、跨 feature 内部依赖）和强制重构触发阈值。
+
+## 2026-03-12 | 2026-03-12-fe-auth-login-integration
+- Summary: 基于已完成后端契约实现前端首版登录联调，新增 `/auth/login` 页面、`features/auth` 模块、统一 API 错误模型与登录态 store。
+- Files:
+  - `apps/web/app/page.tsx`
+  - `apps/web/app/auth/login/page.tsx`
+  - `apps/web/app/onboarding/profile/page.tsx`
+  - `apps/web/app/settings/profile/page.tsx`
+  - `apps/web/features/auth/index.ts`
+  - `apps/web/features/auth/api/auth.api.ts`
+  - `apps/web/features/auth/model/auth.store.ts`
+  - `apps/web/features/auth/types/auth.types.ts`
+  - `apps/web/features/auth/ui/components/login-form-card.tsx`
+  - `apps/web/features/auth/ui/sections/login-page-section.tsx`
+  - `apps/web/lib/api/client.ts`
+  - `apps/web/lib/api/types.ts`
+  - `apps/web/features/health/api/health.api.ts`
+  - `apps/web/.env.example`
+  - `docs/tech/changelog/conversations/2026-03-12.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: `npm run typecheck`、`npm run lint`、`npm run build`（cwd: `apps/web`）均通过。
+
+## 2026-03-13 | 2026-03-13-rq001-auth-profile-sync
+- Summary: 对齐 `rq-001` 前端设计，补齐登录后分流与档案页联调：新增 `features/profile`，打通 `/onboarding/profile` 与 `/settings/profile` 对后端 profile 接口调用。
+- Files:
+  - `apps/web/features/auth/ui/sections/login-page-section.tsx`
+  - `apps/web/features/auth/model/auth.store.ts`
+  - `apps/web/lib/api/client.ts`
+  - `apps/web/features/profile/index.ts`
+  - `apps/web/features/profile/api/profile.api.ts`
+  - `apps/web/features/profile/types/profile.types.ts`
+  - `apps/web/features/profile/ui/components/profile-form-card.tsx`
+  - `apps/web/features/profile/ui/sections/profile-editor-section.tsx`
+  - `apps/web/app/onboarding/profile/page.tsx`
+  - `apps/web/app/settings/profile/page.tsx`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 登录成功后依据 `profileCompleted` 自动路由；未登录访问档案页会被守卫重定向到登录页。

@@ -1,7 +1,7 @@
 ﻿import { apiClient } from '@/lib/api/client';
 
 export type HealthStatusResponse = {
-  code: number;
+  code: string | number;
   message: string;
   data: {
     service: string;

@@ -14,16 +14,35 @@ export class AuthService {
       throw new BadRequestException('INVALID_PARAMS');
     }
 
-    await this.authRepository.upsertUserByPhone(payload.phone);
+    const user = await this.authRepository.upsertUserByPhone(payload.phone);
+    const token = this.buildToken('atk');
+    const refreshToken = this.buildToken('rtk');
+    const expiresIn = envConfig.authTokenExpiresInSeconds;
+
+    await this.authRepository.createSession({
+      userId: user.id,
+      accessToken: token,
+      refreshToken,
+      expiresAt: this.calculateExpiresAt(expiresIn),
+    });
 
     return {
-      token: this.buildToken('atk'),
-      refreshToken: this.buildToken('rtk'),
-      expiresIn: envConfig.authTokenExpiresInSeconds,
+      token,
+      refreshToken,
+      expiresIn,
     };
+  }
+
+  async getUserIdByAccessToken(accessToken: string): Promise<bigint | null> {
+    const session = await this.authRepository.findValidSessionByAccessToken(accessToken);
+    return session?.userId ?? null;
   }
 
   private buildToken(prefix: 'atk' | 'rtk'): string {
     return `${prefix}_${randomBytes(24).toString('base64url')}`;
+  }
+
+  private calculateExpiresAt(expiresInSeconds: number): Date {
+    return new Date(Date.now() + expiresInSeconds * 1000);
   }
 }

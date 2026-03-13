@@ -8,14 +8,167 @@ datasource db {
 }
 
 model User {
-  id         BigInt      @id @default(autoincrement()) @map("id")
-  externalId String      @unique @db.VarChar(64) @map("external_id")
-  createdAt  DateTime    @default(now()) @map("created_at")
-  updatedAt  DateTime    @updatedAt @map("updated_at")
-  deletedAt  DateTime?   @map("deleted_at")
-  weightLogs WeightLog[]
+  id               BigInt           @id @default(autoincrement()) @map("id")
+  phone            String           @unique @db.VarChar(64) @map("external_id")
+  profileCompleted Boolean          @default(false) @map("profile_completed")
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+  deletedAt        DateTime?        @map("deleted_at")
+  weightLogs       WeightLog[]
+  profile          UserProfile?
+  authSessions     AuthSession[]
+  weightCheckins   CheckinWeight[]
+  mealCheckins     CheckinMeal[]
+  activityCheckins CheckinActivity[]
+  sleepCheckins    CheckinSleep[]
+  aiPlans          AiPlan[]
+  aiReviews        AiReview[]
 
   @@map("users")
+}
+
+model UserProfile {
+  id              BigInt    @id @default(autoincrement()) @map("id")
+  userId           BigInt    @unique @map("user_id")
+  heightCm         Int       @map("height_cm")
+  currentWeightKg  Decimal   @db.Decimal(5, 2) @map("current_weight_kg")
+  targetWeightKg   Decimal   @db.Decimal(5, 2) @map("target_weight_kg")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @updatedAt @map("updated_at")
+  deletedAt        DateTime? @map("deleted_at")
+  user             User      @relation(fields: [userId], references: [id])
+
+  @@map("user_profiles")
+}
+
+model AuthSession {
+  id           BigInt    @id @default(autoincrement()) @map("id")
+  userId       BigInt    @map("user_id")
+  accessToken  String    @unique @db.VarChar(255) @map("access_token")
+  refreshToken String    @unique @db.VarChar(255) @map("refresh_token")
+  expiresAt    DateTime  @map("expires_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+  deletedAt    DateTime? @map("deleted_at")
+  user         User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, expiresAt], map: "idx_auth_sessions_user_expires_at")
+  @@map("auth_sessions")
+}
+
+model AiPlan {
+  id         BigInt    @id @default(autoincrement()) @map("id")
+  userId     BigInt    @map("user_id")
+  planDate   DateTime  @db.Date @map("plan_date")
+  refreshSeq Int       @default(0) @map("refresh_seq")
+  payloadJson Json     @map("payload_json")
+  source     String    @db.VarChar(32) @map("source")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, planDate], map: "idx_ai_plans_user_date")
+  @@index([userId, planDate, refreshSeq], map: "idx_ai_plans_user_date_refresh")
+  @@map("ai_plans")
+}
+
+model AiReview {
+  id         BigInt    @id @default(autoincrement()) @map("id")
+  userId     BigInt    @map("user_id")
+  reviewDate DateTime  @db.Date @map("review_date")
+  payloadJson Json     @map("payload_json")
+  source     String    @db.VarChar(32) @map("source")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+  deletedAt  DateTime? @map("deleted_at")
+  user       User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, reviewDate], map: "idx_ai_reviews_user_date")
+  @@map("ai_reviews")
+}
+
+model CheckinWeight {
+  id             BigInt    @id @default(autoincrement()) @map("id")
+  userId         BigInt    @map("user_id")
+  checkinDate    DateTime  @db.Date @map("checkin_date")
+  measuredAt     DateTime  @map("measured_at")
+  weightKg       Decimal   @db.Decimal(5, 2) @map("weight_kg")
+  source         String    @db.VarChar(32) @map("source")
+  isBackfill     Boolean   @default(false) @map("is_backfill")
+  idempotencyKey String?   @db.VarChar(64) @map("idempotency_key")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, checkinDate], map: "idx_checkins_weight_user_date")
+  @@index([userId, measuredAt], map: "idx_weight_user_measured_at")
+  @@index([userId, createdAt], map: "idx_checkins_weight_user_created_at")
+  @@unique([userId, idempotencyKey], map: "uk_checkins_weight_user_idempotency")
+  @@map("checkins_weight")
+}
+
+model CheckinMeal {
+  id             BigInt    @id @default(autoincrement()) @map("id")
+  userId         BigInt    @map("user_id")
+  checkinDate    DateTime  @db.Date @map("checkin_date")
+  mealType       String    @db.VarChar(32) @map("meal_type")
+  description    String    @db.VarChar(255) @map("description")
+  estimatedKcal  Int?      @map("estimated_kcal")
+  imageUrl       String?   @db.VarChar(255) @map("image_url")
+  isBackfill     Boolean   @default(false) @map("is_backfill")
+  idempotencyKey String?   @db.VarChar(64) @map("idempotency_key")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, checkinDate], map: "idx_checkins_meal_user_date")
+  @@index([userId, createdAt], map: "idx_checkins_meal_user_created_at")
+  @@unique([userId, idempotencyKey], map: "uk_checkins_meal_user_idempotency")
+  @@map("checkins_meal")
+}
+
+model CheckinActivity {
+  id             BigInt    @id @default(autoincrement()) @map("id")
+  userId         BigInt    @map("user_id")
+  checkinDate    DateTime  @db.Date @map("checkin_date")
+  activityType   String    @db.VarChar(32) @map("activity_type")
+  durationMin    Int       @map("duration_min")
+  steps          Int?      @map("steps")
+  estimatedKcal  Int?      @map("estimated_kcal")
+  isBackfill     Boolean   @default(false) @map("is_backfill")
+  idempotencyKey String?   @db.VarChar(64) @map("idempotency_key")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, checkinDate], map: "idx_checkins_activity_user_date")
+  @@index([userId, createdAt], map: "idx_checkins_activity_user_created_at")
+  @@unique([userId, idempotencyKey], map: "uk_checkins_activity_user_idempotency")
+  @@map("checkins_activity")
+}
+
+model CheckinSleep {
+  id             BigInt    @id @default(autoincrement()) @map("id")
+  userId         BigInt    @map("user_id")
+  checkinDate    DateTime  @db.Date @map("checkin_date")
+  sleepAt        DateTime  @map("sleep_at")
+  wakeAt         DateTime  @map("wake_at")
+  durationMin    Int       @map("duration_min")
+  isBackfill     Boolean   @default(false) @map("is_backfill")
+  idempotencyKey String?   @db.VarChar(64) @map("idempotency_key")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+  deletedAt      DateTime? @map("deleted_at")
+  user           User      @relation(fields: [userId], references: [id])
+
+  @@index([userId, checkinDate], map: "idx_checkins_sleep_user_date")
+  @@index([userId, createdAt], map: "idx_checkins_sleep_user_created_at")
+  @@unique([userId, idempotencyKey], map: "uk_checkins_sleep_user_idempotency")
+  @@map("checkins_sleep")
 }
 
 model WeightLog {
