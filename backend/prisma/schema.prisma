@@ -134,6 +134,7 @@ model CheckinActivity {
   id             BigInt    @id @default(autoincrement()) @map("id")
   userId         BigInt    @map("user_id")
   checkinDate    DateTime  @db.Date @map("checkin_date")
+  completed      Boolean   @default(true) @map("completed")
   activityType   String    @db.VarChar(32) @map("activity_type")
   durationMin    Int       @map("duration_min")
   steps          Int?      @map("steps")

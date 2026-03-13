@@ -1,6 +1,8 @@
 ﻿# API Error Codes（MVP v1）
 
 owner: backend
+status: superseded
+superseded_by: docs/api/errors/2026-03-13-api-v2-error-codes.md
 last_updated: 2026-03-13
 prd_ref: docs/product/prd/2026-03-12-prd.md
 contracts_ref: docs/api/contracts/2026-03-13-api-v1-contracts.md
@@ -84,3 +86,4 @@ contracts_ref: docs/api/contracts/2026-03-13-api-v1-contracts.md
 - `docs/api/contracts/*`（接口映射）
 - 对应 RQ backend/frontend design 文档
 - 任何错误码删除或含义变更视为契约变更，需在同一 PR 完成联动更新。
+

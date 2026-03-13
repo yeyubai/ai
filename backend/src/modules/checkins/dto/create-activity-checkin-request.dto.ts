@@ -1,4 +1,4 @@
-import { Transform, Type } from 'class-transformer';
+﻿import { Transform, Type } from 'class-transformer';
 import {
   IsBoolean,
   IsInt,
@@ -13,12 +13,17 @@ export class CreateActivityCheckinRequestDto {
   @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'INVALID_PARAMS' })
   checkinDate!: string;
 
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean({ message: 'INVALID_PARAMS' })
+  completed!: boolean;
+
+  @IsOptional()
   @IsString({ message: 'INVALID_PARAMS' })
-  activityType!: string;
+  activityType?: string;
 
   @Type(() => Number)
   @IsInt({ message: 'INVALID_PARAMS' })
-  @Min(1, { message: 'INVALID_PARAMS' })
+  @Min(0, { message: 'INVALID_PARAMS' })
   @Max(600, { message: 'INVALID_PARAMS' })
   durationMin!: number;
 

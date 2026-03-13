@@ -1,9 +1,13 @@
-import { PlanDetailSection } from '@/features/ai-coach';
+﻿import { HomePlanDetailSection } from '@/features/home-daily-loop';
 
 export default function CoachPlanPage() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl items-center px-6 py-12">
-      <PlanDetailSection />
+    <main className="page-shell page-shell-with-tabbar relative flex items-start justify-center overflow-hidden">
+      <div className="pointer-events-none absolute -top-24 right-[-120px] h-72 w-72 rounded-full bg-primary/15 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-28 left-[-100px] h-72 w-72 rounded-full bg-accent/40 blur-3xl" />
+      <div className="relative w-full max-w-5xl motion-enter">
+        <HomePlanDetailSection />
+      </div>
     </main>
   );
 }

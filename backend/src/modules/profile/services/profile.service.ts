@@ -1,11 +1,15 @@
-import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+﻿import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { JourneyStateService } from 'src/shared/state/journey-state.service';
 import { UpdateProfileRequestDto } from '../dto/update-profile-request.dto';
 import { UserProfileDto } from '../dto/user-profile.dto';
 import { ProfileRepository } from '../repositories/profile.repository';
 
 @Injectable()
 export class ProfileService {
-  constructor(private readonly profileRepository: ProfileRepository) {}
+  constructor(
+    private readonly profileRepository: ProfileRepository,
+    private readonly journeyState: JourneyStateService,
+  ) {}
 
   async getProfile(userId: bigint): Promise<UserProfileDto> {
     const user = await this.profileRepository.findUserById(userId);
@@ -14,23 +18,19 @@ export class ProfileService {
     }
 
     const profile = await this.profileRepository.findActiveProfileByUserId(userId);
-
-    if (!profile) {
-      return {
-        phone: user.phone,
-        profileCompleted: user.profileCompleted,
-        heightCm: null,
-        currentWeightKg: null,
-        targetWeightKg: null,
-      };
-    }
+    const extras = this.journeyState.getProfileExtras(userId);
 
     return {
       phone: user.phone,
       profileCompleted: user.profileCompleted,
-      heightCm: profile.heightCm,
-      currentWeightKg: Number(profile.currentWeightKg),
-      targetWeightKg: Number(profile.targetWeightKg),
+      heightCm: profile?.heightCm ?? null,
+      currentWeightKg: profile ? Number(profile.currentWeightKg) : null,
+      targetWeightKg: profile ? Number(profile.targetWeightKg) : null,
+      goalWeeks: extras.goalWeeks,
+      workRestPattern: extras.workRestPattern,
+      dietPreference: extras.dietPreference,
+      activityBaseline: extras.activityBaseline,
+      motivationPattern: extras.motivationPattern,
     };
   }
 
@@ -55,6 +55,14 @@ export class ProfileService {
         targetWeightKg: payload.targetWeightKg,
       });
       await this.profileRepository.markProfileCompleted(tx, userId);
+    });
+
+    this.journeyState.updateProfileExtras(userId, {
+      goalWeeks: payload.goalWeeks,
+      workRestPattern: payload.workRestPattern,
+      dietPreference: payload.dietPreference,
+      activityBaseline: payload.activityBaseline,
+      motivationPattern: payload.motivationPattern,
     });
 
     return this.getProfile(userId);

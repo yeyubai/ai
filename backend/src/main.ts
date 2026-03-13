@@ -12,6 +12,23 @@ async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule, { bufferLogs: true });
   const logger = app.get(AppLogger);
 
+  const corsOrigin = envConfig.corsOrigins.includes('*')
+    ? true
+    : envConfig.corsOrigins;
+
+  app.enableCors({
+    origin: corsOrigin,
+    credentials: true,
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'x-trace-id',
+      'x-idempotency-key',
+    ],
+    exposedHeaders: ['x-trace-id'],
+  });
+
   app.useLogger(logger);
   app.setGlobalPrefix('api/v1');
   app.useGlobalPipes(

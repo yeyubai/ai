@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { isApiError } from '@/lib/api/types';
 import { postLogin } from '../api/auth.api';
-import type { LoginRequest } from '../types/auth.types';
+import type { LoginRequest, UserStatus } from '../types/auth.types';
 
 type LoginStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -12,6 +12,7 @@ type AuthState = {
   token: string | null;
   refreshToken: string | null;
   expiresIn: number | null;
+  userStatus: UserStatus | null;
   loginStatus: LoginStatus;
   loginError: string | null;
   traceId: string | null;
@@ -20,15 +21,14 @@ type AuthState = {
   logout: () => void;
 };
 
-type PersistedAuthState = Pick<AuthState, 'token' | 'refreshToken' | 'expiresIn'>;
+type PersistedAuthState = Pick<
+  AuthState,
+  'token' | 'refreshToken' | 'expiresIn' | 'userStatus'
+>;
 
 function mapLoginError(code: string | number): string {
   if (code === 'INVALID_PARAMS') {
     return '手机号或验证码不正确，请检查后重试。';
-  }
-
-  if (code === 'AUTH_EXPIRED') {
-    return '登录状态已过期，请重新登录。';
   }
 
   if (code === 'AUTH_RATE_LIMIT') {
@@ -44,15 +44,12 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       refreshToken: null,
       expiresIn: null,
+      userStatus: null,
       loginStatus: 'idle',
       loginError: null,
       traceId: null,
       login: async (payload) => {
-        set({
-          loginStatus: 'loading',
-          loginError: null,
-          traceId: null,
-        });
+        set({ loginStatus: 'loading', loginError: null, traceId: null });
 
         try {
           const result = await postLogin(payload);
@@ -60,6 +57,7 @@ export const useAuthStore = create<AuthState>()(
             token: result.token,
             refreshToken: result.refreshToken,
             expiresIn: result.expiresIn,
+            userStatus: result.userStatus,
             loginStatus: 'success',
             loginError: null,
             traceId: null,
@@ -86,6 +84,7 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           refreshToken: null,
           expiresIn: null,
+          userStatus: null,
           loginStatus: 'idle',
           loginError: null,
           traceId: null,
@@ -98,6 +97,7 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         refreshToken: state.refreshToken,
         expiresIn: state.expiresIn,
+        userStatus: state.userStatus,
       }),
     },
   ),

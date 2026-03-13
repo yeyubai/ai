@@ -1,10 +1,15 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { isApiError } from '@/lib/api/types';
 import { postActivityCheckin } from '../../api/checkins.api';
+import { CheckinFeedPanel } from '../components/checkin-feed-panel';
 import { CheckinFormLayout } from '../components/checkin-form-layout';
 import {
   getMinBackfillDate,
@@ -22,6 +27,7 @@ export function ActivityCheckinSection() {
 
   const [checkinDate, setCheckinDate] = useState(today);
   const [isBackfill, setIsBackfill] = useState(false);
+  const [completed, setCompleted] = useState(true);
   const [activityType, setActivityType] = useState('walk');
   const [durationMin, setDurationMin] = useState('40');
   const [steps, setSteps] = useState('6000');
@@ -74,14 +80,14 @@ export function ActivityCheckinSection() {
     }
 
     const parsedDuration = Number(durationMin);
-    if (!Number.isInteger(parsedDuration) || parsedDuration <= 0 || parsedDuration > 600) {
-      setSubmitError('运动时长需在 1-600 分钟之间。');
+    if (completed && (!Number.isInteger(parsedDuration) || parsedDuration <= 0 || parsedDuration > 600)) {
+      setSubmitError('已完成运动时，时长需在 1-600 分钟之间。');
       return;
     }
 
     const parsedSteps = Number(steps);
     const safeSteps =
-      steps.trim().length === 0
+      !completed || steps.trim().length === 0
         ? undefined
         : Number.isInteger(parsedSteps) && parsedSteps >= 0 && parsedSteps <= 100000
           ? parsedSteps
@@ -93,8 +99,8 @@ export function ActivityCheckinSection() {
 
     const parsedKcal = Number(estimatedKcal);
     const safeKcal =
-      estimatedKcal.trim().length === 0
-        ? undefined
+      !completed || estimatedKcal.trim().length === 0
+        ? 0
         : Number.isInteger(parsedKcal) && parsedKcal >= 0 && parsedKcal <= 5000
           ? parsedKcal
           : null;
@@ -107,13 +113,18 @@ export function ActivityCheckinSection() {
     try {
       const result = await postActivityCheckin({
         checkinDate,
-        activityType: activityType.trim(),
-        durationMin: parsedDuration,
+        completed,
+        activityType: completed ? activityType.trim() || undefined : undefined,
+        durationMin: completed ? parsedDuration : 0,
         steps: safeSteps,
-        estimatedKcal: safeKcal,
+        estimatedKcal: completed ? safeKcal : 0,
         isBackfill,
       });
-      setSuccessMessage(`记录成功：${result.submissionId}`);
+      setSuccessMessage(
+        completed
+          ? `运动已记录，首页和进度页会同步更新。记录号：${result.submissionId}`
+          : `已记录今天暂未完成运动，今晚复盘会据此给你更轻的建议。记录号：${result.submissionId}`,
+      );
     } catch (error) {
       if (isApiError(error) && error.status === 401) {
         logout();
@@ -134,8 +145,8 @@ export function ActivityCheckinSection() {
 
   return (
     <CheckinFormLayout
-      title="运动打卡"
-      description="记录运动类型、时长与可选消耗指标。"
+      title="运动记录"
+      description="先记录今天有没有完成运动，再补充时长和消耗。"
       isBackfill={isBackfill}
       checkinDate={checkinDate}
       minDate={minDate}
@@ -148,45 +159,85 @@ export function ActivityCheckinSection() {
       onBackfillChange={handleBackfillChange}
       onCheckinDateChange={setCheckinDate}
       onSubmit={handleSubmit}
+      afterForm={<CheckinFeedPanel type="activity" />}
     >
-      <label className="block text-sm text-slate-700">
-        运动类型
-        <input
-          value={activityType}
-          onChange={(event) => setActivityType(event.target.value)}
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="flex items-start gap-3">
+          <Checkbox
+            id="activity-completed"
+            checked={completed}
+            onCheckedChange={(checked) => setCompleted(Boolean(checked))}
+          />
+          <div className="space-y-1">
+            <Label htmlFor="activity-completed">今天已完成运动</Label>
+            <p className="text-sm text-muted-foreground">
+              如果今天还没动，也可以先记录下来，晚间 AI 会给你更轻的恢复建议。
+            </p>
+          </div>
+        </div>
+      </div>
 
-      <label className="block text-sm text-slate-700">
-        时长（分钟）
-        <input
-          value={durationMin}
-          onChange={(event) => setDurationMin(event.target.value.trim())}
-          inputMode="numeric"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="activity-duration">时长（分钟）</Label>
+          <Input
+            id="activity-duration"
+            value={completed ? durationMin : '0'}
+            onChange={(event) => setDurationMin(event.target.value.trim())}
+            inputMode="numeric"
+            disabled={!completed}
+            className="bg-background"
+          />
+        </div>
+      </div>
 
-      <label className="block text-sm text-slate-700">
-        步数（可选）
-        <input
-          value={steps}
-          onChange={(event) => setSteps(event.target.value.trim())}
-          inputMode="numeric"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="activity-kcal">消耗热量（kcal）</Label>
+          <Input
+            id="activity-kcal"
+            value={completed ? estimatedKcal : '0'}
+            onChange={(event) => setEstimatedKcal(event.target.value.trim())}
+            inputMode="numeric"
+            disabled={!completed}
+            className="bg-background"
+          />
+        </div>
+      </div>
 
-      <label className="block text-sm text-slate-700">
-        估算热量（可选）
-        <input
-          value={estimatedKcal}
-          onChange={(event) => setEstimatedKcal(event.target.value.trim())}
-          inputMode="numeric"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="activity-type">活动类型（可选）</Label>
+          <Input
+            id="activity-type"
+            value={activityType}
+            onChange={(event) => setActivityType(event.target.value)}
+            disabled={!completed}
+            placeholder="walk / run / strength"
+            className="bg-background"
+          />
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="activity-steps">步数（可选）</Label>
+          <Input
+            id="activity-steps"
+            value={completed ? steps : ''}
+            onChange={(event) => setSteps(event.target.value.trim())}
+            inputMode="numeric"
+            disabled={!completed}
+            className="bg-background"
+          />
+        </div>
+      </div>
+
+      {cooldownSeconds > 0 ? (
+        <Badge variant="outline" className="w-fit border-amber-300 text-amber-700">
+          请等待 {cooldownSeconds}s 后再提交
+        </Badge>
+      ) : null}
     </CheckinFormLayout>
   );
 }

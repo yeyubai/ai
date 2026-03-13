@@ -1,6 +1,8 @@
 ﻿# API Contracts（MVP v1）
 
 owner: backend
+status: superseded
+superseded_by: docs/api/contracts/2026-03-13-api-v2-contracts.md
 last_updated: 2026-03-13
 prd_ref: docs/product/prd/2026-03-12-prd.md
 source_refs:
@@ -679,3 +681,4 @@ Success Response:
 ```
 
 Error codes: `INVALID_PARAMS`, `AUTH_EXPIRED`, `INTERNAL_ERROR`
+

@@ -1,9 +1,11 @@
-import { MealCheckinSection } from '@/features/checkins';
+﻿import { MealCheckinSection } from '@/features/checkins';
 
 export default function MealCheckinPage() {
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-2xl items-center px-6 py-12">
-      <MealCheckinSection />
+    <main className="page-shell page-shell-with-tabbar flex items-start justify-center">
+      <div className="w-full max-w-2xl motion-enter">
+        <MealCheckinSection />
+      </div>
     </main>
   );
 }

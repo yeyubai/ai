@@ -1,10 +1,22 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { isApiError } from '@/lib/api/types';
 import { postMealCheckin } from '../../api/checkins.api';
+import { CheckinFeedPanel } from '../components/checkin-feed-panel';
 import { CheckinFormLayout } from '../components/checkin-form-layout';
 import {
   getMinBackfillDate,
@@ -103,7 +115,7 @@ export function MealCheckinSection() {
         imageUrl: imageUrl.trim() || undefined,
         isBackfill,
       });
-      setSuccessMessage(`记录成功：${result.submissionId}`);
+      setSuccessMessage(`饮食已记录，可在辅助记录里继续查看。记录号：${result.submissionId}`);
     } catch (error) {
       if (isApiError(error) && error.status === 401) {
         logout();
@@ -124,8 +136,8 @@ export function MealCheckinSection() {
 
   return (
     <CheckinFormLayout
-      title="饮食打卡"
-      description="记录餐次、描述和可选热量，支持补录。"
+      title="辅助饮食记录"
+      description="饮食信息继续可记，但本轮不会进入首页主任务和 AI 主决策。"
       isBackfill={isBackfill}
       checkinDate={checkinDate}
       minDate={minDate}
@@ -138,49 +150,72 @@ export function MealCheckinSection() {
       onBackfillChange={handleBackfillChange}
       onCheckinDateChange={setCheckinDate}
       onSubmit={handleSubmit}
+      afterForm={<CheckinFeedPanel type="meal" />}
     >
-      <label className="block text-sm text-slate-700">
-        餐次
-        <select
-          value={mealType}
-          onChange={(event) => setMealType(event.target.value as MealType)}
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        >
-          <option value="breakfast">早餐</option>
-          <option value="lunch">午餐</option>
-          <option value="dinner">晚餐</option>
-          <option value="snack">加餐</option>
-        </select>
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label>餐次</Label>
+          <Select
+            value={mealType}
+            onValueChange={(value) => setMealType((value as MealType) ?? 'lunch')}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="请选择餐次" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="breakfast">早餐</SelectItem>
+              <SelectItem value="lunch">午餐</SelectItem>
+              <SelectItem value="dinner">晚餐</SelectItem>
+              <SelectItem value="snack">加餐</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-      <label className="block text-sm text-slate-700">
-        饮食描述
-        <textarea
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-          rows={3}
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="meal-description">饮食描述</Label>
+          <Textarea
+            id="meal-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={3}
+            className="bg-background"
+          />
+        </div>
+      </div>
 
-      <label className="block text-sm text-slate-700">
-        估算热量（可选）
-        <input
-          value={estimatedKcal}
-          onChange={(event) => setEstimatedKcal(event.target.value.trim())}
-          inputMode="numeric"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="meal-kcal">估算热量（可选）</Label>
+          <Input
+            id="meal-kcal"
+            value={estimatedKcal}
+            onChange={(event) => setEstimatedKcal(event.target.value.trim())}
+            inputMode="numeric"
+            className="bg-background"
+          />
+        </div>
+      </div>
 
-      <label className="block text-sm text-slate-700">
-        图片链接（可选）
-        <input
-          value={imageUrl}
-          onChange={(event) => setImageUrl(event.target.value)}
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="meal-image-url">图片链接（可选）</Label>
+          <Input
+            id="meal-image-url"
+            value={imageUrl}
+            onChange={(event) => setImageUrl(event.target.value)}
+            placeholder="https://..."
+            className="bg-background"
+          />
+        </div>
+      </div>
+
+      {cooldownSeconds > 0 ? (
+        <Badge variant="outline" className="w-fit border-amber-300 text-amber-700">
+          请等待 {cooldownSeconds}s 后再提交
+        </Badge>
+      ) : null}
     </CheckinFormLayout>
   );
 }

@@ -1,4 +1,4 @@
-import {
+﻿import {
   CallHandler,
   ExecutionContext,
   Injectable,
@@ -6,7 +6,10 @@ import {
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { buildApiResponse } from '../dto/api-response.dto';
+import {
+  buildApiResponse,
+  isApiSuccessPayload,
+} from '../dto/api-response.dto';
 
 @Injectable()
 export class ApiResponseInterceptor<T> implements NestInterceptor<T, unknown> {
@@ -14,6 +17,19 @@ export class ApiResponseInterceptor<T> implements NestInterceptor<T, unknown> {
     const request = context.switchToHttp().getRequest<Request & { id?: string }>();
     const traceId = request.id;
 
-    return next.handle().pipe(map((data) => buildApiResponse({ data, traceId })));
+    return next.handle().pipe(
+      map((data) => {
+        if (isApiSuccessPayload(data)) {
+          return buildApiResponse({
+            code: data.code,
+            message: data.message,
+            data: data.data,
+            traceId,
+          });
+        }
+
+        return buildApiResponse({ data, traceId });
+      }),
+    );
   }
 }

@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+﻿import { BadRequestException, Injectable } from '@nestjs/common';
 import { randomBytes } from 'crypto';
 import { envConfig } from 'src/shared/config/env.config';
 import { LoginRequestDto } from '../dto/login-request.dto';
@@ -30,6 +30,7 @@ export class AuthService {
       token,
       refreshToken,
       expiresIn,
+      userStatus: user.profileCompleted ? 'active' : 'needs_onboarding',
     };
   }
 

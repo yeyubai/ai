@@ -1,10 +1,21 @@
-'use client';
+﻿'use client';
 
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useEffect, useMemo, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { isApiError } from '@/lib/api/types';
 import { postWeightCheckin } from '../../api/checkins.api';
+import { CheckinFeedPanel } from '../components/checkin-feed-panel';
 import { CheckinFormLayout } from '../components/checkin-form-layout';
 import {
   getMinBackfillDate,
@@ -86,7 +97,7 @@ export function WeightCheckinSection() {
         source,
         isBackfill,
       });
-      setSuccessMessage(`记录成功：${result.submissionId}`);
+      setSuccessMessage(`体重已记录，首页今日状态会同步更新。记录号：${result.submissionId}`);
     } catch (error) {
       if (isApiError(error) && error.status === 401) {
         logout();
@@ -99,7 +110,7 @@ export function WeightCheckinSection() {
       }
 
       setSubmitError(
-        mapCheckinErrorMessage(error, '当日体重记录已达上限（最多 3 条）。'),
+        mapCheckinErrorMessage(error, '当日体重记录已达上限（最多 1 条）。'),
       );
       setTraceId(isApiError(error) ? error.traceId ?? null : null);
     } finally {
@@ -123,28 +134,44 @@ export function WeightCheckinSection() {
       onBackfillChange={handleBackfillChange}
       onCheckinDateChange={setCheckinDate}
       onSubmit={handleSubmit}
+      afterForm={<CheckinFeedPanel type="weight" />}
     >
-      <label className="block text-sm text-slate-700">
-        体重（kg）
-        <input
-          value={weightKg}
-          onChange={(event) => setWeightKg(event.target.value.trim())}
-          inputMode="decimal"
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        />
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label htmlFor="weight-kg">体重（kg）</Label>
+          <Input
+            id="weight-kg"
+            value={weightKg}
+            onChange={(event) => setWeightKg(event.target.value.trim())}
+            inputMode="decimal"
+            className="bg-background"
+          />
+        </div>
+      </div>
 
-      <label className="block text-sm text-slate-700">
-        来源
-        <select
-          value={source}
-          onChange={(event) => setSource(event.target.value as 'manual' | 'smart_scale')}
-          className="mt-1 w-full rounded-xl border border-slate-300 px-3 py-2 text-sm outline-none transition focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-        >
-          <option value="manual">手动输入</option>
-          <option value="smart_scale">智能体脂秤</option>
-        </select>
-      </label>
+      <div className="rounded-xl border border-border/70 bg-background/75 p-3.5">
+        <div className="space-y-2">
+          <Label>来源</Label>
+          <Select
+            value={source}
+            onValueChange={(value) => setSource((value as 'manual' | 'smart_scale') ?? 'manual')}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="请选择来源" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="manual">手动输入</SelectItem>
+              <SelectItem value="smart_scale">智能体脂秤</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {cooldownSeconds > 0 ? (
+        <Badge variant="outline" className="w-fit border-amber-300 text-amber-700">
+          请等待 {cooldownSeconds}s 后再提交
+        </Badge>
+      ) : null}
     </CheckinFormLayout>
   );
 }

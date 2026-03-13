@@ -1,8 +1,15 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
+import { ArrowLeft, Sparkles } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { useCoachStore } from '../../model/coach.store';
 import { getClientTimezone, getTodayDateString } from './coach-utils';
@@ -68,111 +75,114 @@ export function ReviewSection() {
   const isLoading = reviewStatus === 'loading' && !review;
 
   return (
-    <section className="w-full max-w-4xl rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">
-        RQ-003 / FE-3.3
-      </p>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-slate-900">晚间复盘</h1>
-      <p className="mt-2 text-sm text-slate-600">复盘今天执行情况，并确定明日重点。</p>
+    <Card className="w-full border-border/70 bg-card/92 backdrop-blur">
+      <CardHeader className="border-b border-border/60 bg-gradient-to-r from-secondary/75 to-accent/65">
+        <Badge variant="outline" className="w-fit border-border/70 bg-background/80 text-[10px] uppercase tracking-[0.14em]">
+          RQ-003 / FE-3.3
+        </Badge>
+        <CardTitle className="flex items-center gap-2 text-2xl sm:text-3xl">
+          <Sparkles className="h-6 w-6 text-primary" />
+          晚间复盘
+        </CardTitle>
+        <CardDescription>复盘今天执行情况，并确定明日重点。</CardDescription>
+      </CardHeader>
 
-      <div className="mt-4 flex flex-wrap items-center gap-3">
-        <button
-          type="button"
-          onClick={handleRetry}
-          disabled={isSubmitting}
-          className="rounded-xl bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-500 disabled:cursor-not-allowed disabled:bg-blue-300"
-        >
-          {isSubmitting ? '生成中...' : '重新生成复盘'}
-        </button>
-        <Link
-          href="/dashboard"
-          className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400"
-        >
-          返回 Dashboard
-        </Link>
-      </div>
-
-      {isLoading ? (
-        <div className="mt-6 animate-pulse space-y-3">
-          <div className="h-5 w-40 rounded bg-slate-100" />
-          <div className="h-16 w-full rounded bg-slate-100" />
-          <div className="h-16 w-full rounded bg-slate-100" />
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Button type="button" variant="secondary" onClick={handleRetry} disabled={isSubmitting}>
+            {isSubmitting ? '生成中...' : '重新生成复盘'}
+          </Button>
+          <Link href="/dashboard" className={cn(buttonVariants({ variant: 'outline' }), 'gap-2')}>
+            <ArrowLeft className="h-4 w-4" />
+            返回 Dashboard
+          </Link>
         </div>
-      ) : null}
 
-      {!isLoading && review ? (
-        <div className="mt-6 space-y-5">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <p className="text-sm font-medium text-slate-800">
-              日期：{review.date} · 复盘分数：{review.score}
-            </p>
-            <p className="mt-2 text-sm text-slate-700">{review.summaryText}</p>
-            {review.source === 'fallback' ? (
-              <p className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                当前为通用复盘建议，补齐近期记录可获得更精准结果。
+        {isLoading ? (
+          <div className="space-y-3 rounded-2xl border border-border/70 bg-background/70 p-4">
+            <Skeleton className="h-5 w-40" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
+        ) : null}
+
+        {!isLoading && review ? (
+          <div className="space-y-4">
+            <div className="rounded-2xl border border-border/70 bg-muted/55 p-4">
+              <p className="text-sm font-semibold">
+                日期：{review.date} · 复盘分数：{review.score}
               </p>
+              <p className="mt-2 text-sm text-muted-foreground">{review.summaryText}</p>
+              {review.source === 'fallback' ? (
+                <Alert className="mt-3 border-amber-300 bg-amber-50 text-amber-700">
+                  <AlertDescription className="text-amber-700">
+                    当前为通用复盘建议，补齐近期记录可获得更精准结果。
+                  </AlertDescription>
+                </Alert>
+              ) : null}
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
+              <h2 className="font-display text-lg font-semibold">今天亮点</h2>
+              <ul className="mt-3 space-y-2">
+                {review.highlights.map((item) => (
+                  <li key={item} className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
+              <h2 className="font-display text-lg font-semibold">需要改进</h2>
+              <ul className="mt-3 space-y-2">
+                {review.gaps.map((item) => (
+                  <li key={item} className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
+              <h2 className="font-display text-lg font-semibold">明日重点</h2>
+              <ul className="mt-3 space-y-2">
+                {review.tomorrowFocus.map((item) => (
+                  <li key={item} className="rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-sm text-sky-700">
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {review.riskFlags.length > 0 ? (
+              <div className="rounded-2xl border border-border/70 bg-background/75 p-4">
+                <h2 className="font-display text-lg font-semibold">风险提示</h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {review.riskFlags.map((flag) => (
+                    <Badge key={flag} variant="outline" className="border-amber-300 text-amber-700">
+                      {flag}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
             ) : null}
           </div>
+        ) : null}
 
-          <div className="rounded-2xl border border-slate-200 p-4">
-            <h2 className="text-sm font-semibold text-slate-900">今天亮点</h2>
-            <ul className="mt-3 space-y-2">
-              {review.highlights.map((item) => (
-                <li key={item} className="rounded-xl bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+        {!isLoading && !review ? (
+          <p className="rounded-2xl border border-dashed border-border/90 bg-background/70 px-4 py-5 text-sm text-muted-foreground">
+            暂无复盘数据，请先完成今天的打卡再试。
+          </p>
+        ) : null}
 
-          <div className="rounded-2xl border border-slate-200 p-4">
-            <h2 className="text-sm font-semibold text-slate-900">需要改进</h2>
-            <ul className="mt-3 space-y-2">
-              {review.gaps.map((item) => (
-                <li key={item} className="rounded-xl bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="rounded-2xl border border-slate-200 p-4">
-            <h2 className="text-sm font-semibold text-slate-900">明日重点</h2>
-            <ul className="mt-3 space-y-2">
-              {review.tomorrowFocus.map((item) => (
-                <li key={item} className="rounded-xl bg-blue-50 px-3 py-2 text-sm text-blue-700">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {review.riskFlags.length > 0 ? (
-            <div className="rounded-2xl border border-slate-200 p-4">
-              <h2 className="text-sm font-semibold text-slate-900">风险提示</h2>
-              <div className="mt-3 flex flex-wrap gap-2">
-                {review.riskFlags.map((flag) => (
-                  <span
-                    key={flag}
-                    className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-700"
-                  >
-                    {flag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      {!isLoading && !review ? (
-        <p className="mt-6 rounded-xl border border-dashed border-slate-300 px-4 py-5 text-sm text-slate-600">
-          暂无复盘数据，请先完成今天的打卡再试。
-        </p>
-      ) : null}
-
-      {reviewError ? <p className="mt-4 text-sm text-rose-600">{reviewError}</p> : null}
-      {reviewTraceId ? <p className="mt-2 text-xs text-slate-500">traceId: {reviewTraceId}</p> : null}
-    </section>
+        {reviewError ? (
+          <Alert variant="destructive">
+            <AlertDescription>{reviewError}</AlertDescription>
+          </Alert>
+        ) : null}
+        {reviewTraceId ? <p className="text-xs text-muted-foreground">traceId: {reviewTraceId}</p> : null}
+      </CardContent>
+    </Card>
   );
 }

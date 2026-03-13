@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { CheckinsRepository } from 'src/modules/checkins/repositories/checkins.repository';
 import { CheckinsService } from 'src/modules/checkins/services/checkins.service';
+import { PrismaService } from 'src/shared/db/prisma.service';
 
 function getTodayInShanghai(): string {
   const formatter = new Intl.DateTimeFormat('en-US', {
@@ -89,6 +90,7 @@ describe('CheckinsService', () => {
     repository.countWeightByDate.mockResolvedValue(3);
     const service = new CheckinsService(
       repository as unknown as CheckinsRepository,
+      {} as PrismaService,
     );
 
     await expect(
@@ -105,6 +107,7 @@ describe('CheckinsService', () => {
     const repository = createCheckinsRepositoryMock();
     const service = new CheckinsService(
       repository as unknown as CheckinsRepository,
+      {} as PrismaService,
     );
     const now = new Date().toISOString();
 
@@ -128,6 +131,7 @@ describe('CheckinsService', () => {
     });
     const service = new CheckinsService(
       repository as unknown as CheckinsRepository,
+      {} as PrismaService,
     );
 
     const result = await service.createMealCheckin(
@@ -150,11 +154,13 @@ describe('CheckinsService', () => {
     repository.countActivityByRecentHour.mockResolvedValue(60);
     const service = new CheckinsService(
       repository as unknown as CheckinsRepository,
+      {} as PrismaService,
     );
 
     await expect(
       service.createActivityCheckin(1n, {
         checkinDate: getTodayInShanghai(),
+        completed: true,
         activityType: 'walk',
         durationMin: 30,
       }),
@@ -173,6 +179,7 @@ describe('CheckinsService', () => {
     });
     const service = new CheckinsService(
       repository as unknown as CheckinsRepository,
+      {} as PrismaService,
     );
 
     const result = await service.createWeightCheckin(1n, {

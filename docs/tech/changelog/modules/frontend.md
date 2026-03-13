@@ -71,3 +71,69 @@
   - `docs/tech/changelog/conversations/2026-03-13.md`
   - `docs/tech/changelog/modules/frontend.md`
 - Notes: 登录成功后依据 `profileCompleted` 自动路由；未登录访问档案页会被守卫重定向到登录页。
+
+## 2026-03-13 | 2026-03-13-rq007-tabbar-shell
+- Summary: 新增登录后全局底部 Tab App Shell（首页/打卡/趋势/我的），补齐 `/trend` 与 `/settings/preferences` 路由，并引入 `lucide-react` 图标依赖。
+- Files:
+  - `apps/web/package.json`
+  - `apps/web/package-lock.json`
+  - `apps/web/app/layout.tsx`
+  - `apps/web/app/trend/page.tsx`
+  - `apps/web/app/settings/preferences/page.tsx`
+  - `apps/web/features/navigation/index.ts`
+  - `apps/web/features/navigation/types/tab.types.ts`
+  - `apps/web/features/navigation/config/tab.config.ts`
+  - `apps/web/features/navigation/utils/tab-tracking.ts`
+  - `apps/web/features/navigation/ui/components/app-shell.tsx`
+  - `apps/web/features/navigation/ui/components/bottom-tab-bar.tsx`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: `npm run typecheck/lint/build --prefix apps/web` 均通过。
+
+## 2026-03-13 | 2026-03-13-shadcn-theme-polish
+- Summary: 基于 shadcn 完成前端视觉升级，统一主题令牌并重构核心页面（登录/打卡/AI/趋势）和底部 Tab 导航样式。
+- Files:
+  - `apps/web/tailwind.config.ts`
+  - `apps/web/app/globals.css`
+  - `apps/web/components/ui/*`
+  - `apps/web/app/auth/login/page.tsx`
+  - `apps/web/app/dashboard/page.tsx`
+  - `apps/web/app/checkins/*/page.tsx`
+  - `apps/web/app/coach/*/page.tsx`
+  - `apps/web/app/trend/page.tsx`
+  - `apps/web/features/navigation/ui/components/app-shell.tsx`
+  - `apps/web/features/navigation/ui/components/bottom-tab-bar.tsx`
+  - `apps/web/features/auth/ui/components/login-form-card.tsx`
+  - `apps/web/features/profile/ui/components/profile-form-card.tsx`
+  - `apps/web/features/checkins/ui/components/checkin-form-layout.tsx`
+  - `apps/web/features/checkins/ui/sections/*.tsx`
+  - `apps/web/features/ai-coach/ui/sections/*.tsx`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: `npm --prefix apps/web run typecheck/lint/build` 全部通过。
+
+## 2026-03-13 | 2026-03-13-vibe-polish-pass-2
+- Summary: 基于 shadcn 完成第二轮视觉增强，新增入场动效、登录双栏视觉、Dashboard/Trend 与底部 Tab 质感优化。
+- Files:
+  - `apps/web/app/globals.css`
+  - `apps/web/app/auth/login/page.tsx`
+  - `apps/web/app/dashboard/page.tsx`
+  - `apps/web/app/coach/plan/page.tsx`
+  - `apps/web/app/coach/review/page.tsx`
+  - `apps/web/app/checkins/*/page.tsx`
+  - `apps/web/app/trend/page.tsx`
+  - `apps/web/features/navigation/ui/components/app-shell.tsx`
+  - `apps/web/features/navigation/ui/components/bottom-tab-bar.tsx`
+  - `apps/web/features/auth/ui/components/login-form-card.tsx`
+  - `apps/web/features/ai-coach/ui/sections/dashboard-coach-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: `npm --prefix apps/web run typecheck/lint/build` 全通过。
+
+## 2026-03-13 | 2026-03-13-dev-cache-font-fix
+- Summary: 修复前端 dev 500（`next/font` 误报 + `.next` chunk 缓存损坏），确认布局无 `Geist` 并清理缓存恢复重启路径。
+- Files:
+  - `apps/web/app/layout.tsx`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 生产构建 `npm --prefix apps/web run build` 可通过；`/.well-known/appspecific/...` 请求失败可忽略。

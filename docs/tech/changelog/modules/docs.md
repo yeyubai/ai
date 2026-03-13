@@ -153,3 +153,14 @@
   - `docs/tech/changelog/modules/frontend.md`
   - `docs/tech/changelog/modules/docs.md`
 - Notes: 本次是文档驱动实现同步，后续 `rq-002` 需在 draft 升级为 approved 后再进入编码。
+
+## 2026-03-13 | 2026-03-13-prd-rq007-tabbar-spec
+- Summary: PRD 增补 H5 底部 Tab 导航规范（信息架构、显隐规则、高亮归属、Safe Area），新增 `rq-007-app-shell-tabbar` 前后端设计并更新需求索引执行顺序。
+- Files:
+  - `docs/product/prd/2026-03-12-prd.md`
+  - `docs/tech/design/requirements/index.md`
+  - `docs/tech/design/requirements/rq-007-app-shell-tabbar/2026-03-13-rq-007-app-shell-tabbar-backend-design.md`
+  - `docs/tech/design/requirements/rq-007-app-shell-tabbar/2026-03-13-rq-007-app-shell-tabbar-frontend-design.md`
+  - `docs/tech/changelog/conversations/2026-03-13.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本次文档改动与前端实现保持一致，未新增后端业务 API。

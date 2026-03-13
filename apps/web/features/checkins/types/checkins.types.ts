@@ -1,8 +1,17 @@
-export type CheckinSubmission = {
+﻿export type CheckinSubmission = {
   submissionId: string;
   checkinType: 'weight' | 'meal' | 'activity' | 'sleep';
   checkinDate: string;
   isBackfillTag: boolean;
+  createdAt: string;
+};
+
+export type CheckinFeedItem = {
+  checkinId: string;
+  type: 'weight' | 'meal' | 'activity' | 'sleep';
+  checkinDate: string;
+  displayValue: string;
+  isBackfill: boolean;
   createdAt: string;
 };
 
@@ -25,7 +34,8 @@ export type MealCheckinPayload = {
 
 export type ActivityCheckinPayload = {
   checkinDate: string;
-  activityType: string;
+  completed: boolean;
+  activityType?: string;
   durationMin: number;
   steps?: number;
   estimatedKcal?: number;

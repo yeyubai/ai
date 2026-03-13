@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+﻿import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/db/prisma.service';
 
 type PersistedCheckin = {
@@ -6,6 +6,7 @@ type PersistedCheckin = {
   checkinDate: Date;
   isBackfill: boolean;
   createdAt: Date;
+  completed?: boolean;
 };
 
 type CreateWeightPayload = {
@@ -32,6 +33,7 @@ type CreateMealPayload = {
 type CreateActivityPayload = {
   userId: bigint;
   checkinDate: Date;
+  completed: boolean;
   activityType: string;
   durationMin: number;
   steps?: number;
@@ -207,6 +209,7 @@ export class CheckinsRepository {
   async findActivityDuplicate(
     userId: bigint,
     checkinDate: Date,
+    completed: boolean,
     activityType: string,
     durationMin: number,
     steps?: number,
@@ -216,6 +219,7 @@ export class CheckinsRepository {
       where: {
         userId,
         checkinDate,
+        completed,
         activityType,
         durationMin,
         steps: steps ?? null,
@@ -227,6 +231,7 @@ export class CheckinsRepository {
         checkinDate: true,
         isBackfill: true,
         createdAt: true,
+        completed: true,
       },
     });
   }
@@ -246,6 +251,7 @@ export class CheckinsRepository {
         checkinDate: true,
         isBackfill: true,
         createdAt: true,
+        completed: true,
       },
     });
   }
@@ -258,6 +264,7 @@ export class CheckinsRepository {
         checkinDate: true,
         isBackfill: true,
         createdAt: true,
+        completed: true,
       },
     });
   }

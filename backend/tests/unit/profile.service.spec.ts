@@ -2,6 +2,7 @@ import { BadRequestException, UnauthorizedException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ProfileRepository } from 'src/modules/profile/repositories/profile.repository';
 import { ProfileService } from 'src/modules/profile/services/profile.service';
+import { JourneyStateService } from 'src/shared/state/journey-state.service';
 
 type FindUserById = ProfileRepository['findUserById'];
 type FindActiveProfileByUserId = ProfileRepository['findActiveProfileByUserId'];
@@ -53,7 +54,10 @@ describe('ProfileService', () => {
       profileCompleted: false,
     });
     repository.findActiveProfileByUserId.mockResolvedValue(null);
-    const service = new ProfileService(repository as unknown as ProfileRepository);
+    const service = new ProfileService(
+      repository as unknown as ProfileRepository,
+      new JourneyStateService(),
+    );
 
     const profile = await service.getProfile(1n);
 
@@ -70,7 +74,10 @@ describe('ProfileService', () => {
       phone: '13800138000',
       profileCompleted: false,
     });
-    const service = new ProfileService(repository as unknown as ProfileRepository);
+    const service = new ProfileService(
+      repository as unknown as ProfileRepository,
+      new JourneyStateService(),
+    );
 
     await expect(
       service.updateProfile(1n, {
@@ -84,7 +91,10 @@ describe('ProfileService', () => {
   it('throws AUTH_EXPIRED when current user does not exist', async () => {
     const repository = createProfileRepositoryMock();
     repository.findUserById.mockResolvedValue(null);
-    const service = new ProfileService(repository as unknown as ProfileRepository);
+    const service = new ProfileService(
+      repository as unknown as ProfileRepository,
+      new JourneyStateService(),
+    );
 
     await expect(service.getProfile(1n)).rejects.toBeInstanceOf(UnauthorizedException);
   });
