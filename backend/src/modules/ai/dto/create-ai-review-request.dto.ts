@@ -1,13 +1,12 @@
 import { Transform } from 'class-transformer';
-import { IsString, Matches } from 'class-validator';
+import { IsDateOnly, IsTimezone } from 'src/shared/validation/decorators';
 
 export class CreateAiReviewRequestDto {
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-  @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  @IsDateOnly({ message: 'INVALID_PARAMS' })
   date!: string;
 
   @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
-  @IsString()
+  @IsTimezone({ message: 'INVALID_PARAMS' })
   timezone!: string;
 }

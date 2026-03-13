@@ -1,5 +1,6 @@
-﻿import { Type } from 'class-transformer';
+import { Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsString, Matches, ValidateNested } from 'class-validator';
+import { IsTimezone } from 'src/shared/validation/decorators';
 
 class QuietHoursDto {
   @IsString({ message: 'INVALID_PARAMS' })
@@ -27,7 +28,6 @@ export class ReminderSettingsRequestDto {
   @Type(() => QuietHoursDto)
   quietHours!: QuietHoursDto;
 
-  @IsString({ message: 'INVALID_PARAMS' })
-  @Matches(/^.{3,64}$/, { message: 'INVALID_PARAMS' })
+  @IsTimezone({ message: 'INVALID_PARAMS' })
   timezone!: string;
 }

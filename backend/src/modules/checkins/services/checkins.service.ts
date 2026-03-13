@@ -7,6 +7,12 @@
 } from '@nestjs/common';
 import { PrismaService } from 'src/shared/db/prisma.service';
 import {
+  formatDateOnly,
+  getTodayInTimezone,
+  parseDateOnly,
+  shiftDateString,
+} from 'src/shared/utils/date.utils';
+import {
   CheckinHistoryResponseDto,
   TodayCheckinsResponseDto,
 } from '../dto/checkin-feed-response.dto';
@@ -36,6 +42,41 @@ type NormalizedActivityPayload = {
   durationMin: number;
   steps?: number;
   estimatedKcal?: number;
+};
+
+type WeightRecord = {
+  id: bigint;
+  checkinDate: Date;
+  weightKg: { toString(): string };
+  isBackfill: boolean;
+  createdAt: Date;
+};
+
+type MealRecord = {
+  id: bigint;
+  checkinDate: Date;
+  mealType: string;
+  description: string;
+  isBackfill: boolean;
+  createdAt: Date;
+};
+
+type ActivityRecord = {
+  id: bigint;
+  checkinDate: Date;
+  completed: boolean;
+  durationMin: number;
+  estimatedKcal: number | null;
+  isBackfill: boolean;
+  createdAt: Date;
+};
+
+type SleepRecord = {
+  id: bigint;
+  checkinDate: Date;
+  durationMin: number;
+  isBackfill: boolean;
+  createdAt: Date;
 };
 
 @Injectable()
@@ -228,7 +269,7 @@ export class CheckinsService {
   }
 
   async getTodayCheckins(userId: bigint, date?: string): Promise<TodayCheckinsResponseDto> {
-    const targetDate = this.parseDateOnly(date ?? this.getTodayInShanghai());
+    const targetDate = parseDateOnly(date ?? getTodayInTimezone());
 
     const [weight, meals, activities, sleep] = await Promise.all([
       this.prisma.checkinWeight.findMany({
@@ -250,34 +291,34 @@ export class CheckinsService {
     ]);
 
     const items = [
-      ...weight.map((item) => ({
+      ...weight.map((item: WeightRecord) => ({
         checkinId: `w_${item.id.toString()}`,
         type: 'weight' as const,
-        checkinDate: this.formatDateOnly(item.checkinDate),
+        checkinDate: formatDateOnly(item.checkinDate),
         displayValue: `${item.weightKg.toString()} kg`,
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
       })),
-      ...meals.map((item) => ({
+      ...meals.map((item: MealRecord) => ({
         checkinId: `m_${item.id.toString()}`,
         type: 'meal' as const,
-        checkinDate: this.formatDateOnly(item.checkinDate),
+        checkinDate: formatDateOnly(item.checkinDate),
         displayValue: `${item.mealType} · ${item.description}`,
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
       })),
-      ...activities.map((item) => ({
+      ...activities.map((item: ActivityRecord) => ({
         checkinId: `a_${item.id.toString()}`,
         type: 'activity' as const,
-        checkinDate: this.formatDateOnly(item.checkinDate),
+        checkinDate: formatDateOnly(item.checkinDate),
         displayValue: this.formatActivityDisplayValue(item.completed, item.durationMin, item.estimatedKcal),
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
       })),
-      ...sleep.map((item) => ({
+      ...sleep.map((item: SleepRecord) => ({
         checkinId: `s_${item.id.toString()}`,
         type: 'sleep' as const,
-        checkinDate: this.formatDateOnly(item.checkinDate),
+        checkinDate: formatDateOnly(item.checkinDate),
         displayValue: `${item.durationMin} 分钟睡眠`,
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
@@ -293,10 +334,10 @@ export class CheckinsService {
   ): Promise<CheckinHistoryResponseDto> {
     const page = query.page ?? 1;
     const pageSize = query.pageSize ?? 20;
-    const dateFrom = this.parseDateOnly(
-      query.dateFrom ?? this.shiftDateString(this.getTodayInShanghai(), -6),
+    const dateFrom = parseDateOnly(
+      query.dateFrom ?? shiftDateString(getTodayInTimezone(), -6),
     );
-    const dateTo = this.parseDateOnly(query.dateTo ?? this.getTodayInShanghai());
+    const dateTo = parseDateOnly(query.dateTo ?? getTodayInTimezone());
 
     if (dateFrom > dateTo) {
       throw new BadRequestException('INVALID_PARAMS');
@@ -319,10 +360,10 @@ export class CheckinsService {
       ]);
 
       return {
-        list: list.map((item) => ({
+        list: list.map((item: WeightRecord) => ({
           checkinId: `w_${item.id.toString()}`,
           type: 'weight',
-          checkinDate: this.formatDateOnly(item.checkinDate),
+          checkinDate: formatDateOnly(item.checkinDate),
           displayValue: `${item.weightKg.toString()} kg`,
           isBackfill: item.isBackfill,
           createdAt: item.createdAt.toISOString(),
@@ -345,10 +386,10 @@ export class CheckinsService {
       ]);
 
       return {
-        list: list.map((item) => ({
+        list: list.map((item: MealRecord) => ({
           checkinId: `m_${item.id.toString()}`,
           type: 'meal',
-          checkinDate: this.formatDateOnly(item.checkinDate),
+          checkinDate: formatDateOnly(item.checkinDate),
           displayValue: `${item.mealType} · ${item.description}`,
           isBackfill: item.isBackfill,
           createdAt: item.createdAt.toISOString(),
@@ -371,10 +412,10 @@ export class CheckinsService {
       ]);
 
       return {
-        list: list.map((item) => ({
+        list: list.map((item: ActivityRecord) => ({
           checkinId: `a_${item.id.toString()}`,
           type: 'activity',
-          checkinDate: this.formatDateOnly(item.checkinDate),
+          checkinDate: formatDateOnly(item.checkinDate),
           displayValue: this.formatActivityDisplayValue(item.completed, item.durationMin, item.estimatedKcal),
           isBackfill: item.isBackfill,
           createdAt: item.createdAt.toISOString(),
@@ -396,10 +437,10 @@ export class CheckinsService {
     ]);
 
     return {
-      list: list.map((item) => ({
+      list: list.map((item: SleepRecord) => ({
         checkinId: `s_${item.id.toString()}`,
         type: 'sleep',
-        checkinDate: this.formatDateOnly(item.checkinDate),
+        checkinDate: formatDateOnly(item.checkinDate),
         displayValue: `${item.durationMin} 分钟睡眠`,
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
@@ -412,7 +453,7 @@ export class CheckinsService {
     checkinDateString: string,
     isBackfillInput?: boolean,
   ): BaseCheckinContext {
-    const checkinDate = this.parseDateOnly(checkinDateString);
+    const checkinDate = parseDateOnly(checkinDateString);
     const isBackfill = isBackfillInput ?? false;
     this.ensureCheckinDateWindow(checkinDateString, isBackfill);
     return { checkinDate, isBackfill };
@@ -448,8 +489,8 @@ export class CheckinsService {
     checkinDateString: string,
     isBackfill: boolean,
   ): void {
-    const today = this.getTodayInShanghai();
-    const earliestAllowed = this.shiftDateString(today, -7);
+    const today = getTodayInTimezone();
+    const earliestAllowed = shiftDateString(today, -7);
 
     if (checkinDateString < earliestAllowed || checkinDateString > today) {
       throw new BadRequestException('INVALID_PARAMS');
@@ -492,7 +533,7 @@ export class CheckinsService {
     return {
       checkinId: `${prefixByType[checkinType]}_${checkin.id.toString()}`,
       checkinType,
-      checkinDate: this.formatDateOnly(checkin.checkinDate),
+      checkinDate: formatDateOnly(checkin.checkinDate),
       isBackfill: checkin.isBackfill,
       createdAt: checkin.createdAt,
     };
@@ -551,28 +592,4 @@ export class CheckinsService {
     return `已完成 ${durationMin} 分钟 · ${estimatedKcal ?? 0} kcal`;
   }
 
-  private parseDateOnly(value: string): Date {
-    return new Date(`${value}T00:00:00.000+08:00`);
-  }
-
-  private formatDateOnly(value: Date): string {
-    return value.toISOString().slice(0, 10);
-  }
-
-  private getTodayInShanghai(): string {
-    const formatter = new Intl.DateTimeFormat('en-CA', {
-      timeZone: 'Asia/Shanghai',
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-    });
-
-    return formatter.format(new Date());
-  }
-
-  private shiftDateString(dateString: string, offsetDays: number): string {
-    const base = this.parseDateOnly(dateString);
-    base.setUTCDate(base.getUTCDate() + offsetDays);
-    return this.formatDateOnly(base);
-  }
 }

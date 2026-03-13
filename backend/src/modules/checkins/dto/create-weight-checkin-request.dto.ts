@@ -5,13 +5,13 @@ import {
   IsIn,
   IsNumber,
   IsOptional,
-  Matches,
   Max,
   Min,
 } from 'class-validator';
+import { IsDateOnly } from 'src/shared/validation/decorators';
 
 export class CreateWeightCheckinRequestDto {
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'INVALID_PARAMS' })
+  @IsDateOnly({ message: 'INVALID_PARAMS' })
   checkinDate!: string;
 
   @IsDateString({}, { message: 'INVALID_PARAMS' })

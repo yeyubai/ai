@@ -1,4 +1,5 @@
-﻿import { IsIn, IsOptional, IsString, Matches } from 'class-validator';
+import { IsIn, IsOptional, IsString, Matches } from 'class-validator';
+import { IsTimezone } from 'src/shared/validation/decorators';
 
 export class UpdateSettingsRequestDto {
   @IsOptional()
@@ -6,8 +7,7 @@ export class UpdateSettingsRequestDto {
   weightUnit?: 'kg' | 'lb';
 
   @IsOptional()
-  @IsString({ message: 'INVALID_PARAMS' })
-  @Matches(/^.{3,64}$/, { message: 'INVALID_PARAMS' })
+  @IsTimezone({ message: 'INVALID_PARAMS' })
   timezone?: string;
 
   @IsOptional()

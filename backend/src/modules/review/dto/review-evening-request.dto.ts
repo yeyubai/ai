@@ -1,11 +1,11 @@
-﻿import { IsDateString, IsString, Matches } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
+import { IsDateOnly, IsTimezone } from 'src/shared/validation/decorators';
 
 export class ReviewEveningRequestDto {
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'INVALID_PARAMS' })
+  @IsDateOnly({ message: 'INVALID_PARAMS' })
   date!: string;
 
-  @IsString({ message: 'INVALID_PARAMS' })
-  @Matches(/^.{3,64}$/, { message: 'INVALID_PARAMS' })
+  @IsTimezone({ message: 'INVALID_PARAMS' })
   timezone!: string;
 
   @IsString({ message: 'INVALID_PARAMS' })

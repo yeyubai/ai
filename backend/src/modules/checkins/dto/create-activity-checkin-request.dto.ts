@@ -4,13 +4,13 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  Matches,
   Max,
   Min,
 } from 'class-validator';
+import { IsDateOnly } from 'src/shared/validation/decorators';
 
 export class CreateActivityCheckinRequestDto {
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'INVALID_PARAMS' })
+  @IsDateOnly({ message: 'INVALID_PARAMS' })
   checkinDate!: string;
 
   @Transform(({ value }) => value === true || value === 'true')

@@ -6,6 +6,11 @@ import {
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { LlmClient } from 'src/shared/llm/llm.client';
+import {
+  formatDateOnly,
+  isValidDateOnly,
+  parseDateOnly,
+} from 'src/shared/utils/date.utils';
 import { AiPayloadSource, AiPlanResponseDto } from '../dto/ai-plan-response.dto';
 import { AiProviderDto } from '../dto/ai-provider.dto';
 import { AiReviewResponseDto } from '../dto/ai-review-response.dto';
@@ -77,9 +82,8 @@ export class AiService {
     payload: CreateAiPlanRequestDto,
   ): Promise<AiPlanResponseDto> {
     const date = this.normalizeDate(payload.date);
-    this.ensureValidTimezone(payload.timezone);
     const forceRefresh = payload.forceRefresh ?? false;
-    const planDate = this.parseDateOnly(date);
+    const planDate = parseDateOnly(date);
 
     const latestPlan = await this.aiRepository.findLatestPlanByDate(userId, planDate);
     if (!forceRefresh && latestPlan) {
@@ -114,8 +118,7 @@ export class AiService {
     payload: CreateAiReviewRequestDto,
   ): Promise<AiReviewResponseDto> {
     const date = this.normalizeDate(payload.date);
-    this.ensureValidTimezone(payload.timezone);
-    const reviewDate = this.parseDateOnly(date);
+    const reviewDate = parseDateOnly(date);
 
     const reviewCount = await this.aiRepository.countReviewsByDate(userId, reviewDate);
     if (reviewCount >= REVIEW_DAILY_LIMIT) {
@@ -297,7 +300,7 @@ export class AiService {
   }
 
   private toPlanResponse(record: AiPlanRecord): AiPlanResponseDto {
-    const date = this.formatDateOnly(record.planDate);
+    const date = formatDateOnly(record.planDate);
     const payload = this.parsePlanPayload(record.payloadJson);
     const source = this.normalizeSource(record.source);
 
@@ -330,7 +333,7 @@ export class AiService {
   }
 
   private toReviewResponse(record: AiReviewRecord): AiReviewResponseDto {
-    const date = this.formatDateOnly(record.reviewDate);
+    const date = formatDateOnly(record.reviewDate);
     const payload = this.parseReviewPayload(record.payloadJson);
     const source = this.normalizeSource(record.source);
 
@@ -719,37 +722,11 @@ export class AiService {
 
   private normalizeDate(value: string): string {
     const normalized = value.trim();
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(normalized)) {
-      throw new BadRequestException('INVALID_PARAMS');
-    }
-
-    const parsed = this.parseDateOnly(normalized);
-    if (Number.isNaN(parsed.getTime())) {
+    if (!isValidDateOnly(normalized)) {
       throw new BadRequestException('INVALID_PARAMS');
     }
 
     return normalized;
-  }
-
-  private ensureValidTimezone(value: string): void {
-    const timezone = value.trim();
-    if (timezone.length === 0) {
-      throw new BadRequestException('INVALID_PARAMS');
-    }
-
-    try {
-      new Intl.DateTimeFormat('en-US', { timeZone: timezone }).format(new Date());
-    } catch {
-      throw new BadRequestException('INVALID_PARAMS');
-    }
-  }
-
-  private parseDateOnly(value: string): Date {
-    return new Date(`${value}T00:00:00.000Z`);
-  }
-
-  private formatDateOnly(value: Date): string {
-    return value.toISOString().slice(0, 10);
   }
 
   private shiftDate(baseDate: Date, dayOffset: number): Date {

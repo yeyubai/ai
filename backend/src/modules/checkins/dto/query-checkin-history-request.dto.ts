@@ -1,5 +1,6 @@
 ﻿import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, IsString, Matches, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsDateOnly } from 'src/shared/validation/decorators';
 
 export class QueryCheckinHistoryRequestDto {
   @IsOptional()
@@ -7,13 +8,11 @@ export class QueryCheckinHistoryRequestDto {
   type?: 'weight' | 'meal' | 'activity' | 'sleep';
 
   @IsOptional()
-  @IsString({ message: 'INVALID_PARAMS' })
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'INVALID_PARAMS' })
+  @IsDateOnly({ message: 'INVALID_PARAMS' })
   dateFrom?: string;
 
   @IsOptional()
-  @IsString({ message: 'INVALID_PARAMS' })
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'INVALID_PARAMS' })
+  @IsDateOnly({ message: 'INVALID_PARAMS' })
   dateTo?: string;
 
   @IsOptional()

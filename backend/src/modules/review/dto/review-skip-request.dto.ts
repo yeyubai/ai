@@ -1,7 +1,8 @@
-﻿import { IsString, Matches } from 'class-validator';
+import { IsString, Matches } from 'class-validator';
+import { IsDateOnly } from 'src/shared/validation/decorators';
 
 export class ReviewSkipRequestDto {
-  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'INVALID_PARAMS' })
+  @IsDateOnly({ message: 'INVALID_PARAMS' })
   date!: string;
 
   @IsString({ message: 'INVALID_PARAMS' })
