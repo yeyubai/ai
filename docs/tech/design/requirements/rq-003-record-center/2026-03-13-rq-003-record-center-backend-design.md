@@ -56,6 +56,7 @@ Out of scope:
 - 重复提交返回 `DUPLICATE_CHECKIN`
 - 写接口必须支持幂等 key
 - 记录成功后首页和进度页通过重新拉取在 2 秒内可见更新
+- 主记录接口不额外增加“回跳地址”字段；前端默认按主链路回首页
 
 ## 5. 非功能要求
 
@@ -66,7 +67,7 @@ Out of scope:
 ## 6. 测试方案
 
 - Unit：补录时间窗、运动 `completed=false` 归一化、体重上限校验
-- Integration：体重写入 -> 首页切换到运动；运动写入 -> 进度页消耗更新
+- Integration：体重写入 -> 首页切换到运动；运动写入 -> 进度页消耗更新；主记录成功后前端默认回首页
 - Contract：`displayValue`, `isBackfill`, `completed` 字段稳定
 
 ## 7. 开发任务拆解

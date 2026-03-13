@@ -1,18 +1,20 @@
-﻿'use client';
+'use client';
 
 import Link from 'next/link';
 import {
   ArrowRight,
   CalendarDays,
+  CheckCircle2,
   Flame,
   Footprints,
   LineChart,
   MoonStar,
   Scale,
   ShieldAlert,
+  Sparkles,
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
@@ -68,6 +70,192 @@ function resolveFollowUpHref(data: HomeTodayResult): string {
   return '/dashboard';
 }
 
+function getDirectionSummary(data: HomeTodayResult): string {
+  const weeklyChange = data.weightStatus.weeklyChangeKg;
+  const exerciseDays = data.activityStatus.exerciseDays7d;
+
+  if (weeklyChange < 0 && exerciseDays >= 3) {
+    return `过去 7 天体重变化 ${formatWeeklyChange(weeklyChange)}，运动完成 ${exerciseDays} 天，方向是对的，继续稳住连续性。`;
+  }
+
+  if (exerciseDays >= 3) {
+    return `过去 7 天体重变化 ${formatWeeklyChange(weeklyChange)}，运动完成 ${exerciseDays} 天，节奏已经建立，接下来更看重连续记录。`;
+  }
+
+  return `过去 7 天体重变化 ${formatWeeklyChange(weeklyChange)}，运动完成 ${exerciseDays} 天，方向还在建立中，先把今天这一步做掉。`;
+}
+
+function getMilestoneLabel(data: HomeTodayResult): string {
+  if (data.activityStatus.exerciseDays7d >= 5) {
+    return '本周运动 5 天，节奏已经很稳';
+  }
+  if (data.activityStatus.exerciseDays7d >= 3) {
+    return '本周运动达到 3 天，已经跨过起步门槛';
+  }
+  if (data.weightStatus.weighedToday) {
+    return '今天体重已记录，先把第二步接上';
+  }
+  return '先拿下今天的第一条记录';
+}
+
+function PrimaryActionCard({ data }: { data: HomeTodayResult }) {
+  if (data.nextAction.actionId === 'weight_checkin') {
+    return (
+      <Card className="border-border/70 bg-card/92 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.45)]">
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-slate-500">当前最关键的动作</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">先称一次体重，确定今天的起点</h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                {data.weightStatus.weighedToday
+                  ? '体重已经更新，首页接下来会把重点切到运动。'
+                  : '先完成这一步，首页和今晚的调整才知道今天该怎么推进。'}
+              </p>
+            </div>
+            <div className="rounded-3xl bg-primary/10 p-3 text-primary">
+              <Scale className="h-6 w-6" />
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">当前体重</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">{formatWeight(data.weightStatus.latestWeightKg)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">目标 {formatWeight(data.weightStatus.targetWeightKg)}</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">本周趋势</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">{formatWeeklyChange(data.weightStatus.weeklyChangeKg)}</p>
+              <p className="mt-1 text-sm text-muted-foreground">先看方向，不放大单日波动</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (data.nextAction.actionId === 'activity_complete') {
+    return (
+      <Card className="border-border/70 bg-card/92 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.45)]">
+        <CardContent className="p-5 sm:p-6">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium text-slate-500">当前最关键的动作</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">把今天的运动接上，先完成一次记录</h2>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+                {data.activityStatus.completedToday
+                  ? '今天的运动已经完成，晚上复盘会接着帮你安排明天。'
+                  : `今天目标 ${data.activityStatus.targetDurationMin} 分钟，建议消耗 ${data.activityStatus.targetBurnKcal} kcal。`}
+              </p>
+            </div>
+            <div className="rounded-3xl bg-primary/10 p-3 text-primary">
+              <Footprints className="h-6 w-6" />
+            </div>
+          </div>
+
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">本周运动</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">{data.activityStatus.exerciseDays7d} 天</p>
+              <p className="mt-1 text-sm text-muted-foreground">这周越稳，趋势越容易往目标方向走</p>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+              <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">今天完成度</p>
+              <p className="mt-2 text-2xl font-semibold text-foreground">
+                {data.completion.done}/{data.completion.total}
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">先把今天的第二步做掉，晚上再看调整</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-border/70 bg-card/92 shadow-[0_24px_70px_-36px_rgba(15,23,42,0.45)]">
+      <CardContent className="p-5 sm:p-6">
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-medium text-slate-500">当前最关键的动作</p>
+            <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">晚上做 1 分钟调整，把明天接起来</h2>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
+              白天的动作已经有结果了，现在只需要把今天收住，明天首页就会直接告诉你先做什么。
+            </p>
+          </div>
+          <div className="rounded-3xl bg-primary/10 p-3 text-primary">
+            <MoonStar className="h-6 w-6" />
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">今天完成</p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {data.completion.done}/{data.completion.total}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">先回看今天，再给明天留一个容易开始的动作</p>
+          </div>
+          <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+            <p className="text-xs uppercase tracking-[0.16em] text-muted-foreground">恢复策略</p>
+            <p className="mt-2 text-2xl font-semibold text-foreground">
+              {data.recoveryMode ? '轻恢复模式' : '正常推进'}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {data.recoveryMode ? '今晚先用更轻的节奏把连续性找回来' : '今晚重点是把明天的门槛继续压低'}
+            </p>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function SecondaryCard({ data }: { data: HomeTodayResult }) {
+  const isWeightPrimary = data.nextAction.actionId === 'weight_checkin';
+  const title = isWeightPrimary ? '运动记录' : '体重记录';
+  const heading = isWeightPrimary
+    ? data.activityStatus.completedToday
+      ? `今天已完成 ${data.activityStatus.durationMin} 分钟运动`
+      : '运动还没接上，先完成一次记录'
+    : data.weightStatus.weighedToday
+      ? '体重已经记录，今天的起点已明确'
+      : '体重还没记录，越早完成越容易进入节奏';
+  const body = isWeightPrimary
+    ? data.activityStatus.completedToday
+      ? `已记录 ${data.activityStatus.estimatedKcal} kcal，今晚复盘会直接接这次运动结果。`
+      : `今天目标 ${data.activityStatus.targetDurationMin} 分钟，先做一段轻运动也算继续。`
+    : data.weightStatus.weighedToday
+      ? `当前体重 ${formatWeight(data.weightStatus.latestWeightKg)}，目标 ${formatWeight(data.weightStatus.targetWeightKg)}。`
+      : '哪怕只是先称一次体重，也是在把今天的节奏接回来。';
+  const href = isWeightPrimary ? '/checkins/activity' : '/checkins/weight';
+
+  return (
+    <Card className="border-border/70 bg-card/92">
+      <CardContent className="p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <p className="text-sm font-medium text-slate-500">{title}</p>
+            <p className="mt-2 text-xl font-semibold text-slate-950">{heading}</p>
+            <p className="mt-2 text-sm leading-6 text-slate-600">{body}</p>
+          </div>
+          <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+            {isWeightPrimary ? <Footprints className="h-5 w-5" /> : <Scale className="h-5 w-5" />}
+          </div>
+        </div>
+
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <Link href={href} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-xl')}>
+            去补上这一步
+          </Link>
+          <span className="text-sm text-muted-foreground">这是次级动作，不会抢当前主任务。</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function HomeDashboardSection() {
   const router = useRouter();
   const token = useAuthStore((state) => state.token);
@@ -76,57 +264,59 @@ export function HomeDashboardSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const weightMission = useMemo(
-    () => data?.dailyMission.find((item) => item.actionId === 'weight_checkin') ?? null,
-    [data],
-  );
-  const activityMission = useMemo(
-    () => data?.dailyMission.find((item) => item.actionId === 'activity_complete') ?? null,
-    [data],
-  );
-  const reviewMission = useMemo(
-    () => data?.dailyMission.find((item) => item.actionId === 'evening_review') ?? null,
-    [data],
-  );
-
-  const load = async () => {
+  useEffect(() => {
     if (!token) {
       router.replace('/auth/login');
       return;
     }
 
-    setIsLoading(true);
-    setError(null);
-    try {
-      setData(await fetchHomeToday());
-    } catch (loadError) {
-      setError('首页加载失败，请稍后重试。');
-      if (
-        typeof loadError === 'object' &&
-        loadError !== null &&
-        'status' in loadError &&
-        (loadError as { status?: number }).status === 401
-      ) {
-        logout();
-        router.replace('/auth/login');
+    let active = true;
+    const load = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const result = await fetchHomeToday();
+        if (!active) {
+          return;
+        }
+        setData(result);
+      } catch (loadError) {
+        if (!active) {
+          return;
+        }
+        setError('首页加载失败，请稍后重试。');
+        if (
+          typeof loadError === 'object' &&
+          loadError !== null &&
+          'status' in loadError &&
+          (loadError as { status?: number }).status === 401
+        ) {
+          logout();
+          router.replace('/auth/login');
+        }
+      } finally {
+        if (active) {
+          setIsLoading(false);
+        }
       }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    };
 
-  useEffect(() => {
     void load();
-  }, [token]);
+    return () => {
+      active = false;
+    };
+  }, [logout, router, token]);
 
   if (isLoading) {
     return (
       <div className="grid gap-4">
-        <Skeleton className="h-[300px] w-full rounded-[32px]" />
-        <Skeleton className="h-[120px] w-full rounded-[32px]" />
-        <div className="grid gap-4 lg:grid-cols-2">
-          <Skeleton className="h-[220px] w-full rounded-[32px]" />
-          <Skeleton className="h-[220px] w-full rounded-[32px]" />
+        <Skeleton className="h-[280px] w-full rounded-[32px]" />
+        <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+          <Skeleton className="h-[320px] w-full rounded-[32px]" />
+          <div className="grid gap-4">
+            <Skeleton className="h-[150px] w-full rounded-[32px]" />
+            <Skeleton className="h-[150px] w-full rounded-[32px]" />
+          </div>
         </div>
         <Skeleton className="h-[220px] w-full rounded-[32px]" />
       </div>
@@ -156,15 +346,20 @@ export function HomeDashboardSection() {
               <CalendarDays className="h-3.5 w-3.5" />
               {formatHomeDate(data.date)}
             </div>
-            <Badge
-              variant="secondary"
-              className={cn(
-                'rounded-full px-3 py-1 text-xs',
-                data.recoveryMode ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800',
-              )}
-            >
-              {data.recoveryMode ? '轻恢复日' : '正常推进中'}
-            </Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="secondary" className="rounded-full bg-white/80 px-3 py-1 text-slate-700">
+                今日完成 {data.completion.done}/{data.completion.total}
+              </Badge>
+              <Badge
+                variant="secondary"
+                className={cn(
+                  'rounded-full px-3 py-1 text-xs',
+                  data.recoveryMode ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800',
+                )}
+              >
+                {data.recoveryMode ? '恢复优先' : '正常推进'}
+              </Badge>
+            </div>
           </div>
 
           <div className="mt-6 max-w-3xl">
@@ -174,8 +369,8 @@ export function HomeDashboardSection() {
             </h1>
             <p className="mt-4 max-w-2xl text-base leading-7 text-slate-600">
               {data.recoveryMode
-                ? '今天不用补回昨天的进度，先把体重和运动里的最关键一步做掉，把节奏找回来。'
-                : '先完成今天最关键的一步，再让 AI 帮你把今天和明天接起来。'}
+                ? '今天不用补回昨天的进度，先把最关键的一步做掉，把节奏找回来。'
+                : '首页现在只保留一个主动作，先完成它，再看趋势和解释。'}
             </p>
           </div>
 
@@ -190,121 +385,10 @@ export function HomeDashboardSection() {
               {data.nextAction.cta}
               <ArrowRight className="h-4 w-4" />
             </Link>
-            <Link
-              href="/trend"
-              className={cn(
-                buttonVariants({ variant: 'outline', size: 'lg' }),
-                'rounded-2xl border-slate-300 bg-white/75 px-5 text-slate-700 hover:bg-white',
-              )}
-            >
-              查看本周变化
-            </Link>
+            <p className="text-sm text-slate-500">把这一步做掉，下面的信息才有意义。</p>
           </div>
         </CardContent>
       </Card>
-
-      <section className="grid gap-3 sm:grid-cols-3">
-        <Card className="border-border/70 bg-card/92">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 text-slate-500">
-              <Scale className="h-4 w-4" />
-              <span className="text-sm font-medium">当前体重</span>
-            </div>
-            <p className="mt-3 text-3xl font-semibold text-slate-950">{formatWeight(data.weightStatus.latestWeightKg)}</p>
-            <p className="mt-1 text-sm text-slate-500">目标 {formatWeight(data.weightStatus.targetWeightKg)}</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/70 bg-card/92">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 text-slate-500">
-              <LineChart className="h-4 w-4" />
-              <span className="text-sm font-medium">本周变化</span>
-            </div>
-            <p className="mt-3 text-3xl font-semibold text-slate-950">{formatWeeklyChange(data.weightStatus.weeklyChangeKg)}</p>
-            <p className="mt-1 text-sm text-slate-500">先看趋势，不放大单日波动</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/70 bg-card/92">
-          <CardContent className="p-5">
-            <div className="flex items-center gap-2 text-slate-500">
-              <Flame className="h-4 w-4" />
-              <span className="text-sm font-medium">近 7 天运动</span>
-            </div>
-            <p className="mt-3 text-3xl font-semibold text-slate-950">{data.activityStatus.exerciseDays7d} 天</p>
-            <p className="mt-1 text-sm text-slate-500">今天完成度 {data.completion.done}/{data.completion.total}</p>
-          </CardContent>
-        </Card>
-      </section>
-
-      <section className="grid gap-4 lg:grid-cols-2">
-        <Card className="border-border/70 bg-card/92 shadow-[0_20px_50px_-36px_rgba(15,23,42,0.45)]">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-slate-500">体重记录</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-950">
-                  {data.weightStatus.weighedToday ? '今天已完成体重记录' : '今天还没称重'}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {data.weightStatus.weighedToday
-                    ? '体重已经更新到今天状态，下一步优先去完成运动。'
-                    : '先称一次体重，首页和 AI 才能知道今天该怎么推进。'}
-                </p>
-              </div>
-              <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-                <Scale className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Link
-                href="/checkins/weight"
-                className={cn(buttonVariants({ size: 'sm' }), 'rounded-xl')}
-              >
-                {data.weightStatus.weighedToday ? '重新记录体重' : '去记录体重'}
-              </Link>
-              {weightMission ? (
-                <span className="text-sm text-muted-foreground">建议时间 {weightMission.recommendedAt}</span>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="border-border/70 bg-card/92 shadow-[0_20px_50px_-36px_rgba(15,23,42,0.45)]">
-          <CardContent className="p-5">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium text-slate-500">运动记录</p>
-                <p className="mt-2 text-2xl font-semibold text-slate-950">
-                  {data.activityStatus.completedToday
-                    ? `今天已完成 ${data.activityStatus.durationMin} 分钟运动`
-                    : '今天还没完成运动记录'}
-                </p>
-                <p className="mt-2 text-sm leading-6 text-slate-600">
-                  {data.activityStatus.completedToday
-                    ? `当前已记录 ${data.activityStatus.estimatedKcal} kcal，晚上复盘会根据这次运动继续调整。`
-                    : `今天目标 ${data.activityStatus.targetDurationMin} 分钟，建议消耗 ${data.activityStatus.targetBurnKcal} kcal。`}
-                </p>
-              </div>
-              <div className="rounded-2xl bg-primary/10 p-3 text-primary">
-                <Footprints className="h-5 w-5" />
-              </div>
-            </div>
-            <div className="mt-5 flex flex-wrap items-center gap-3">
-              <Link
-                href="/checkins/activity"
-                className={cn(buttonVariants({ size: 'sm' }), 'rounded-xl')}
-              >
-                {data.activityStatus.completedToday ? '更新运动记录' : '去记录运动'}
-              </Link>
-              {activityMission ? (
-                <span className="text-sm text-muted-foreground">建议时间 {activityMission.recommendedAt}</span>
-              ) : null}
-            </div>
-          </CardContent>
-        </Card>
-      </section>
 
       {data.responseCode === 'PLAN_FALLBACK_USED' ? (
         <Alert className="border-amber-200 bg-amber-50/90 text-amber-900">
@@ -315,61 +399,111 @@ export function HomeDashboardSection() {
         </Alert>
       ) : null}
 
-      <Card className="border-border/70 bg-card/92">
-        <CardContent className="p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold text-foreground">完成今天后，会怎么继续</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                首页只负责把今天和明天接起来，不再额外摆放割裂的说明块。
-              </p>
-            </div>
-            <div className="rounded-2xl bg-muted p-3 text-muted-foreground">
-              <MoonStar className="h-5 w-5" />
-            </div>
-          </div>
+      <section className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+        <PrimaryActionCard data={data} />
 
-          <div className="mt-5 grid gap-3 md:grid-cols-3">
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-sm font-medium text-foreground">1. 先完成白天两步</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                先称重，再完成一次运动或记录今天的运动消耗。
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-sm font-medium text-foreground">2. 晚上 AI 帮你调整</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                {reviewMission?.status === 'done'
-                  ? '今晚复盘已经完成，明天首页会据此更新建议。'
-                  : '晚上花 1 分钟做复盘，AI 会根据体重和运动记录给出明天动作。'}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
-              <p className="text-sm font-medium text-foreground">3. 明天继续接着做</p>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                不用自己再排计划，明天首页会直接告诉你先做什么。
-              </p>
-            </div>
-          </div>
+        <div className="grid gap-4">
+          <Card className="border-border/70 bg-card/92">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-500">方向判断</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-950">这周有没有朝目标前进</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{getDirectionSummary(data)}</p>
+                </div>
+                <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                  <LineChart className="h-5 w-5" />
+                </div>
+              </div>
+              <Link
+                href="/trend"
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'mt-4 rounded-xl')}
+              >
+                查看本周变化
+              </Link>
+            </CardContent>
+          </Card>
 
-          <div className="mt-5 flex flex-wrap items-center gap-3">
-            <Link
-              href={resolveFollowUpHref(data)}
-              className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-xl')}
-            >
-              {data.followUp.cta}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <span className="text-sm text-muted-foreground">{data.followUp.title}</span>
-          </div>
+          <Card className="border-border/70 bg-card/92">
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-medium text-slate-500">轻量成就</p>
+                  <p className="mt-2 text-xl font-semibold text-slate-950">{getMilestoneLabel(data)}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">
+                    不用追求完美，先把连续记录和本周 2 / 3 / 5 次运动里程碑接起来。
+                  </p>
+                </div>
+                <div className="rounded-2xl bg-primary/10 p-3 text-primary">
+                  <Sparkles className="h-5 w-5" />
+                </div>
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <Badge variant="outline" className="rounded-full">
+                  <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
+                  体重 {data.weightStatus.weighedToday ? '已完成' : '待完成'}
+                </Badge>
+                <Badge variant="outline" className="rounded-full">
+                  <Flame className="mr-1 h-3.5 w-3.5" />
+                  本周运动 {data.activityStatus.exerciseDays7d} 天
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </section>
 
-          {data.membershipState.plan === 'coach_plus' ? (
-            <p className="mt-4 text-xs leading-5 text-muted-foreground">
-              你已开启更细的动作解释和恢复建议，复盘里会比基础版更具体。
-            </p>
-          ) : null}
-        </CardContent>
-      </Card>
+      <section className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
+        <SecondaryCard data={data} />
+
+        <Card className="border-border/70 bg-card/92">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-semibold text-foreground">今晚复盘 / 明日预览</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  完成今天后，用 1 分钟把明天接起来。这里保留解释，但不会和首页主 CTA 抢优先级。
+                </p>
+              </div>
+              <div className="rounded-2xl bg-muted p-3 text-muted-foreground">
+                <MoonStar className="h-5 w-5" />
+              </div>
+            </div>
+
+            <div className="mt-5 grid gap-3 sm:grid-cols-2">
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+                <p className="text-sm font-medium text-foreground">白天先完成动作</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  首页现在只会先推一个动作，做完再接下一个，不让信息挤在同一屏上。
+                </p>
+              </div>
+              <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
+                <p className="text-sm font-medium text-foreground">晚上再生成调整</p>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">
+                  复盘页会先判断今天是否已准备好，再由你主动生成今晚调整。
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3">
+              <Link
+                href={resolveFollowUpHref(data)}
+                className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-xl')}
+              >
+                {data.followUp.cta}
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <span className="text-sm text-muted-foreground">{data.followUp.title}</span>
+            </div>
+
+            {data.membershipState.plan === 'coach_plus' ? (
+              <p className="mt-4 text-xs leading-5 text-muted-foreground">
+                会员版会把动作解释、提醒节奏和掉队后的恢复建议讲得更清楚。
+              </p>
+            ) : null}
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }

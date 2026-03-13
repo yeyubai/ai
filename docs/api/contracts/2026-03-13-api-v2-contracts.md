@@ -93,6 +93,10 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 }
 ```
 
+说明：
+- MVP 前端首屏只强制用户填写 `currentWeightKg`, `targetWeightKg`, `goalWeeks`, `activityBaseline`。
+- `workRestPattern`, `dietPreference`, `motivationPattern` 允许由前端按默认模板兜底后提交，不应阻断首次开始。
+
 ### 4.2 Home Daily Loop
 
 #### GET /api/v1/home/today
@@ -159,6 +163,10 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
   "traceId": "b5efdd32-07ee-4d63-a9b7-43ed90abde00"
 }
 ```
+
+说明：
+- `nextAction` 是首页唯一强 CTA 的事实来源；客户端不得并列展示第二个同级主 CTA。
+- 首页的方向判断、轻量成就等结论型文案由客户端基于 `weightStatus`, `activityStatus`, `completion` 派生，MVP 不新增专用字段。
 
 #### POST /api/v1/home/actions/{actionId}/complete
 
@@ -239,6 +247,10 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 }
 ```
 
+说明：
+- 客户端应先通过 `GET /api/v1/home/today` 判断当天是否已具备复盘条件，再由用户主动触发本接口。
+- 当天体重与运动都缺失时，本接口返回 `REVIEW_NOT_READY`。
+
 ```json
 {
   "code": "PLAN_FALLBACK_USED",
@@ -287,6 +299,10 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 }
 ```
 
+说明：
+- 首屏“我是否在朝目标前进”的结论由客户端基于 `weightTrendPoints`, `exerciseCompletionRate`, `exerciseDays`, `weighInDays` 派生。
+- MVP 不新增 `directionSummary` 或强游戏化成就字段，避免口径漂移。
+
 #### GET /api/v1/progress/weekly-report
 
 ```json
@@ -313,3 +329,4 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 - `POST /api/v1/checkins/meal` 与 `POST /api/v1/checkins/sleep` 继续保留，作为辅助记录接口。
 - 饮食和睡眠不再进入首页主任务、首页主 CTA、首页 follow-up、进度页首屏主指标。
 - AI 默认只依赖体重变化、运动完成率、运动消耗与恢复模式状态。
+- 会员价值表达应围绕“解释更清楚、提醒更稳、恢复更快”，不以“更多功能”作为默认主卖点。

@@ -30,13 +30,15 @@ Out of scope:
 - `/checkins/sleep`
 
 页面职责：
-- `/checkins` 首屏只展示今日体重、今日运动、最近 7 天体重、最近 7 天运动
+- `/checkins` 首屏上半部分只放两个快捷入口：记录体重 / 记录运动
+- 最近 7 天体重与运动历史下沉到次屏
 - 饮食和睡眠收纳到“辅助信息”区块，不进入记录页首屏主视觉
 
 ## 3. 数据流设计
 
 - 记录中心加载 `GET /api/v1/checkins/today`、`GET /api/v1/checkins/history?type=weight`、`GET /api/v1/checkins/history?type=activity`
 - 主记录页写入后失效首页和进度页查询
+- 主记录页写入成功后默认回流首页，减少用户停留在表单分叉页
 - 辅助记录页写入后仅刷新对应 feed，不触发首页主 CTA 变化
 - 共享类型：`CheckinFeedItem`, `ActivityCheckinPayload`
 
@@ -61,7 +63,7 @@ DTO -> UI Model：
 
 ## 5. 交互与状态
 
-- 体重和运动页是主记录入口，文案需要明确“已同步到首页 / 进度”
+- 体重和运动页是主记录入口，文案需要明确“已同步到首页 / 进度”，并在成功后默认回首页
 - 运动表单优先字段：是否完成、时长、消耗热量；活动类型和步数为可选
 - 饮食和睡眠页文案必须明确“这是辅助记录，不影响首页主任务” 
 - 主记录成功后默认引导回首页；辅助记录成功后停留在当前页即可
@@ -78,13 +80,13 @@ DTO -> UI Model：
 
 ## 7. 测试方案
 
-- Component tests：记录中心摘要卡、补录标记、运动表单 completed 分支
-- Page flow tests：体重提交 -> 首页更新；运动提交 -> 进度更新；辅助记录保持可访问
+- Component tests：记录中心快捷入口卡、补录标记、运动表单 completed 分支
+- Page flow tests：体重提交 -> 自动回首页 -> 首页更新；运动提交 -> 自动回首页；辅助记录保持可访问
 - Contract mock tests：`displayValue`, `completed`, `estimatedKcal` 映射
 
 ## 8. 开发任务拆解
 
 - FE-3.1 新增 `/checkins` 记录中心入口
-- FE-3.2 收敛主记录文案为体重 / 运动双核心
-- FE-3.3 调整辅助记录为次级入口
+- FE-3.2 把记录中心重排为快捷录入台，突出体重 / 运动双核心
+- FE-3.3 调整辅助记录为次级入口并下沉历史展示
 - FE-3.4 补记录成功后的首页 / 进度回流验证

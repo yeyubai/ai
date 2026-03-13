@@ -76,3 +76,4 @@ supersedes: docs/api/errors/2026-03-13-api-error-codes.md
 - 饮食和睡眠接口仍可复用现有错误码，但不得影响首页主任务与主 CTA 判定。
 - 前端对 `PLAN_FALLBACK_USED` 必须按成功态渲染，不得当作 toast 级错误拦截。
 - 首页、进度页、复盘页对核心动作的缺失都优先引导体重或运动，而不是辅助记录。
+- `REVIEW_NOT_READY` 应发生在用户主动点击生成复盘之后；客户端不应在进入复盘页时自动触发失败请求。

@@ -29,6 +29,7 @@ Out of scope:
 页面职责：
 - 会员区域说明当前权益，不重讲主流程
 - 提醒区域围绕体重、运动、复盘三个提醒点配置
+- 会员文案只围绕“解释更清楚、提醒更稳、恢复更快”
 - 回执区域只负责确认“是否已发出”
 
 ## 3. 数据流设计
@@ -46,7 +47,7 @@ Out of scope:
 - `GET /api/v1/reminders/receipts`
 
 DTO -> UI Model：
-- `entitlements` -> 权益状态列表
+- `entitlements` -> 解释更清楚 / 提醒更稳 / 恢复更快 三类权益状态
 - `upgradePrompts[]` -> 升级触点文案
 - `dailyMissionReminderTimes` -> 体重 / 运动提醒时间输入
 - `reviewReminderTime` -> 复盘提醒输入
@@ -65,6 +66,7 @@ DTO -> UI Model：
 交互规则：
 - 会员触点必须跟价值点绑定，不单独拦截首页首屏
 - 提醒文案应使用“体重提醒 / 运动提醒 / 复盘提醒”，不使用抽象任务名
+- 禁止使用“更多功能”“解锁全部能力”作为主卖点，改为强调坚持更稳
 - 我的页不解释核心主线，只承接低频设置
 
 ## 6. 埋点设计
@@ -79,13 +81,13 @@ DTO -> UI Model：
 
 ## 7. 测试方案
 
-- Component tests：权益卡、提醒冲突提示、升级触点卡
-- Page flow tests：修改提醒 -> 保存成功；开启强提醒 -> 权益提示
+- Component tests：权益卡、提醒冲突提示、升级触点卡、会员价值文案
+- Page flow tests：修改提醒 -> 保存成功；开启强提醒 -> 权益提示；免费用户不出现阻断式触点
 - Contract mock tests：`entitlements`, `upgradePrompts`, `dailyMissionReminderTimes`, `reviewReminderTime` 映射
 
 ## 8. 开发任务拆解
 
 - FE-6.1 对齐我的页中的会员与提醒分区
-- FE-6.2 明确体重 / 运动 / 复盘提醒文案
+- FE-6.2 明确体重 / 运动 / 复盘提醒文案，并收敛会员价值表达
 - FE-6.3 接入升级触点与回执查看
 - FE-6.4 补提醒和会员埋点测试

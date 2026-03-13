@@ -28,6 +28,7 @@ Out of scope:
 - `GET /api/v1/progress/weekly-report`
   - 免费用户返回摘要 + `lockedSections`
   - 会员权益信息通过 `membershipPrompt` 与 `lockedSections` 表示
+  - MVP 不新增 `directionSummary` 字段，首屏“我是否在朝目标前进”由前端根据现有指标派生
 
 ## 3. 数据来源与模型
 
@@ -40,6 +41,7 @@ Out of scope:
 ## 4. 业务规则
 
 - 进度首屏只展示体重趋势、运动执行率、总消耗、里程碑
+- “方向判断”结论必须能由 `weightTrendPoints`、`exerciseCompletionRate`、`exerciseDays`、`weighInDays` 稳定推导
 - 缺失体重点必须标记为 `isMissing=true`
 - 周报摘要重点解释：本周体重变化、运动执行稳定度、下周建议动作
 - 饮食和睡眠不得进入进度页首屏主指标
@@ -53,7 +55,7 @@ Out of scope:
 
 ## 6. 测试方案
 
-- Unit：趋势缺失点、执行率、总消耗、里程碑计算
+- Unit：趋势缺失点、执行率、总消耗、里程碑计算、方向判断可推导性
 - Integration：体重 / 运动补录后周视图与月视图重算
 - Contract：`weightTrendPoints`, `exerciseCompletionRate`, `burnKcalTotal`, `lockedSections` 稳定
 

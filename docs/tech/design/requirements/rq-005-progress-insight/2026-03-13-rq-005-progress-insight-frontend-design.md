@@ -27,16 +27,18 @@ Out of scope:
 
 页面结构：
 1. 范围切换（7 日 / 30 日）
-2. 体重变化 / 运动执行率 / 总消耗三张摘要卡
-3. 体重趋势列表
-4. 当前里程碑 + AI 周回顾
-5. 会员锁定提示
+2. 结论型方向判断
+3. 体重变化 / 运动执行率 / 总消耗三张摘要卡
+4. 体重趋势列表
+5. 轻量成就 + AI 周回顾
+6. 会员锁定提示
 
 ## 3. 数据流设计
 
 - 页面进入请求 `GET /api/v1/progress/weekly` 与 `GET /api/v1/progress/weekly-report`
 - 切换范围时请求对应的 `weekly` 或 `monthly`
 - 不单独请求饮食 / 睡眠进度数据
+- 首屏优先基于 `weightTrendPoints` + `exerciseCompletionRate` 生成方向判断文案
 - 周报锁定区块通过 `lockedSections` 和 `membershipPrompt` 渲染，不阻断基础摘要
 
 ## 4. 接口契约映射
@@ -50,6 +52,7 @@ DTO -> UI Model：
 - `exerciseCompletionRate` -> 执行率卡
 - `burnKcalTotal` -> 总消耗卡
 - `milestone` -> 里程碑卡
+- `weightTrendPoints` + `exerciseCompletionRate` -> “这周有没有朝目标前进”的首屏结论
 - `lockedSections` -> 锁定标签
 
 错误态映射：
@@ -61,11 +64,13 @@ DTO -> UI Model：
 
 - loading：摘要卡和趋势区域骨架屏
 - empty：提示“先连续记录几天体重和运动，再回来查看变化”
-- success：突出趋势和解释，不夸大单日波动
+- success：先给方向判断，再展示趋势和解释，不夸大单日波动
 - error：提供回首页或去记录的 CTA
 
 交互规则：
 - 进度页首屏不得出现饮食和睡眠主指标
+- 进度页首屏必须能让用户在 3 秒内回答“我这周有没有朝目标前进”
+- 轻量成就仅限连续记录、运动 2 / 3 / 5 次、恢复回归提示，不做强游戏化
 - 会员提示只出现在用户已经看到基础价值之后
 - 页面需要保留返回首页和继续记录的自然回流点
 
@@ -81,13 +86,13 @@ DTO -> UI Model：
 
 ## 7. 测试方案
 
-- Component tests：摘要卡、里程碑卡、锁定提示
-- Page flow tests：7 日 / 30 日切换；周报查看；深度洞察提示
-- Contract mock tests：`weightTrendPoints`, `milestone`, `lockedSections` 映射
+- Component tests：方向判断卡、摘要卡、轻量成就卡、锁定提示
+- Page flow tests：7 日 / 30 日切换；周报查看；深度洞察提示；回首页 / 去记录回流
+- Contract mock tests：`weightTrendPoints`, `exerciseCompletionRate`, `milestone`, `lockedSections` 映射
 
 ## 8. 开发任务拆解
 
-- FE-5.1 重写趋势页为体重 + 运动双核心洞察
+- FE-5.1 重写趋势页为“结论先行”的体重 + 运动双核心洞察
 - FE-5.2 接入 weekly / monthly / report 查询
-- FE-5.3 补会员锁定提示与回流 CTA
+- FE-5.3 补轻量成就、会员锁定提示与回流 CTA
 - FE-5.4 补趋势页埋点与回归测试

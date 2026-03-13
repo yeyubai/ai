@@ -27,15 +27,16 @@ Out of scope:
 - 首页中的 follow-up 卡属于首页模块，不拆成主导航
 
 页面块：
-1. 执行分数
-2. 今天做得好的地方
-3. 明天继续补上的地方
-4. 明天只关注这几件事
+1. 复盘准备态判断
+2. 今天的体重 / 运动状态摘要
+3. 手动触发“生成今晚调整”
+4. 执行分数与明日重点
 5. 返回首页 / 看本周变化
 
 ## 3. 数据流设计
 
-- 进入复盘页后自动调用 `POST /api/v1/review/evening`
+- 进入复盘页后先读取 `GET /api/v1/home/today` 判断今天是否已具备复盘条件
+- 用户点击“生成今晚调整”后再调用 `POST /api/v1/review/evening`
 - 用户主动跳过时调用 `POST /api/v1/review/skip`
 - 复盘成功后返回首页时刷新 `home/today`
 - `PLAN_FALLBACK_USED` 视为成功态，不展示错误弹窗
@@ -46,6 +47,7 @@ Out of scope:
 - `POST /api/v1/review/skip`
 
 DTO -> UI Model：
+- `weightStatus` + `activityStatus` -> 复盘准备态与今日摘要
 - `reviewSummary.score` -> 分数卡
 - `reviewSummary.highlights` -> 正向反馈列表
 - `reviewSummary.gaps` -> 明日补位列表
@@ -59,13 +61,15 @@ DTO -> UI Model：
 
 ## 5. 交互与状态
 
-- loading：复盘骨架屏
+- loading：复盘准备态骨架屏
+- ready：展示手动生成入口
 - success：突出“明天只关注这几件事”
 - error：提供回首页去记录的 CTA
 
 交互规则：
 - 所有文案都以恢复型表达为主，不用惩罚式语气
 - 复盘页不再出现复杂说明卡或第二主流程 CTA
+- 不允许一进入页面就自动开始 AI 生成，必须先判断是否 ready
 - 主 CTA 优先回首页，其次看本周变化
 
 ## 6. 埋点设计
@@ -80,13 +84,13 @@ DTO -> UI Model：
 
 ## 7. 测试方案
 
-- Component tests：恢复说明条、分数卡、明日动作列表
-- Page flow tests：首页进入复盘 -> 生成结果 -> 返回首页
-- Contract mock tests：`reviewSummary`, `tomorrowPreview`, `PLAN_FALLBACK_USED` 映射
+- Component tests：准备态卡、恢复说明条、分数卡、明日动作列表
+- Page flow tests：首页进入复盘 -> ready 判断 -> 手动生成结果 -> 返回首页；not-ready -> 去记录
+- Contract mock tests：`weightStatus`, `activityStatus`, `reviewSummary`, `tomorrowPreview`, `PLAN_FALLBACK_USED` 映射
 
 ## 8. 开发任务拆解
 
-- FE-4.1 实现复盘页自动生成
+- FE-4.1 实现复盘页“先判断、再生成”
 - FE-4.2 完成 not-ready 与 fallback 表达
 - FE-4.3 接首页 follow-up 和返回首页回流
 - FE-4.4 补充复盘页埋点与回归测试
