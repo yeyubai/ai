@@ -5,8 +5,24 @@ type ApiErrorPayload = Partial<Pick<ApiResponse<null>, 'code' | 'message' | 'tra
 type PersistedAuthStore = {
   state?: {
     token?: string | null;
+    expiresAt?: number | null;
   };
 };
+
+function hasUsableSession(
+  token: string | null | undefined,
+  expiresAt: number | null | undefined,
+): boolean {
+  if (!token) {
+    return false;
+  }
+
+  if (typeof expiresAt !== 'number') {
+    return false;
+  }
+
+  return expiresAt > Date.now();
+}
 
 function createTraceId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -28,6 +44,10 @@ function readAccessTokenFromStorage(): string | null {
 
   try {
     const parsed = JSON.parse(rawAuthStore) as PersistedAuthStore;
+    if (!hasUsableSession(parsed.state?.token, parsed.state?.expiresAt)) {
+      return null;
+    }
+
     return parsed.state?.token ?? null;
   } catch {
     return null;

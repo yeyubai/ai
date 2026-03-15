@@ -13,6 +13,7 @@ type AuthState = {
   token: string | null;
   refreshToken: string | null;
   expiresIn: number | null;
+  expiresAt: number | null;
   userStatus: UserStatus | null;
   userRole: UserRole | null;
   loginStatus: LoginStatus;
@@ -28,8 +29,52 @@ type AuthState = {
 
 type PersistedAuthState = Pick<
   AuthState,
-  'token' | 'refreshToken' | 'expiresIn' | 'userStatus' | 'userRole'
+  'token' | 'refreshToken' | 'expiresIn' | 'expiresAt' | 'userStatus' | 'userRole'
 >;
+
+function calculateExpiresAt(expiresIn: number): number {
+  return Date.now() + expiresIn * 1000;
+}
+
+function hasUsableSession(token: string | null, expiresAt: number | null): boolean {
+  if (!token) {
+    return false;
+  }
+
+  if (typeof expiresAt !== 'number') {
+    return false;
+  }
+
+  return expiresAt > Date.now();
+}
+
+function buildSessionState(result: {
+  token: string;
+  refreshToken: string;
+  expiresIn: number;
+  userStatus: UserStatus;
+  userRole: UserRole;
+}) {
+  return {
+    token: result.token,
+    refreshToken: result.refreshToken,
+    expiresIn: result.expiresIn,
+    expiresAt: calculateExpiresAt(result.expiresIn),
+    userStatus: result.userStatus,
+    userRole: result.userRole,
+  };
+}
+
+function buildClearedSessionState() {
+  return {
+    token: null,
+    refreshToken: null,
+    expiresIn: null,
+    expiresAt: null,
+    userStatus: null,
+    userRole: null,
+  };
+}
 
 function mapLoginError(code: string | number): string {
   if (code === 'INVALID_PARAMS') {
@@ -49,6 +94,7 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       refreshToken: null,
       expiresIn: null,
+      expiresAt: null,
       userStatus: null,
       userRole: null,
       loginStatus: 'idle',
@@ -67,11 +113,7 @@ export const useAuthStore = create<AuthState>()(
             guestToken,
           });
           set({
-            token: result.token,
-            refreshToken: result.refreshToken,
-            expiresIn: result.expiresIn,
-            userStatus: result.userStatus,
-            userRole: result.userRole,
+            ...buildSessionState(result),
             loginStatus: 'success',
             sessionStatus: 'ready',
             loginError: null,
@@ -97,11 +139,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const result = await postGuestSession();
           set({
-            token: result.token,
-            refreshToken: result.refreshToken,
-            expiresIn: result.expiresIn,
-            userStatus: result.userStatus,
-            userRole: result.userRole,
+            ...buildSessionState(result),
             sessionStatus: 'ready',
             loginError: null,
           });
@@ -121,11 +159,7 @@ export const useAuthStore = create<AuthState>()(
         }),
       logout: () =>
         set({
-          token: null,
-          refreshToken: null,
-          expiresIn: null,
-          userStatus: null,
-          userRole: null,
+          ...buildClearedSessionState(),
           loginStatus: 'idle',
           sessionStatus: 'idle',
           loginError: null,
@@ -139,6 +173,7 @@ export const useAuthStore = create<AuthState>()(
         token: state.token,
         refreshToken: state.refreshToken,
         expiresIn: state.expiresIn,
+        expiresAt: state.expiresAt,
         userStatus: state.userStatus,
         userRole: state.userRole,
       }),
@@ -147,7 +182,14 @@ export const useAuthStore = create<AuthState>()(
           return;
         }
 
-        state.sessionStatus = state.token ? 'ready' : 'idle';
+        if (!hasUsableSession(state.token, state.expiresAt)) {
+          Object.assign(state, buildClearedSessionState(), {
+            sessionStatus: 'idle' as const,
+          });
+          return;
+        }
+
+        state.sessionStatus = 'ready';
       },
     },
   ),

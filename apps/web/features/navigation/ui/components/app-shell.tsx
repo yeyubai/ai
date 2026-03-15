@@ -1,11 +1,14 @@
-﻿'use client';
+'use client';
 
-import { type ReactNode, useEffect, useMemo } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
+import { useEffect, useMemo } from 'react';
+import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
 import { usePathname } from 'next/navigation';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { APP_TABS, resolveActiveTabKey } from '../../config/tab.config';
 import { trackTabEvent } from '../../utils/tab-tracking';
 import { BottomTabBar } from './bottom-tab-bar';
+import { RouteTransitionShell } from './route-transition-shell';
 
 type Props = {
   children: ReactNode;
@@ -76,21 +79,31 @@ export function AppShell({ children }: Props) {
     });
   }, [activeTabKey, isTabBarVisible, pathname]);
 
-  if (!isTabBarVisible) {
-    return <>{children}</>;
-  }
+  const pageContent = (
+    <RouteTransitionShell pathname={pathname}>
+      {children}
+    </RouteTransitionShell>
+  );
 
   return (
-    <div
-      className="relative min-h-screen"
-      style={
-        {
-          '--app-tab-bar-offset': `calc(${TAB_BAR_OFFSET} + env(safe-area-inset-bottom))`,
-        } as React.CSSProperties
-      }
-    >
-      <div className="relative pb-[var(--app-tab-bar-offset)]">{children}</div>
-      <BottomTabBar tabs={APP_TABS} activeTabKey={activeTabKey} pathname={pathname} />
-    </div>
+    <LazyMotion features={domAnimation}>
+      <MotionConfig reducedMotion="user">
+        {!isTabBarVisible ? (
+          pageContent
+        ) : (
+          <div
+            className="relative min-h-screen"
+            style={
+              {
+                '--app-tab-bar-offset': `calc(${TAB_BAR_OFFSET} + env(safe-area-inset-bottom))`,
+              } as CSSProperties
+            }
+          >
+            <div className="relative pb-[var(--app-tab-bar-offset)]">{pageContent}</div>
+            <BottomTabBar tabs={APP_TABS} activeTabKey={activeTabKey} pathname={pathname} />
+          </div>
+        )}
+      </MotionConfig>
+    </LazyMotion>
   );
 }
