@@ -283,46 +283,51 @@ export function HomeOverviewSection() {
         className="h-[calc(100dvh-var(--app-tab-bar-offset)-16px)] overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       >
-        <header
-          className={cn(
-            'sticky top-0 z-30 mb-[-76px] flex h-[76px] items-start justify-between px-5 pb-3 pt-4 transition-[background-color,backdrop-filter,box-shadow,color] duration-200',
-            headerSolid
-              ? 'bg-[linear-gradient(180deg,rgba(46,214,219,0.96),rgba(19,181,191,0.96))] text-white backdrop-blur-xl shadow-[0_12px_30px_-24px_rgba(15,23,42,0.28)]'
-              : 'bg-transparent text-white',
-          )}
-        >
-          <div className="flex min-w-0 items-center gap-3">
-            <NotebookText className="h-5 w-5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                首页
-              </p>
-              <h1 className="mt-1 truncate text-[1.55rem] font-semibold leading-none">
-                {settings.diaryName}
-              </h1>
-            </div>
-          </div>
+        <header className="sticky top-0 z-30 mb-[-76px] h-[76px] text-white">
+          <div
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 transition-[background-color,backdrop-filter,box-shadow] duration-200',
+              headerSolid
+                ? 'bg-[linear-gradient(180deg,rgba(46,214,219,0.96),rgba(19,181,191,0.96))] backdrop-blur-xl shadow-[0_12px_30px_-24px_rgba(15,23,42,0.28)]'
+                : 'bg-transparent',
+            )}
+          />
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/diary"
-              className={cn(
-                'inline-flex h-10 items-center gap-2 rounded-2xl px-3 text-sm font-medium transition-colors',
-                headerSolid
-                  ? 'border border-white/35 bg-white/10 text-white/95'
-                  : 'border border-white/35 text-white/95',
-              )}
-            >
-              <CalendarDays className="h-4 w-4" />
-              日历
-            </Link>
-            <Link
-              href="/me"
-              aria-label="更多"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-white/90"
-            >
-              <EllipsisVertical className="h-5 w-5" />
-            </Link>
+          <div className="relative z-10 flex h-full items-start justify-between px-5 pb-3 pt-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <NotebookText className="h-5 w-5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                  首页
+                </p>
+                <h1 className="mt-1 truncate text-[1.55rem] font-semibold leading-none">
+                  {settings.diaryName}
+                </h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/diary"
+                className={cn(
+                  'inline-flex h-10 items-center gap-2 rounded-2xl px-3 text-sm font-medium transition-colors',
+                  headerSolid
+                    ? 'border border-white/35 bg-white/10 text-white/95'
+                    : 'border border-white/35 text-white/95',
+                )}
+              >
+                <CalendarDays className="h-4 w-4" />
+                日历
+              </Link>
+              <Link
+                href="/me"
+                aria-label="更多"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-white/90"
+              >
+                <EllipsisVertical className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -444,9 +449,7 @@ export function HomeOverviewSection() {
 
       <Dialog open={isRecordOpen} onOpenChange={handleRecordOpenChange}>
         <DialogTrigger asChild>
-          <div
-            className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--app-tab-bar-offset)+14px)] z-[65] flex justify-center px-3"
-          >
+          <div className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--app-tab-bar-offset)+14px)] z-[65] flex justify-center px-3">
             <div className="flex w-full max-w-[375px] justify-end">
               <button
                 type="button"
