@@ -1,5 +1,6 @@
 ﻿import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
 import { AuthModule } from './modules/auth/auth.module';
+import { CoachModule } from './modules/coach/coach.module';
 import { DiaryModule } from './modules/diary/diary.module';
 import { HealthModule } from './modules/health/health.module';
 import { MeModule } from './modules/me/me.module';
@@ -13,6 +14,7 @@ import { TraceIdMiddleware } from './shared/middleware/trace-id.middleware';
     PrismaModule,
     HealthModule,
     AuthModule,
+    CoachModule,
     DiaryModule,
     MeModule,
     WeightsModule,

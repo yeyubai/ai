@@ -18,6 +18,10 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 - `GET /api/v1/me/settings`
 - `PUT /api/v1/me/settings`
 - `POST /api/v1/me/export`
+- `GET /api/v1/me/coach/sessions`
+- `GET /api/v1/me/coach/sessions/:sessionId`
+- `POST /api/v1/me/coach/analysis`
+- `POST /api/v1/me/coach/sessions/:sessionId/messages`
 - `GET /api/v1/weights/today-summary`
 - `GET /api/v1/weights/stats`
 - `GET /api/v1/weights/trend`
@@ -34,6 +38,7 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 - 日记列表按日期分组数据。
 - 单次记录详情页的派生字段与区间轴数据。
 - 我的页 / 个人资料 / 目标 / 偏好 / 导出占位接口。
+- 高级私教的图片分析、最近会话恢复与会话追问接口。
 
 当前仍未落成的能力：
 - 导出文件生成链路仅为占位。

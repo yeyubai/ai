@@ -6,6 +6,7 @@ import {
   ChevronRight,
   Download,
   Palette,
+  Sparkles,
   Target,
   UserRound,
 } from 'lucide-react';
@@ -226,6 +227,13 @@ export function MeSection() {
       </Card>
 
       <div className="space-y-3">
+        <SummaryLinkCard
+          href="/me/coach"
+          icon={<Sparkles className="h-5 w-5" />}
+          title="高级私教"
+          value="图片分析"
+          description="上传体型照，获得分析结果与后续追问建议。"
+        />
         <SummaryLinkCard
           href="/me/profile"
           icon={<UserRound className="h-5 w-5" />}
