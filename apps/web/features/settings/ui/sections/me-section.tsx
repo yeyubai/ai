@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { fetchTodaySummary } from '@/features/weight-diary/api/weights.api';
 import type { WeightTodaySummary } from '@/features/weight-diary/types/weight-diary.types';
+import { cn } from '@/lib/utils';
 import {
   fetchGoal,
   fetchProfile,
@@ -58,6 +59,30 @@ function SummaryLinkCard({
   );
 }
 
+function MetricCell({
+  label,
+  value,
+  unit,
+  withDivider,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  withDivider?: boolean;
+}) {
+  return (
+    <div className={cn('px-3', withDivider && 'border-l border-white/18 pl-5')}>
+      <div className="flex items-end justify-center gap-2">
+        <span className="text-[1.5rem] font-semibold leading-none tracking-[-0.03em] text-slate-950">
+          {value}
+        </span>
+        {unit ? <span className="pb-1 text-[12px] font-medium text-slate-500">{unit}</span> : null}
+      </div>
+      <p className="mt-2 whitespace-nowrap text-[12px] font-medium text-slate-600">{label}</p>
+    </div>
+  );
+}
+
 export function MeSection() {
   const token = useAuthStore((state) => state.token);
   const sessionStatus = useAuthStore((state) => state.sessionStatus);
@@ -87,9 +112,11 @@ export function MeSection() {
           fetchSettings(),
           fetchTodaySummary(),
         ]);
+
         if (!active) {
           return;
         }
+
         setProfile(nextProfile);
         setGoal(nextGoal);
         setSettings(nextSettings);
@@ -98,6 +125,7 @@ export function MeSection() {
         if (!active) {
           return;
         }
+
         setError('我的页面加载失败，请稍后重试。');
       } finally {
         if (active) {
@@ -142,6 +170,8 @@ export function MeSection() {
     );
   }
 
+  const displayName = profile.nickname?.trim() || (userRole === 'guest' ? '游客' : '体重用户');
+
   return (
     <div className="app-page space-y-4">
       {error ? (
@@ -155,37 +185,41 @@ export function MeSection() {
         </Alert>
       ) : null}
 
-      <Card className="glass-card overflow-hidden border-none">
-        <CardContent className="bg-[linear-gradient(135deg,rgba(255,249,220,0.5),rgba(214,234,248,0.6))] p-6">
+      <Card className="overflow-hidden rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(244,251,252,0.98),rgba(234,246,248,0.98))] shadow-[0_24px_60px_-34px_rgba(15,170,183,0.32)] backdrop-blur-xl">
+        <CardContent className="p-6">
           <div className="flex items-start gap-4">
-            <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-slate-700/70 text-slate-700">
-              <UserRound className="h-12 w-12" />
+            <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-[3px] border-cyan-900/55 bg-white/55 text-cyan-950 shadow-[inset_0_1px_0_rgba(255,255,255,0.5)]">
+              <UserRound className="h-11 w-11" />
             </div>
-            <div className="flex-1">
-              <p className="text-sm text-slate-500">我的</p>
-              <h1 className="mt-2 text-4xl font-semibold text-slate-950">
-                {profile.nickname?.trim() || (userRole === 'guest' ? '游客' : '体重用户')}
+
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-cyan-800/70">我的</p>
+              <h1 className="mt-2 truncate text-[2.3rem] font-semibold leading-none text-slate-950">
+                {displayName}
               </h1>
-              <p className="mt-2 text-sm text-slate-500">
+              <p className="mt-3 max-w-[18rem] text-[14px] leading-6 text-slate-600">
                 {userRole === 'guest'
-                  ? '当前为游客模式，登录后会把本机记录同步到正式账号。'
-                  : '在这里管理个人资料、目标、日记主题和导出能力。'}
+                  ? '当前为游客模式，后续登录可同步这台设备上的记录与目标。'
+                  : '在这里管理个人资料、目标、主题和导出能力。'}
               </p>
             </div>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3 text-center">
-            <div>
-              <p className="text-4xl font-semibold">{summary.recordDays}</p>
-              <p className="mt-2 text-sm text-slate-500">记录天数</p>
-            </div>
-            <div>
-              <p className="text-4xl font-semibold">{summary.bodyFatPct?.toFixed(1) ?? '--'}</p>
-              <p className="mt-2 text-sm text-slate-500">体脂</p>
-            </div>
-            <div>
-              <p className="text-4xl font-semibold">{summary.deltaFromStart?.toFixed(2) ?? '--'}</p>
-              <p className="mt-2 text-sm text-slate-500">体重变化</p>
+          <div className="mt-6 rounded-[24px] border border-white/50 bg-white/58 px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
+            <div className="grid grid-cols-[1.1fr_1.05fr_1.25fr] text-center">
+              <MetricCell label="记录天数" value={`${summary.recordDays}`} />
+              <MetricCell
+                label="体脂"
+                value={summary.bodyFatPct?.toFixed(1) ?? '--'}
+                unit={summary.bodyFatPct === null ? undefined : '%'}
+                withDivider
+              />
+              <MetricCell
+                label="体重变化"
+                value={summary.deltaFromStart?.toFixed(2) ?? '--'}
+                unit={summary.deltaFromStart === null ? undefined : 'kg'}
+                withDivider
+              />
             </div>
           </div>
         </CardContent>
@@ -205,7 +239,7 @@ export function MeSection() {
           title="目标与体重"
           value={
             goal.startWeightKg && goal.targetWeightKg
-              ? `${goal.startWeightKg.toFixed(1)} → ${goal.targetWeightKg.toFixed(1)}`
+              ? `${goal.startWeightKg.toFixed(1)} -> ${goal.targetWeightKg.toFixed(1)}`
               : '待完善'
           }
           description="查看当前体重、目标体重和单位设置。"

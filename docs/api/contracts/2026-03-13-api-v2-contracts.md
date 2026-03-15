@@ -2,9 +2,42 @@
 
 owner: backend
 status: active
-last_updated: 2026-03-13
+last_updated: 2026-03-15
 prd_ref: docs/product/prd/2026-03-13-prd-v2.md
 supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
+
+## 当前联调状态（2026-03-15）
+
+当前已完成联调并实际被前端消费的接口：
+- `POST /api/v1/auth/guest`
+- `POST /api/v1/auth/login`
+- `GET /api/v1/me/profile`
+- `PUT /api/v1/me/profile`
+- `GET /api/v1/me/goal`
+- `PUT /api/v1/me/goal`
+- `GET /api/v1/me/settings`
+- `PUT /api/v1/me/settings`
+- `POST /api/v1/me/export`
+- `GET /api/v1/weights/today-summary`
+- `GET /api/v1/weights/stats`
+- `GET /api/v1/weights/trend`
+- `GET /api/v1/weights/entries`
+- `GET /api/v1/weights/entries/:entryId`
+- `POST /api/v1/weights/entries`
+- `PUT /api/v1/weights/entries/:entryId`
+- `DELETE /api/v1/weights/entries/:entryId`
+
+当前前端已依赖的契约能力：
+- 游客会话创建与登录后迁移。
+- 首页 summary 摘要数据。
+- 趋势页 range 切换数据。
+- 日记列表按日期分组数据。
+- 单次记录详情页的派生字段与区间轴数据。
+- 我的页 / 个人资料 / 目标 / 偏好 / 导出占位接口。
+
+当前仍未落成的能力：
+- 导出文件生成链路仅为占位。
+- 旧 `v1` 与旧教练业务线接口不再作为当前主流程依赖。
 
 ## 1. 基线约定
 
