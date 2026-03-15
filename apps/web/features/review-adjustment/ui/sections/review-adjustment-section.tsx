@@ -112,21 +112,21 @@ export function ReviewAdjustmentSection() {
         <Badge variant="secondary" className="w-fit">
           晚间 AI 调整
         </Badge>
-        <CardTitle className="text-3xl">先判断今天是否准备好了，再生成今晚调整</CardTitle>
+        <CardTitle className="text-3xl">先看看今天的记录够不够，再给你明天建议</CardTitle>
         <CardDescription>这里不批评你，只负责把今天的结果接到明天的动作上。</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {homeData ? (
           <div className="grid gap-4 lg:grid-cols-[1.05fr_0.95fr]">
             <div className="rounded-3xl border border-border/70 bg-background/85 p-4">
-              <p className="text-sm text-muted-foreground">复盘准备态</p>
+              <p className="text-sm text-muted-foreground">当前状态</p>
               <p className="mt-2 text-2xl font-semibold text-foreground">
-                {isReady ? '今天已经具备复盘条件' : '今天还没准备好生成复盘'}
+                {isReady ? '今天已经可以看明天建议了' : '今天的记录还不够，先补一步再来'}
               </p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
                 {isReady
-                  ? '你已经至少完成了一个核心动作，现在可以主动生成今晚调整。'
-                  : '先完成体重记录或运动记录中的一个，复盘才会更有意义。'}
+                  ? '你已经完成了至少一项重要记录，现在可以看看明天先做什么。'
+                  : '先完成体重记录或运动记录中的一个，再来看明天建议会更有帮助。'}
               </p>
 
               <div className="mt-4 flex flex-wrap gap-2">
@@ -144,14 +144,14 @@ export function ReviewAdjustmentSection() {
                 {homeData.recoveryMode ? (
                   <Badge variant="secondary" className="rounded-full">
                     <CheckCircle2 className="mr-1 h-3.5 w-3.5" />
-                    当前是恢复优先日
+                    今天先把节奏找回来
                   </Badge>
                 ) : null}
               </div>
             </div>
 
             <div className="rounded-3xl border border-border/70 bg-muted/55 p-4">
-              <p className="font-semibold text-foreground">今天会怎么被总结</p>
+              <p className="font-semibold text-foreground">今天的情况</p>
               <div className="mt-4 space-y-3 text-sm text-muted-foreground">
                 <div className="rounded-2xl border border-border/60 bg-background/80 p-3">
                   <p className="font-medium text-foreground">体重状态</p>
@@ -178,11 +178,11 @@ export function ReviewAdjustmentSection() {
           <div className="rounded-3xl border border-border/70 bg-card/70 p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="font-semibold text-foreground">生成今晚调整</p>
+                <p className="font-semibold text-foreground">看看明天先做什么</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   {isReady
-                    ? '准备好后再点一次生成，避免让你先看到空转加载。'
-                    : '先补一个核心动作，复盘页就会从“未准备好”切到可生成状态。'}
+                    ? '准备好之后再点一次，不用先等空白加载。'
+                    : '先补一个关键记录，这里就会切换成可查看状态。'}
                 </p>
               </div>
               <Button
@@ -190,7 +190,7 @@ export function ReviewAdjustmentSection() {
                 onClick={() => void handleGenerate()}
                 disabled={!isReady || isGenerating}
               >
-                {isGenerating ? '正在生成今晚调整...' : '生成今晚调整'}
+                {isGenerating ? '正在整理明天建议...' : '查看明天建议'}
                 <MoonStar className="h-4 w-4" />
               </Button>
             </div>
@@ -240,7 +240,7 @@ export function ReviewAdjustmentSection() {
             {reviewData.responseCode === 'PLAN_FALLBACK_USED' ? (
               <Alert className="border-amber-300 bg-amber-50 text-amber-800">
                 <AlertDescription className="text-amber-800">
-                  系统已切换到恢复模式：先把体重记录和一次轻运动接回来，再慢慢恢复正常任务量。
+                  今天先把节奏找回来：先补一次体重记录，或者先做一段轻运动，明天再继续往上加。
                 </AlertDescription>
               </Alert>
             ) : null}

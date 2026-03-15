@@ -1,35 +1,21 @@
 ﻿import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
-import { AiModule } from './modules/ai/ai.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { CheckinsModule } from './modules/checkins/checkins.module';
+import { DiaryModule } from './modules/diary/diary.module';
 import { HealthModule } from './modules/health/health.module';
-import { HomeModule } from './modules/home/home.module';
-import { MembershipModule } from './modules/membership/membership.module';
-import { OnboardingModule } from './modules/onboarding/onboarding.module';
-import { ProfileModule } from './modules/profile/profile.module';
-import { ProgressModule } from './modules/progress/progress.module';
-import { ReviewModule } from './modules/review/review.module';
-import { SettingsModule } from './modules/settings/settings.module';
+import { MeModule } from './modules/me/me.module';
+import { WeightsModule } from './modules/weights/weights.module';
 import { PrismaModule } from './shared/db/prisma.module';
 import { AppLogger } from './shared/logger/app-logger.service';
 import { TraceIdMiddleware } from './shared/middleware/trace-id.middleware';
-import { JourneyStateModule } from './shared/state/journey-state.module';
 
 @Module({
   imports: [
     PrismaModule,
-    JourneyStateModule,
     HealthModule,
     AuthModule,
-    ProfileModule,
-    OnboardingModule,
-    HomeModule,
-    CheckinsModule,
-    ReviewModule,
-    ProgressModule,
-    MembershipModule,
-    SettingsModule,
-    AiModule,
+    DiaryModule,
+    MeModule,
+    WeightsModule,
   ],
   providers: [AppLogger],
 })

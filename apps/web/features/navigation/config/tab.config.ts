@@ -1,6 +1,6 @@
 ﻿'use client';
 
-import { ClipboardCheck, House, LineChart, UserRound } from 'lucide-react';
+import { BookOpenText, ChartSpline, House, UserRound } from 'lucide-react';
 import type { TabItem, TabKey } from '../types/tab.types';
 
 export const APP_TABS: TabItem[] = [
@@ -8,29 +8,29 @@ export const APP_TABS: TabItem[] = [
     key: 'home',
     label: '首页',
     icon: House,
-    href: '/dashboard',
-    matchPrefixes: ['/dashboard', '/coach'],
-  },
-  {
-    key: 'checkins',
-    label: '记录',
-    icon: ClipboardCheck,
-    href: '/checkins',
-    matchPrefixes: ['/checkins'],
+    href: '/home',
+    matchPrefixes: ['/home'],
   },
   {
     key: 'trend',
-    label: '进度',
-    icon: LineChart,
+    label: '趋势',
+    icon: ChartSpline,
     href: '/trend',
     matchPrefixes: ['/trend'],
+  },
+  {
+    key: 'diary',
+    label: '日记',
+    icon: BookOpenText,
+    href: '/diary',
+    matchPrefixes: ['/diary', '/weight'],
   },
   {
     key: 'me',
     label: '我的',
     icon: UserRound,
-    href: '/settings/preferences',
-    matchPrefixes: ['/settings'],
+    href: '/me',
+    matchPrefixes: ['/me'],
   },
 ];
 

@@ -1,6 +1,6 @@
 ﻿import type { LucideIcon } from 'lucide-react';
 
-export type TabKey = 'home' | 'checkins' | 'trend' | 'me';
+export type TabKey = 'home' | 'trend' | 'diary' | 'me';
 
 export type TabItem = {
   key: TabKey;

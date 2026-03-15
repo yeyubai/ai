@@ -159,7 +159,7 @@ export function RecordCenterSection() {
           <Badge variant="secondary" className="w-fit">
             记录中心
           </Badge>
-          <CardTitle className="text-3xl">这里负责最低成本输入，不负责讲完整策略</CardTitle>
+          <CardTitle className="text-3xl">这里就是快速记录，不用先看一堆说明</CardTitle>
           <CardDescription>
             先完成体重和运动两个核心记录，饮食和睡眠继续保留，但只作为背景信息。
           </CardDescription>
@@ -172,7 +172,7 @@ export function RecordCenterSection() {
           headline={todayWeight ? '今天体重已记录' : '先记录今天体重'}
           body={
             todayWeight
-              ? `${todayWeight.displayValue} 已同步到首页，接下来更适合去补上运动。`
+              ? `${todayWeight.displayValue} 已经记好了，接下来更适合去补上运动。`
               : '越早完成体重记录，首页越能快速判断今天应该先做什么。'
           }
           href="/checkins/weight"
@@ -184,7 +184,7 @@ export function RecordCenterSection() {
           headline={todayActivity ? '今天运动已记录' : '把今天的运动接上'}
           body={
             todayActivity
-              ? `${todayActivity.displayValue} 已同步到首页和进度页，晚上复盘会直接用上它。`
+              ? `${todayActivity.displayValue} 已经记好了，晚上看明天建议时会直接用上。`
               : '先记录有没有完成运动，再补时长和消耗，别把自己卡在复杂表单里。'
           }
           href="/checkins/activity"
@@ -214,7 +214,7 @@ export function RecordCenterSection() {
             <div>
               <p className="font-semibold text-foreground">辅助背景记录</p>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                饮食和睡眠会继续保留，但不影响首页主任务，也不会盖过体重和运动。
+                饮食和睡眠还可以记，但不会影响你今天先做体重和运动这两件事。
               </p>
             </div>
             <Badge variant="outline" className="rounded-full">

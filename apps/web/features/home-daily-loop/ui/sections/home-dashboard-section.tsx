@@ -105,7 +105,7 @@ function PrimaryActionCard({ data }: { data: HomeTodayResult }) {
         <CardContent className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-slate-500">当前最关键的动作</p>
+              <p className="text-sm font-medium text-slate-500">现在先做这一步</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">先称一次体重，确定今天的起点</h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
                 {data.weightStatus.weighedToday
@@ -141,7 +141,7 @@ function PrimaryActionCard({ data }: { data: HomeTodayResult }) {
         <CardContent className="p-5 sm:p-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-slate-500">当前最关键的动作</p>
+              <p className="text-sm font-medium text-slate-500">现在先做这一步</p>
               <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">把今天的运动接上，先完成一次记录</h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
                 {data.activityStatus.completedToday
@@ -178,7 +178,7 @@ function PrimaryActionCard({ data }: { data: HomeTodayResult }) {
       <CardContent className="p-5 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-sm font-medium text-slate-500">当前最关键的动作</p>
+              <p className="text-sm font-medium text-slate-500">现在先做这一步</p>
             <h2 className="mt-2 text-2xl font-semibold text-slate-950 sm:text-3xl">晚上做 1 分钟调整，把明天接起来</h2>
             <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600">
               白天的动作已经有结果了，现在只需要把今天收住，明天首页就会直接告诉你先做什么。
@@ -249,7 +249,7 @@ function SecondaryCard({ data }: { data: HomeTodayResult }) {
           <Link href={href} className={cn(buttonVariants({ variant: 'outline', size: 'sm' }), 'rounded-xl')}>
             去补上这一步
           </Link>
-          <span className="text-sm text-muted-foreground">这是次级动作，不会抢当前主任务。</span>
+          <span className="text-sm text-muted-foreground">这一步可以稍后补上，不会影响你现在先做眼前这件事。</span>
         </div>
       </CardContent>
     </Card>
@@ -394,7 +394,7 @@ export function HomeDashboardSection() {
         <Alert className="border-amber-200 bg-amber-50/90 text-amber-900">
           <ShieldAlert className="h-4 w-4" />
           <AlertDescription className="text-amber-900">
-            当前已进入恢复模式：先恢复体重记录和一次轻运动，不要求你一次做满全部节奏。
+            我们先把节奏找回来：今天先补一次体重记录，或者先做一段轻运动，不用一下子做很多。
           </AlertDescription>
         </Alert>
       ) : null}
@@ -407,7 +407,7 @@ export function HomeDashboardSection() {
             <CardContent className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-slate-500">方向判断</p>
+                  <p className="text-sm font-medium text-slate-500">本周变化</p>
                   <p className="mt-2 text-xl font-semibold text-slate-950">这周有没有朝目标前进</p>
                   <p className="mt-2 text-sm leading-6 text-slate-600">{getDirectionSummary(data)}</p>
                 </div>
@@ -428,7 +428,7 @@ export function HomeDashboardSection() {
             <CardContent className="p-5">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-slate-500">轻量成就</p>
+                  <p className="text-sm font-medium text-slate-500">这周进展</p>
                   <p className="mt-2 text-xl font-semibold text-slate-950">{getMilestoneLabel(data)}</p>
                   <p className="mt-2 text-sm leading-6 text-slate-600">
                     不用追求完美，先把连续记录和本周 2 / 3 / 5 次运动里程碑接起来。
@@ -462,7 +462,7 @@ export function HomeDashboardSection() {
               <div>
                 <p className="text-sm font-semibold text-foreground">今晚复盘 / 明日预览</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  完成今天后，用 1 分钟把明天接起来。这里保留解释，但不会和首页主 CTA 抢优先级。
+                  完成今天后，用 1 分钟看看明天先做什么。这里会给你一点解释，但不会打断你先把今天做好。
                 </p>
               </div>
               <div className="rounded-2xl bg-muted p-3 text-muted-foreground">
@@ -474,13 +474,13 @@ export function HomeDashboardSection() {
               <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
                 <p className="text-sm font-medium text-foreground">白天先完成动作</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  首页现在只会先推一个动作，做完再接下一个，不让信息挤在同一屏上。
+                  先把白天最重要的一步做掉，再继续下一步，信息不会一股脑压给你。
                 </p>
               </div>
               <div className="rounded-2xl border border-border/70 bg-background/80 p-4">
                 <p className="text-sm font-medium text-foreground">晚上再生成调整</p>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  复盘页会先判断今天是否已准备好，再由你主动生成今晚调整。
+                  晚上打开时会先看看今天的记录够不够，再由你决定要不要看明天建议。
                 </p>
               </div>
             </div>

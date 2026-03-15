@@ -41,6 +41,7 @@ supersedes: docs/api/errors/2026-03-13-api-error-codes.md
 | `INTERNAL_ERROR` | 500 | global | 未分类异常 | 展示通用错误并支持重试 |
 | `PLAN_FALLBACK_USED` | 200 | home/review | 首页或复盘命中兜底输出 | 按成功态渲染并展示恢复说明 |
 | `AUTH_RATE_LIMIT` | 429 | auth | 登录请求过频 | 按钮冷却并提示稍后重试 |
+| `GUEST_UPGRADE_FAILED` | 500 | auth | 游客数据同步到正式账号失败 | 提示稍后重试并保留游客态 |
 | `DUPLICATE_PROFILE` | 409 | entry | 档案更新冲突 | 刷新数据后重试 |
 | `ONBOARDING_LIMIT_REACHED` | 409 | entry | 当日重复完成 onboarding | 直接跳转首页 |
 | `DUPLICATE_CHECKIN` | 409 | record | 同类记录重复提交 | 提示“请勿重复提交” |
@@ -60,6 +61,14 @@ supersedes: docs/api/errors/2026-03-13-api-error-codes.md
 
 | Method | Path | Errors |
 | --- | --- | --- |
+| POST | `/api/v1/auth/guest` | `AUTH_RATE_LIMIT`, `INTERNAL_ERROR` |
+| POST | `/api/v1/auth/login` | `INVALID_PARAMS`, `AUTH_RATE_LIMIT`, `GUEST_UPGRADE_FAILED`, `INTERNAL_ERROR` |
+| GET | `/api/v1/weights/entries` | `INVALID_PARAMS`, `AUTH_EXPIRED`, `INTERNAL_ERROR` |
+| GET | `/api/v1/weights/entries/{entryId}` | `INVALID_PARAMS`, `AUTH_EXPIRED`, `INTERNAL_ERROR` |
+| GET | `/api/v1/diary/entries` | `AUTH_EXPIRED`, `INTERNAL_ERROR` |
+| GET | `/api/v1/diary/entries/{entryId}` | `INVALID_PARAMS`, `AUTH_EXPIRED`, `INTERNAL_ERROR` |
+| POST | `/api/v1/diary/entries` | `INVALID_PARAMS`, `AUTH_EXPIRED`, `INTERNAL_ERROR` |
+| PUT | `/api/v1/diary/entries/{entryId}` | `INVALID_PARAMS`, `AUTH_EXPIRED`, `INTERNAL_ERROR` |
 | GET | `/api/v1/home/today` | `AUTH_EXPIRED`, `PLAN_FALLBACK_USED`, `INTERNAL_ERROR` |
 | POST | `/api/v1/checkins/weight` | `INVALID_PARAMS`, `DUPLICATE_CHECKIN`, `CHECKIN_LIMIT_REACHED`, `CHECKIN_RATE_LIMIT`, `AUTH_EXPIRED`, `INTERNAL_ERROR` |
 | POST | `/api/v1/checkins/activity` | `INVALID_PARAMS`, `DUPLICATE_CHECKIN`, `CHECKIN_RATE_LIMIT`, `AUTH_EXPIRED`, `INTERNAL_ERROR` |
@@ -77,3 +86,5 @@ supersedes: docs/api/errors/2026-03-13-api-error-codes.md
 - 前端对 `PLAN_FALLBACK_USED` 必须按成功态渲染，不得当作 toast 级错误拦截。
 - 首页、进度页、复盘页对核心动作的缺失都优先引导体重或运动，而不是辅助记录。
 - `REVIEW_NOT_READY` 应发生在用户主动点击生成复盘之后；客户端不应在进入复盘页时自动触发失败请求。
+- 游客模式下不应强制跳转登录；只有在用户主动选择登录同步时才进入 `/auth/login`。
+- 同步状态本轮仅允许作为占位文案/视觉位展示，不接真实同步状态机。

@@ -57,6 +57,9 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error: AxiosError<ApiErrorPayload>) => {
     const payload = error.response?.data;
+    if (typeof window !== 'undefined' && error.response?.status === 401) {
+      window.dispatchEvent(new CustomEvent('auth-expired'));
+    }
     const normalizedError: ApiError = {
       status: error.response?.status ?? 500,
       code: payload?.code ?? error.response?.status ?? 'INTERNAL_ERROR',

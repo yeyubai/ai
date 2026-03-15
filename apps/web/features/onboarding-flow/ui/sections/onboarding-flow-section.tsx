@@ -100,30 +100,30 @@ export function OnboardingFlowSection() {
         </Badge>
         <CardTitle className="flex items-center gap-2 text-3xl">
           <Sparkles className="h-6 w-6 text-primary" />
-          先定下今天最容易开始的一步
+          先把今天怎么开始定下来
         </CardTitle>
         <CardDescription>
-          先填写 4 个必要信息，其他节奏和偏好先用温和默认值兜底，等你开始后再慢慢完善。
+          先填 4 个必要信息，其他内容我们先按常规情况帮你补上，开始之后再慢慢调整。
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         <div className="grid gap-3 rounded-[28px] border border-border/70 bg-background/80 p-4 sm:grid-cols-3">
           <div className="rounded-2xl border border-border/60 bg-card/80 p-3">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">默认节奏</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">先这样开始</p>
             <p className="mt-2 text-sm font-medium text-foreground">先按常规作息开始</p>
             <p className="mt-1 text-sm text-muted-foreground">
               作息和偏好稍后再补，不阻断今天开始。
             </p>
           </div>
           <div className="rounded-2xl border border-border/60 bg-card/80 p-3">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">执行重点</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">先做重点</p>
             <p className="mt-2 text-sm font-medium text-foreground">先围绕体重和运动</p>
             <p className="mt-1 text-sm text-muted-foreground">
               首页只会先给一个最关键动作，不会把你困在表单里。
             </p>
           </div>
           <div className="rounded-2xl border border-border/60 bg-card/80 p-3">
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">后续可改</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">之后再改</p>
             <p className="mt-2 text-sm font-medium text-foreground">身高先用默认值兜底</p>
             <p className="mt-1 text-sm text-muted-foreground">
               后续可以在“我的”里补充更完整的个人信息。
@@ -175,7 +175,7 @@ export function OnboardingFlowSection() {
             </Select>
           </div>
           <div className="rounded-2xl border border-dashed border-border/70 bg-muted/40 p-4 md:col-span-2">
-            <p className="text-sm font-medium text-foreground">默认先帮你补上的信息</p>
+            <p className="text-sm font-medium text-foreground">先按常规情况帮你补上的内容</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">
               当前会先按 165 cm 身高、常规作息、高蛋白偏好和“容易中断后重来”的恢复模式生成首日节奏，后续都可以再调整。
             </p>

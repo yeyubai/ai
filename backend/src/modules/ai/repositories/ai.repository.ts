@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import type { Decimal, InputJsonValue, JsonValue } from '@prisma/client/runtime/library';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/db/prisma.service';
 
@@ -12,21 +13,21 @@ type CreateAiPlanRecordPayload = {
   planDate: Date;
   refreshSeq: number;
   source: 'model' | 'fallback';
-  payloadJson: Prisma.InputJsonValue;
+  payloadJson: InputJsonValue;
 };
 
 type CreateAiReviewRecordPayload = {
   userId: bigint;
   reviewDate: Date;
   source: 'model' | 'fallback';
-  payloadJson: Prisma.InputJsonValue;
+  payloadJson: InputJsonValue;
 };
 
 export type AiPlanRecord = {
   id: bigint;
   planDate: Date;
   refreshSeq: number;
-  payloadJson: Prisma.JsonValue;
+  payloadJson: JsonValue;
   source: string;
   createdAt: Date;
 };
@@ -34,7 +35,7 @@ export type AiPlanRecord = {
 export type AiReviewRecord = {
   id: bigint;
   reviewDate: Date;
-  payloadJson: Prisma.JsonValue;
+  payloadJson: JsonValue;
   source: string;
   createdAt: Date;
 };
@@ -207,8 +208,8 @@ export class AiRepository {
   }
 
   async findUserProfile(userId: bigint): Promise<{
-    currentWeightKg: Prisma.Decimal;
-    targetWeightKg: Prisma.Decimal;
+    currentWeightKg: Decimal;
+    targetWeightKg: Decimal;
   } | null> {
     return this.prisma.userProfile.findFirst({
       where: {
@@ -225,7 +226,7 @@ export class AiRepository {
   async findLatestWeight(
     userId: bigint,
     upToDate: Date,
-  ): Promise<{ weightKg: Prisma.Decimal } | null> {
+  ): Promise<{ weightKg: Decimal } | null> {
     return this.prisma.checkinWeight.findFirst({
       where: {
         userId,

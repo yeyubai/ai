@@ -109,7 +109,7 @@ export function ProgressInsightSection() {
           <TrendingUp className="h-6 w-6 text-primary" />
           这周有没有朝目标前进
         </CardTitle>
-        <CardDescription>这里优先给方向判断，再补充体重趋势、执行率和轻量成就。</CardDescription>
+        <CardDescription>这里先告诉你这周做得怎么样，再补充体重趋势、运动频率和整体进展。</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {error ? (
@@ -130,10 +130,10 @@ export function ProgressInsightSection() {
         <div className="rounded-[28px] border border-border/70 bg-background/85 p-5">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">结论先行</p>
+              <p className="text-sm font-medium text-muted-foreground">先看结论</p>
               <p className="mt-2 text-2xl font-semibold text-foreground">{getDirectionCopy(progress)}</p>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">
-                趋势页现在优先回答“算不算做对”，而不是把所有数字同时堆给你。
+                先看这周整体有没有往目标前进，再去看具体数字。
               </p>
             </div>
             <div className="rounded-3xl bg-primary/10 p-3 text-primary">
@@ -191,7 +191,7 @@ export function ProgressInsightSection() {
             <div className="rounded-3xl border border-border/70 bg-muted/55 p-4">
               <div className="flex items-center gap-2">
                 <Sparkles className="h-4 w-4 text-primary" />
-                <p className="font-semibold">轻量成就</p>
+                <p className="font-semibold">这周进展</p>
               </div>
               <p className="mt-3 text-sm text-muted-foreground">{getMilestoneCopy(progress)}</p>
               <div className="mt-4 flex flex-wrap gap-2">

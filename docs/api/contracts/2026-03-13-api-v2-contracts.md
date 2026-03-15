@@ -9,7 +9,7 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 ## 1. 基线约定
 
 - Base Path：`/api/v1`
-- Auth：除 `POST /auth/login` 外，所有接口默认要求 `Authorization: Bearer <token>`
+- Auth：除 `POST /auth/login`、`POST /auth/guest` 外，所有接口默认要求 `Authorization: Bearer <token>`
 - Content-Type：`application/json`
 - Trace：支持客户端传入 `x-trace-id`，服务端统一返回 `traceId`
 - Idempotency：所有写接口支持 `x-idempotency-key`
@@ -45,6 +45,7 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 
 | Journey | Method | Path |
 | --- | --- | --- |
+| Entry | POST | `/api/v1/auth/guest` |
 | Entry | POST | `/api/v1/auth/login` |
 | Entry | GET | `/api/v1/profile` |
 | Entry | PUT | `/api/v1/profile` |
@@ -78,6 +79,41 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 ## 4. 接口契约与示例
 
 ### 4.1 Entry & Onboarding
+
+#### POST /api/v1/auth/guest
+
+```json
+{
+  "code": "OK",
+  "message": "success",
+  "data": {
+    "token": "atk_xxx",
+    "refreshToken": "rtk_xxx",
+    "expiresIn": 7200,
+    "userStatus": "active",
+    "userRole": "guest"
+  },
+  "traceId": "0d8bb0c4-5cb9-41df-9f4d-6fe608c2f55f"
+}
+```
+
+说明：
+- 首次进入应用时，客户端应优先调用本接口创建游客会话。
+- 游客会话可直接用于首页、趋势页、日记页和我的页。
+
+#### POST /api/v1/auth/login
+
+```json
+{
+  "phone": "13800138000",
+  "code": "123456",
+  "guestToken": "atk_guest_xxx"
+}
+```
+
+说明：
+- `guestToken` 可选；当客户端当前为游客态且用户主动登录时，应携带该字段。
+- 服务端在登录成功后，需要把游客期间产生的资料、目标、设置和体重记录迁移到正式账号。
 
 #### POST /api/v1/onboarding/assessment
 
@@ -330,3 +366,95 @@ supersedes: docs/api/contracts/2026-03-13-api-v1-contracts.md
 - 饮食和睡眠不再进入首页主任务、首页主 CTA、首页 follow-up、进度页首屏主指标。
 - AI 默认只依赖体重变化、运动完成率、运动消耗与恢复模式状态。
 - 会员价值表达应围绕“解释更清楚、提醒更稳、恢复更快”，不以“更多功能”作为默认主卖点。
+
+## 6. 体重日记扩展说明（2026-03-14）
+
+### 6.1 GET /api/v1/weights/entries
+
+- 列表项用于首页与 `/diary` 的统一记录卡片展示。
+- 每项至少包含：
+  - `entryDate`
+  - `measuredAt`
+  - `weightKg`
+  - `deltaFromPreviousKg`
+  - `syncStatus`
+
+### 6.2 GET /api/v1/weights/entries/:entryId
+
+- 本接口扩展为“报告详情页”数据源。
+- 除基础记录字段外，返回：
+  - `previousMeasuredAt`
+  - `bmi`
+  - `bmiLevel`
+  - `estimatedBodyFatPct`
+  - `bodyFatLevel`
+  - `weightLevel`
+  - `syncStatus`
+  - `ranges`
+
+说明：
+- `ranges` 用于前端绘制体重、体脂、BMI 的区间轴。
+- 评级口径采用中国常用标准。
+- `estimatedBodyFatPct` 为估算值，不代表真实体脂测量结果。
+
+### 6.3 GET /api/v1/diary/entries
+
+```json
+{
+  "code": "OK",
+  "message": "success",
+  "data": {
+    "entries": [
+      {
+        "id": "12",
+        "preview": "今天的体重和状态都记录下来了",
+        "createdAt": "2026-03-15T07:15:00.000Z",
+        "updatedAt": "2026-03-15T07:15:00.000Z",
+        "wordCount": 14
+      }
+    ]
+  },
+  "traceId": "9d0d5bc0-bf27-41af-9e53-0ef899ea42fb"
+}
+```
+
+### 6.4 GET /api/v1/diary/entries/:entryId
+
+```json
+{
+  "code": "OK",
+  "message": "success",
+  "data": {
+    "id": "12",
+    "contentHtml": "<p>今天的体重和状态都记录下来了</p>",
+    "plainText": "今天的体重和状态都记录下来了",
+    "createdAt": "2026-03-15T07:15:00.000Z",
+    "updatedAt": "2026-03-15T07:15:00.000Z",
+    "wordCount": 14
+  },
+  "traceId": "a3c539cf-17cf-414f-8710-55c066a53c48"
+}
+```
+
+### 6.5 POST /api/v1/diary/entries
+
+```json
+{
+  "contentHtml": "<p>今天的体重和状态都记录下来了</p>",
+  "plainText": "今天的体重和状态都记录下来了"
+}
+```
+
+### 6.6 PUT /api/v1/diary/entries/:entryId
+
+```json
+{
+  "contentHtml": "<p>今天状态更稳了一点，晚点复盘。</p>",
+  "plainText": "今天状态更稳了一点，晚点复盘。"
+}
+```
+
+说明：
+- 日记摘要 `preview` 由服务端根据 `plainText` 截断生成。
+- 富文本编辑页使用 `contentHtml` 回显正文。
+- 游客写入的 diary 数据在绑定正式账号时需要迁移到正式账号。

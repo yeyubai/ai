@@ -1,4 +1,5 @@
-﻿import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
+import type { CheckinActivity } from '@prisma/client';
 import { PrismaService } from 'src/shared/db/prisma.service';
 import { apiSuccess } from 'src/shared/dto/api-response.dto';
 import { JourneyStateService } from 'src/shared/state/journey-state.service';
@@ -32,7 +33,10 @@ export class ReviewService {
     }
 
     const missedPreviousTwoDays = await this.isRecoveryMode(userId, date);
-    const burnKcalTotal = activityRecords.reduce((sum, item) => sum + (item.estimatedKcal ?? 0), 0);
+    const burnKcalTotal = activityRecords.reduce(
+      (sum: number, item: CheckinActivity) => sum + (item.estimatedKcal ?? 0),
+      0,
+    );
     const completedCoreActions = Number(Boolean(weightRecord)) + Number(activityCompleted);
 
     const response: ReviewEveningResponseDto = {

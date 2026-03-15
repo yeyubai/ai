@@ -1,5 +1,6 @@
 import { HttpStatus } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { Decimal, type JsonValue } from '@prisma/client/runtime/library';
 import { LlmClient } from 'src/shared/llm/llm.client';
 import { AiRepository } from 'src/modules/ai/repositories/ai.repository';
 import { AiService } from 'src/modules/ai/services/ai.service';
@@ -30,7 +31,7 @@ function createAiRepositoryMock(): AiRepositoryMock {
       id: 1n,
       planDate: payload.planDate,
       refreshSeq: payload.refreshSeq,
-      payloadJson: payload.payloadJson as Prisma.JsonValue,
+      payloadJson: payload.payloadJson as JsonValue,
       source: payload.source,
       createdAt: new Date(),
     }));
@@ -40,7 +41,7 @@ function createAiRepositoryMock(): AiRepositoryMock {
     .mockImplementation(async (payload) => ({
       id: 2n,
       reviewDate: payload.reviewDate,
-      payloadJson: payload.payloadJson as Prisma.JsonValue,
+      payloadJson: payload.payloadJson as JsonValue,
       source: payload.source,
       createdAt: new Date(),
     }));
@@ -53,11 +54,11 @@ function createAiRepositoryMock(): AiRepositoryMock {
     createReview,
     countActiveCheckinDays: jest.fn().mockResolvedValue(4),
     findUserProfile: jest.fn().mockResolvedValue({
-      currentWeightKg: new Prisma.Decimal(72),
-      targetWeightKg: new Prisma.Decimal(65),
+      currentWeightKg: new Decimal(72),
+      targetWeightKg: new Decimal(65),
     }),
     findLatestWeight: jest.fn().mockResolvedValue({
-      weightKg: new Prisma.Decimal(71.2),
+      weightKg: new Decimal(71.2),
     }),
     countCheckinCompletionByDate: jest.fn().mockResolvedValue({
       weightCount: 1,

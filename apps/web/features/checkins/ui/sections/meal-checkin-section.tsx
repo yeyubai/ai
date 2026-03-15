@@ -137,7 +137,7 @@ export function MealCheckinSection() {
   return (
     <CheckinFormLayout
       title="辅助饮食记录"
-      description="饮食信息继续可记，但本轮不会进入首页主任务和 AI 主决策。"
+      description="饮食信息还可以继续记录，但这一版不会影响你今天先做什么。"
       isBackfill={isBackfill}
       checkinDate={checkinDate}
       minDate={minDate}

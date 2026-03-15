@@ -1,22 +1,11 @@
-﻿import type { Metadata } from 'next';
-import { Manrope, Space_Grotesk } from 'next/font/google';
+import type { Metadata } from 'next';
 import { AppShell } from '@/features/navigation';
 import { cn } from '@/lib/utils';
 import './globals.css';
 
-const manrope = Manrope({
-  subsets: ['latin'],
-  variable: '--font-manrope',
-});
-
-const spaceGrotesk = Space_Grotesk({
-  subsets: ['latin'],
-  variable: '--font-space-grotesk',
-});
-
 export const metadata: Metadata = {
-  title: '日常减脂教练',
-  description: '面向反复减脂失败者的科学减脂陪伴服务',
+  title: '体重日记',
+  description: '面向移动端的体重记录、趋势查看与轻量目标管理应用',
 };
 
 export default function RootLayout({
@@ -24,7 +13,7 @@ export default function RootLayout({
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN" className={cn('font-sans')}>
-      <body className={cn(manrope.variable, spaceGrotesk.variable, 'min-h-screen font-sans')}>
+      <body className={cn('min-h-screen font-sans')}>
         <AppShell>{children}</AppShell>
       </body>
     </html>
