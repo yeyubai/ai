@@ -1,8 +1,8 @@
-﻿'use client';
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { type FormEvent, useState } from 'react';
-import { Sparkles } from 'lucide-react';
+import { ArrowRight, Sparkles } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -78,15 +78,15 @@ export function OnboardingFlowSection() {
       setActions(assessment.recommendedDailyActions);
       const completed = await completeOnboarding();
       router.replace(completed.homeRedirect);
-    } catch (error) {
-      if (isApiError(error) && error.status === 401) {
+    } catch (nextError) {
+      if (isApiError(nextError) && nextError.status === 401) {
         logout();
         router.replace('/auth/login');
         return;
       }
 
-      setError(isApiError(error) ? error.message : '初始化失败，请稍后重试。');
-      setTraceId(isApiError(error) ? error.traceId ?? null : null);
+      setError(isApiError(nextError) ? nextError.message : '初始化失败，请稍后重试。');
+      setTraceId(isApiError(nextError) ? nextError.traceId ?? null : null);
     } finally {
       setIsSubmitting(false);
     }
@@ -95,30 +95,69 @@ export function OnboardingFlowSection() {
   return (
     <Card className="w-full max-w-3xl border-border/70 bg-card/92 backdrop-blur">
       <CardHeader className="border-b border-border/60 bg-gradient-to-r from-secondary/80 to-accent/60">
-        <Badge variant="secondary" className="w-fit">轻量评估</Badge>
+        <Badge variant="secondary" className="w-fit">
+          轻量评估
+        </Badge>
         <CardTitle className="flex items-center gap-2 text-3xl">
           <Sparkles className="h-6 w-6 text-primary" />
-          先帮你定下今天的第一步
+          先把今天怎么开始定下来
         </CardTitle>
-        <CardDescription>我们只问 6 个关键问题，用来定下目标体重、运动起点，以及你今天先做什么。</CardDescription>
+        <CardDescription>
+          先填 4 个必要信息，其他内容我们先按常规情况帮你补上，开始之后再慢慢调整。
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="grid gap-3 rounded-[28px] border border-border/70 bg-background/80 p-4 sm:grid-cols-3">
+          <div className="rounded-2xl border border-border/60 bg-card/80 p-3">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">先这样开始</p>
+            <p className="mt-2 text-sm font-medium text-foreground">先按常规作息开始</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              作息和偏好稍后再补，不阻断今天开始。
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card/80 p-3">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">先做重点</p>
+            <p className="mt-2 text-sm font-medium text-foreground">先围绕体重和运动</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              首页只会先给一个最关键动作，不会把你困在表单里。
+            </p>
+          </div>
+          <div className="rounded-2xl border border-border/60 bg-card/80 p-3">
+            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">之后再改</p>
+            <p className="mt-2 text-sm font-medium text-foreground">身高先用默认值兜底</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              后续可以在“我的”里补充更完整的个人信息。
+            </p>
+          </div>
+        </div>
+
         <form className="grid gap-4 md:grid-cols-2" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <Label htmlFor="heightCm">身高（cm）</Label>
-            <Input id="heightCm" value={values.heightCm} onChange={(event) => handleChange('heightCm', event.target.value)} />
-          </div>
-          <div className="space-y-2">
             <Label htmlFor="currentWeightKg">当前体重（kg）</Label>
-            <Input id="currentWeightKg" value={values.currentWeightKg} onChange={(event) => handleChange('currentWeightKg', event.target.value)} />
+            <Input
+              id="currentWeightKg"
+              value={values.currentWeightKg}
+              onChange={(event) => handleChange('currentWeightKg', event.target.value)}
+              inputMode="decimal"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="targetWeightKg">目标体重（kg）</Label>
-            <Input id="targetWeightKg" value={values.targetWeightKg} onChange={(event) => handleChange('targetWeightKg', event.target.value)} />
+            <Input
+              id="targetWeightKg"
+              value={values.targetWeightKg}
+              onChange={(event) => handleChange('targetWeightKg', event.target.value)}
+              inputMode="decimal"
+            />
           </div>
           <div className="space-y-2">
             <Label htmlFor="goalWeeks">目标周期（周）</Label>
-            <Input id="goalWeeks" value={values.goalWeeks} onChange={(event) => handleChange('goalWeeks', event.target.value)} />
+            <Input
+              id="goalWeeks"
+              value={values.goalWeeks}
+              onChange={(event) => handleChange('goalWeeks', event.target.value)}
+              inputMode="numeric"
+            />
           </div>
           <div className="space-y-2">
             <Label>活动基线</Label>
@@ -126,49 +165,45 @@ export function OnboardingFlowSection() {
               value={values.activityBaseline}
               onValueChange={(value) => handleChange('activityBaseline', value ?? 'light')}
             >
-              <SelectTrigger><SelectValue placeholder="选择活动基线" /></SelectTrigger>
+              <SelectTrigger>
+                <SelectValue placeholder="选择活动基线" />
+              </SelectTrigger>
               <SelectContent>
                 <SelectItem value="light">轻活动</SelectItem>
                 <SelectItem value="medium">中等活动</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-2">
-            <Label>失败模式</Label>
-            <Select
-              value={values.motivationPattern}
-              onValueChange={(value) =>
-                handleChange('motivationPattern', value ?? 'restart_after_break')
-              }
-            >
-              <SelectTrigger><SelectValue placeholder="选择最像你的情况" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="restart_after_break">经常中断后重来</SelectItem>
-                <SelectItem value="late_night_overeat">容易晚间失控</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="workRestPattern">作息时间</Label>
-            <Input id="workRestPattern" value={values.workRestPattern} onChange={(event) => handleChange('workRestPattern', event.target.value)} />
-          </div>
-          <div className="space-y-2 md:col-span-2">
-            <Label htmlFor="dietPreference">饮食偏好</Label>
-            <Input id="dietPreference" value={values.dietPreference} onChange={(event) => handleChange('dietPreference', event.target.value)} />
+          <div className="rounded-2xl border border-dashed border-border/70 bg-muted/40 p-4 md:col-span-2">
+            <p className="text-sm font-medium text-foreground">先按常规情况帮你补上的内容</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              当前会先按 165 cm 身高、常规作息、高蛋白偏好和“容易中断后重来”的恢复模式生成首日节奏，后续都可以再调整。
+            </p>
           </div>
           <div className="md:col-span-2">
-            <Button type="submit" className="h-11 w-full" disabled={isSubmitting}>
-              {isSubmitting ? '生成中...' : '开始今天'}
+            <Button
+              type="submit"
+              className="h-12 w-full justify-between rounded-2xl px-5"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? '生成今天的起步动作...' : '开始今天'}
+              <ArrowRight className="h-4 w-4" />
             </Button>
           </div>
         </form>
 
         {actions.length > 0 ? (
-          <div className="rounded-2xl border border-border/70 bg-muted/55 p-4">
-            <p className="text-sm font-semibold">你的首日建议</p>
+          <div className="rounded-[28px] border border-border/70 bg-muted/55 p-4">
+            <p className="text-sm font-semibold text-foreground">你的首日节奏</p>
             <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
               {actions.map((action) => (
-                <li key={action} className="rounded-lg bg-background/80 px-3 py-2">{action}</li>
+                <li
+                  key={action}
+                  className="flex items-center justify-between rounded-2xl bg-background/80 px-4 py-3"
+                >
+                  <span>{action}</span>
+                  <ArrowRight className="h-4 w-4 text-primary" />
+                </li>
               ))}
             </ul>
           </div>

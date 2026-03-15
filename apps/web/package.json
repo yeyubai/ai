@@ -3,15 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "node ./scripts/run-next.cjs dev",
+    "build": "node ./scripts/run-next.cjs build",
+    "start": "node ./scripts/run-next.cjs start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "node -e \"const fs=require('fs');['./tsconfig.tsbuildinfo','./.next-dev/types','./.next-prod/types'].forEach((target)=>{try{fs.rmSync(target,{recursive:true,force:true})}catch(e){}})\" && tsc --noEmit",
     "test": "echo \"No frontend tests yet\""
   },
   "dependencies": {
     "@base-ui/react": "^1.3.0",
+    "@radix-ui/react-dialog": "^1.1.2",
+    "ai-weight-coach": "file:../..",
     "axios": "^1.8.2",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

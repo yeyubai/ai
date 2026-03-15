@@ -45,6 +45,18 @@ export function ActivityCheckinSection() {
   }, [router, token]);
 
   useEffect(() => {
+    if (!successMessage) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      router.replace('/dashboard');
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [router, successMessage]);
+
+  useEffect(() => {
     if (cooldownSeconds <= 0) {
       return undefined;
     }
@@ -122,8 +134,8 @@ export function ActivityCheckinSection() {
       });
       setSuccessMessage(
         completed
-          ? `运动已记录，首页和进度页会同步更新。记录号：${result.submissionId}`
-          : `已记录今天暂未完成运动，今晚复盘会据此给你更轻的建议。记录号：${result.submissionId}`,
+          ? `运动已记录，首页和进度页会同步更新。即将返回首页继续下一步。记录号：${result.submissionId}`
+          : `已记录今天暂未完成运动，今晚复盘会据此给你更轻的建议。即将返回首页继续下一步。记录号：${result.submissionId}`,
       );
     } catch (error) {
       if (isApiError(error) && error.status === 401) {

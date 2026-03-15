@@ -1,30 +1,81 @@
-﻿import { Compass, HeartPulse, Sparkles } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { LoginPageSection } from '@/features/auth';
+'use client';
+
+import { type FormEvent, useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ArrowRight } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useAuthStore } from '@/features/auth/model/auth.store';
 
 export default function LoginPage() {
+  const router = useRouter();
+  const login = useAuthStore((state) => state.login);
+  const loginError = useAuthStore((state) => state.loginError);
+  const loginStatus = useAuthStore((state) => state.loginStatus);
+  const token = useAuthStore((state) => state.token);
+  const userRole = useAuthStore((state) => state.userRole);
+  const [phone, setPhone] = useState('13800138000');
+  const [code, setCode] = useState('123456');
+
+  useEffect(() => {
+    if (!token || userRole === 'guest') {
+      return;
+    }
+
+    router.replace('/home');
+  }, [router, token, userRole]);
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const success = await login({ phone, code });
+    if (!success) {
+      return;
+    }
+
+    router.replace('/home');
+  };
+
   return (
-    <main className="page-shell page-shell-centered relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(560px_circle_at_10%_20%,hsl(177_72%_70%/.24),transparent_52%)]" />
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(420px_circle_at_88%_14%,hsl(24_100%_78%/.2),transparent_48%)]" />
-      <div className="relative grid w-full max-w-6xl items-center gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-        <Card className="hidden border-border/70 bg-card/88 backdrop-blur lg:flex">
-          <CardHeader className="space-y-3 border-b border-border/60 bg-gradient-to-r from-secondary/70 to-accent/60">
-            <Badge variant="secondary" className="w-fit">日常减脂教练</Badge>
-            <CardTitle className="text-3xl">今天只做 3 件事，先把节奏找回来</CardTitle>
-            <CardDescription>这是一个面向反复减脂失败者的科学减脂陪伴服务。我们先帮你完成下一步，而不是再给你一大套复杂计划。</CardDescription>
-          </CardHeader>
-          <CardContent className="grid gap-3 motion-stagger sm:grid-cols-3">
-            <div className="surface-card p-4"><Compass className="h-5 w-5 text-primary" /><p className="mt-3 text-sm text-muted-foreground">首页首屏只给一个明确下一步。</p></div>
-            <div className="surface-card p-4"><Sparkles className="h-5 w-5 text-primary" /><p className="mt-3 text-sm text-muted-foreground">晚间复盘会在你掉队时自动切换恢复模式。</p></div>
-            <div className="surface-card p-4"><HeartPulse className="h-5 w-5 text-primary" /><p className="mt-3 text-sm text-muted-foreground">趋势和会员能力都围绕“更稳地坚持”。</p></div>
-          </CardContent>
-        </Card>
-        <div className="motion-enter motion-delay-1">
-          <LoginPageSection />
-        </div>
-      </div>
-    </main>
+    <div className="page-shell-centered">
+      <Card className="glass-card w-full max-w-md overflow-hidden">
+        <CardContent className="space-y-6 p-6">
+          <div className="hero-panel p-6">
+            <p className="section-eyebrow">体重日记</p>
+            <h1 className="mt-4 text-4xl font-semibold">回到你的记录里</h1>
+            <p className="mt-3 text-sm leading-6 text-white/80">
+              当前支持游客直接使用。登录后会把游客期间的记录、目标和设置同步到正式账号。
+            </p>
+          </div>
+
+          <form className="space-y-4" onSubmit={handleSubmit}>
+            <div className="space-y-2">
+              <Label htmlFor="phone">手机号</Label>
+              <Input id="phone" value={phone} onChange={(event) => setPhone(event.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="code">验证码</Label>
+              <Input id="code" value={code} onChange={(event) => setCode(event.target.value)} />
+            </div>
+            <Button
+              type="submit"
+              className="h-12 w-full justify-between rounded-2xl bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-white hover:opacity-95"
+              disabled={loginStatus === 'loading'}
+            >
+              {loginStatus === 'loading' ? '正在登录...' : '进入体重日记'}
+              <ArrowRight className="h-4 w-4" />
+            </Button>
+          </form>
+
+          {loginError ? (
+            <Alert variant="destructive">
+              <AlertDescription>{loginError}</AlertDescription>
+            </Alert>
+          ) : null}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

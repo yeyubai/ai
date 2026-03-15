@@ -8,6 +8,24 @@
 - 后端依赖在 `backend` 安装：`npm install --workspaces=false`（cwd: `backend`）
 - 根目录 `package.json` 仅作为脚本调度入口，不承载业务依赖安装
 
+## 推荐启动方式
+
+如果你在 Codex App 的“运行”面板里直接执行命令，建议统一在仓库根目录运行：
+
+- 首次安装依赖：`npm run setup`
+- 同时启动前后端：`npm run dev`
+- 单独启动前端：`npm run dev:web`
+- 单独启动后端：`npm run dev:backend`
+- Windows 下如果 PowerShell 拦截 `npm`，直接用：`npm.cmd run setup` / `npm.cmd run dev`
+- 也可以直接运行根目录脚本：`.\setup.cmd` / `.\dev.cmd`
+
+这样不需要手动切到 `apps/web` 或 `backend`。
+
+说明：
+- 前端默认端口：`3000`
+- 后端默认端口：`3001`
+- 后端启动前需要先准备好 `backend/.env` 和可用的 MySQL 数据库连接
+
 ## 顶层目录说明
 
 - `.codex/`：项目规则、评审清单、本地技能（skills）
@@ -68,3 +86,17 @@
 1. 项目规则入口：`.codex/project-rules.md`
 2. 详细架构说明：`docs/tech/architecture/project-structure.md`
 3. 对话与模块变更日志：`docs/tech/changelog/README.md`
+## Frontend Next.js output isolation
+
+- `apps/web` now isolates Next.js output directories by mode:
+- `npm --prefix apps/web run dev` -> `.next-dev`
+- `npm --prefix apps/web run build` / `start` -> `.next-prod`
+- This avoids the common local 404 issue where `next dev` and `next build` overwrite the same `.next` artifacts and the browser keeps requesting stale chunks.
+
+## Idempotent local dev startup
+
+- `npm run dev` now automatically frees stale local dev ports before starting:
+- web: `3000`
+- backend: `3001`
+- it also clears older fallback web ports `3002` and `3003`
+- this is meant to make repeated starts from new terminals safe, instead of requiring manual process cleanup first.

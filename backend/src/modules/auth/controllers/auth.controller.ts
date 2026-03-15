@@ -12,4 +12,10 @@ export class AuthController {
   login(@Body() payload: LoginRequestDto): Promise<LoginResponseDto> {
     return this.authService.login(payload);
   }
+
+  @Post('guest')
+  @HttpCode(HttpStatus.OK)
+  createGuestSession(): Promise<LoginResponseDto> {
+    return this.authService.createGuestSession();
+  }
 }

@@ -27,6 +27,7 @@ Out of scope:
   - 输入：`date`, `timezone`, `triggerSource`
   - 输出：`reviewSummary`, `tomorrowPreview`, `recoveryMode`, `fallbackReason`, `confidence`
   - 错误码：`REVIEW_NOT_READY`, `REVIEW_RATE_LIMIT`, `PLAN_FALLBACK_USED`
+  - 调用前置条件由前端通过 `GET /api/v1/home/today` 判断；MVP 不新增独立 ready-check 接口
 - `POST /api/v1/review/skip`
   - 输入：`date`, `reason`
   - 输出：`skipped`, `reason`
@@ -41,6 +42,7 @@ Out of scope:
 
 - 当天只要完成了体重或运动任一核心动作，就允许生成复盘
 - 当天体重和运动都缺失时返回 `REVIEW_NOT_READY`
+- `REVIEW_NOT_READY` 应发生在用户主动点击生成之后，而不是页面首屏自动请求阶段
 - 连续 2 天未称重或连续 2 天未完成运动时进入 `recoveryMode`
 - 恢复模式下 `tomorrowPreview.maxTasks` 降为 2，并优先给低门槛动作
 - `reviewSummary.highlights`、`gaps`、`tomorrowPreview.focus` 必须是可执行短句
@@ -56,7 +58,7 @@ Out of scope:
 ## 6. 测试方案
 
 - Unit：数据不足校验、恢复模式阈值、次日任务数量降级
-- Integration：今日仅体重 -> 可复盘；今日无核心动作 -> `REVIEW_NOT_READY`
+- Integration：今日仅体重 -> 可复盘；今日无核心动作 -> `REVIEW_NOT_READY`；前端先看 `home/today` 再触发生成
 - Contract：`recoveryMode`, `fallbackReason`, `confidence`, `tomorrowPreview` 字段稳定
 
 ## 7. 开发任务拆解

@@ -48,6 +48,18 @@ export function WeightCheckinSection() {
   }, [router, token]);
 
   useEffect(() => {
+    if (!successMessage) {
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      router.replace('/dashboard');
+    }, 900);
+
+    return () => window.clearTimeout(timer);
+  }, [router, successMessage]);
+
+  useEffect(() => {
     if (cooldownSeconds <= 0) {
       return undefined;
     }
@@ -97,7 +109,7 @@ export function WeightCheckinSection() {
         source,
         isBackfill,
       });
-      setSuccessMessage(`体重已记录，首页今日状态会同步更新。记录号：${result.submissionId}`);
+      setSuccessMessage(`体重已记录，首页今日状态会同步更新。即将返回首页继续下一步。记录号：${result.submissionId}`);
     } catch (error) {
       if (isApiError(error) && error.status === 401) {
         logout();

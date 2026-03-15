@@ -38,8 +38,8 @@ export function PreferencesCenterSection() {
       <Card className="border-border/70 bg-card/92 backdrop-blur">
         <CardHeader className="border-b border-border/60 bg-gradient-to-r from-secondary/80 to-accent/60">
           <Badge variant="secondary" className="w-fit">我的</Badge>
-          <CardTitle className="flex items-center gap-2 text-3xl"><Crown className="h-6 w-6 text-primary" />会员与提醒</CardTitle>
-          <CardDescription>这里承接会员价值解释、提醒设置和基础偏好，不抢首页主叙事。</CardDescription>
+          <CardTitle className="flex items-center gap-2 text-3xl"><Crown className="h-6 w-6 text-primary" />会员、提醒与偏好</CardTitle>
+          <CardDescription>这里承接低频设置和会员价值说明，重点是让坚持更稳，而不是堆更多功能。</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4 lg:grid-cols-[0.95fr_1.05fr]">
           <div className="space-y-4">
@@ -47,12 +47,12 @@ export function PreferencesCenterSection() {
               <p className="text-sm text-muted-foreground">当前计划</p>
               <p className="mt-2 text-3xl font-semibold">{membership.plan === 'free' ? '免费基础版' : '会员增强版'}</p>
               <div className="mt-4 space-y-2 text-sm text-muted-foreground">
-                <p>深度复盘：{membership.entitlements.deepReview ? '已解锁' : '未解锁'}</p>
-                <p>周报洞察：{membership.entitlements.weeklyInsight ? '已解锁' : '未解锁'}</p>
-                <p>强提醒：{membership.entitlements.strongReminder ? '已解锁' : '未解锁'}</p>
+                <p>解释更清楚：{membership.entitlements.deepReview ? '已解锁' : '未解锁'}</p>
+                <p>提醒更稳：{membership.entitlements.strongReminder ? '已解锁' : '未解锁'}</p>
+                <p>恢复建议更细：{membership.entitlements.weeklyInsight ? '已解锁' : '未解锁'}</p>
               </div>
               <div className="mt-4 rounded-2xl bg-muted/55 p-3 text-sm text-muted-foreground">
-                {membership.upgradePrompts[0]?.headline}
+                {membership.upgradePrompts[0]?.headline ?? '会员版会把动作解释、提醒节奏和掉队后的恢复建议讲得更清楚。'}
               </div>
             </div>
             <div className="rounded-3xl border border-border/70 bg-background/85 p-4">
@@ -62,16 +62,18 @@ export function PreferencesCenterSection() {
               </div>
               <div className="mt-4 space-y-3 text-sm">
                 <div className="space-y-2">
-                  <Label htmlFor="dailyMissionTimes">首页提醒时间</Label>
+                  <Label htmlFor="dailyMissionTimes">体重 / 运动提醒时间</Label>
                   <Input id="dailyMissionTimes" value={reminders.dailyMissionReminderTimes.join(', ')} onChange={(event) => setReminders({ ...reminders, dailyMissionReminderTimes: event.target.value.split(',').map((item) => item.trim()).filter(Boolean) })} />
+                  <p className="text-xs text-muted-foreground">建议把体重提醒和运动提醒放在你最容易开始的时间段。</p>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="reviewReminderTime">复盘提醒时间</Label>
                   <Input id="reviewReminderTime" value={reminders.reviewReminderTime} onChange={(event) => setReminders({ ...reminders, reviewReminderTime: event.target.value })} />
+                  <p className="text-xs text-muted-foreground">复盘提醒只负责把今天接到明天，不制造额外压力。</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <Checkbox checked={reminders.strongReminderEnabled} onCheckedChange={(checked) => setReminders({ ...reminders, strongReminderEnabled: Boolean(checked) })} />
-                  <p>强提醒（会员增强）</p>
+                  <p>更稳提醒节奏（会员增强）</p>
                 </div>
               </div>
             </div>

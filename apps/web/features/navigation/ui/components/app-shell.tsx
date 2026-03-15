@@ -12,18 +12,25 @@ type Props = {
 };
 
 const TAB_HIDDEN_PREFIXES = ['/auth', '/onboarding'];
+const TAB_BAR_OFFSET = '106px';
 
 function shouldShowTabBar(pathname: string, token: string | null): boolean {
   if (!token) {
     return false;
   }
 
-  return !TAB_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  if (TAB_HIDDEN_PREFIXES.some((prefix) => pathname.startsWith(prefix))) {
+    return false;
+  }
+
+  return APP_TABS.some((tab) => pathname === tab.href);
 }
 
 export function AppShell({ children }: Props) {
   const pathname = usePathname();
   const token = useAuthStore((state) => state.token);
+  const logout = useAuthStore((state) => state.logout);
+  const ensureGuestSession = useAuthStore((state) => state.ensureGuestSession);
 
   const isTabBarVisible = useMemo(
     () => shouldShowTabBar(pathname, token),
@@ -37,6 +44,24 @@ export function AppShell({ children }: Props) {
 
     return resolveActiveTabKey(pathname);
   }, [isTabBarVisible, pathname]);
+
+  useEffect(() => {
+    if (!token && !pathname.startsWith('/auth')) {
+      void ensureGuestSession();
+    }
+  }, [ensureGuestSession, pathname, token]);
+
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      logout();
+      if (!pathname.startsWith('/auth')) {
+        void ensureGuestSession();
+      }
+    };
+
+    window.addEventListener('auth-expired', handleAuthExpired);
+    return () => window.removeEventListener('auth-expired', handleAuthExpired);
+  }, [ensureGuestSession, logout, pathname]);
 
   useEffect(() => {
     if (!isTabBarVisible || !activeTabKey) {
@@ -56,9 +81,15 @@ export function AppShell({ children }: Props) {
   }
 
   return (
-    <div className="relative min-h-screen">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(600px_circle_at_50%_120%,hsl(177_72%_72%/.18),transparent_60%)]" />
-      <div className="relative pb-[calc(98px+env(safe-area-inset-bottom))]">{children}</div>
+    <div
+      className="relative min-h-screen"
+      style={
+        {
+          '--app-tab-bar-offset': `calc(${TAB_BAR_OFFSET} + env(safe-area-inset-bottom))`,
+        } as React.CSSProperties
+      }
+    >
+      <div className="relative pb-[var(--app-tab-bar-offset)]">{children}</div>
       <BottomTabBar tabs={APP_TABS} activeTabKey={activeTabKey} pathname={pathname} />
     </div>
   );

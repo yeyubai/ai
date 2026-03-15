@@ -5,6 +5,7 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import type { InputJsonValue, JsonObject, JsonValue } from '@prisma/client/runtime/library';
 import { LlmClient } from 'src/shared/llm/llm.client';
 import {
   formatDateOnly,
@@ -365,7 +366,7 @@ export class AiService {
     };
   }
 
-  private toPlanJson(payload: AiPlanPayload): Prisma.InputJsonValue {
+  private toPlanJson(payload: AiPlanPayload): InputJsonValue {
     return {
       calorieTargetKcal: payload.calorieTargetKcal,
       meals: payload.meals.map((meal) => ({
@@ -384,7 +385,7 @@ export class AiService {
     };
   }
 
-  private toReviewJson(payload: AiReviewPayload): Prisma.InputJsonValue {
+  private toReviewJson(payload: AiReviewPayload): InputJsonValue {
     return {
       score: payload.score,
       highlights: [...payload.highlights],
@@ -589,7 +590,7 @@ export class AiService {
     );
   }
 
-  private parsePlanPayload(value: Prisma.JsonValue): AiPlanPayload | null {
+  private parsePlanPayload(value: JsonValue): AiPlanPayload | null {
     if (!this.isJsonObject(value)) {
       return null;
     }
@@ -603,7 +604,7 @@ export class AiService {
 
     const meals = rawMeals
       .map((meal) => (this.isJsonObject(meal) ? meal : null))
-      .filter((meal): meal is Prisma.JsonObject => meal !== null)
+      .filter((meal): meal is JsonObject => meal !== null)
       .map((meal) => ({
         name: typeof meal.name === 'string' ? meal.name : '',
         suggestion: typeof meal.suggestion === 'string' ? meal.suggestion : '',
@@ -641,7 +642,7 @@ export class AiService {
     };
   }
 
-  private parseReviewPayload(value: Prisma.JsonValue): AiReviewPayload | null {
+  private parseReviewPayload(value: JsonValue): AiReviewPayload | null {
     if (!this.isJsonObject(value)) {
       return null;
     }
@@ -656,7 +657,7 @@ export class AiService {
     };
   }
 
-  private readStringArray(input: Prisma.JsonValue | undefined): string[] {
+  private readStringArray(input: JsonValue | undefined): string[] {
     if (!Array.isArray(input)) {
       return [];
     }
@@ -666,7 +667,7 @@ export class AiService {
       .filter((item): item is string => item !== null);
   }
 
-  private isJsonObject(value: unknown): value is Prisma.JsonObject {
+  private isJsonObject(value: unknown): value is JsonObject {
     return typeof value === 'object' && value !== null && !Array.isArray(value);
   }
 

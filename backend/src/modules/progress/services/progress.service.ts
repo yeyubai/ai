@@ -1,4 +1,5 @@
-﻿import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
+import type { CheckinActivity, CheckinWeight } from '@prisma/client';
 import { PrismaService } from 'src/shared/db/prisma.service';
 import { JourneyStateService } from 'src/shared/state/journey-state.service';
 import { buildDateRange, getTodayInTimezone, parseDateOnly } from 'src/shared/utils/date.utils';
@@ -53,7 +54,7 @@ export class ProgressService {
     const today = getTodayInTimezone();
     const dates = buildDateRange(today, days);
     const dateObjects = dates.map((item) => parseDateOnly(item));
-    const [weights, activities] = await Promise.all([
+    const [weights, activities]: [CheckinWeight[], CheckinActivity[]] = await Promise.all([
       this.prisma.checkinWeight.findMany({
         where: {
           userId,
@@ -73,7 +74,7 @@ export class ProgressService {
     ]);
 
     const latestWeightByDate = new Map<string, number>();
-    weights.forEach((item) => {
+    weights.forEach((item: CheckinWeight) => {
       latestWeightByDate.set(item.checkinDate.toISOString().slice(0, 10), Number(item.weightKg));
     });
 
@@ -85,8 +86,8 @@ export class ProgressService {
 
     const completedActivityByDate = new Map<string, { count: number; burnKcal: number }>();
     activities
-      .filter((item) => item.completed)
-      .forEach((item) => {
+      .filter((item: CheckinActivity) => item.completed)
+      .forEach((item: CheckinActivity) => {
         const key = item.checkinDate.toISOString().slice(0, 10);
         const current = completedActivityByDate.get(key) ?? { count: 0, burnKcal: 0 };
         current.count += 1;

@@ -27,6 +27,7 @@ Out of scope:
 - `GET /api/v1/home/today`
   - 输出：`date`, `dailyMission`, `completion`, `weightStatus`, `activityStatus`, `nextAction`, `followUp`, `membershipState`, `riskFlags`, `recoveryMode`, `fallbackReason`
   - `dailyMission.actionId` 仅允许：`weight_checkin`, `activity_complete`, `evening_review`
+  - `nextAction` 是首页唯一强 CTA 的事实来源；趋势结论和轻量成就由前端基于返回字段派生
   - 允许返回成功码 `PLAN_FALLBACK_USED`
 - `POST /api/v1/home/actions/{actionId}/complete`
   - 输入：`completedAt`
@@ -47,6 +48,7 @@ Out of scope:
   3. 其余情况 -> `evening_review`
 - `weightStatus` 负责展示当前体重、今日是否称重、本周变化、目标体重
 - `activityStatus` 负责展示今日是否完成、时长、消耗、目标时长、目标消耗、近 7 天运动天数
+- 首页方向判断和轻量成就不新增专用接口字段，继续由 `weightStatus`, `activityStatus`, `completion` 在前端派生
 - 连续 2 天未称重或连续 2 天未完成运动时进入 `recoveryMode`
 - 饮食和睡眠不得改变 `nextAction` 的优先级，只允许作为解释增强输入
 - 首页不得返回空主状态；无历史数据时默认引导先做首次体重记录
@@ -60,7 +62,7 @@ Out of scope:
 
 ## 6. 测试方案
 
-- Unit：`nextAction` 优先级、恢复模式判定、fallback 触发条件
+- Unit：`nextAction` 优先级、恢复模式判定、fallback 触发条件、单一主动作约束
 - Integration：体重记录后首页切换到运动；运动记录后首页 follow-up 指向复盘或趋势
 - Contract：`weightStatus`, `activityStatus`, `followUp`, `PLAN_FALLBACK_USED` 字段稳定
 

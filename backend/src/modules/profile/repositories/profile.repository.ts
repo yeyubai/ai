@@ -1,4 +1,5 @@
 import { Prisma } from '@prisma/client';
+import type { Decimal } from '@prisma/client/runtime/library';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/db/prisma.service';
 
@@ -34,8 +35,8 @@ export class ProfileRepository {
   async findActiveProfileByUserId(userId: bigint): Promise<{
     userId: bigint;
     heightCm: number;
-    currentWeightKg: Prisma.Decimal;
-    targetWeightKg: Prisma.Decimal;
+    currentWeightKg: Decimal;
+    targetWeightKg: Decimal;
   } | null> {
     return this.prisma.userProfile.findFirst({
       where: {

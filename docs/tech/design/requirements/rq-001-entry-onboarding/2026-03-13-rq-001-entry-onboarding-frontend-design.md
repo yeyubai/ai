@@ -29,13 +29,14 @@ Out of scope:
 组件划分：
 - 页面级：登录页、轻评估页
 - 模块级：`features/auth`, `features/onboarding-flow`
-- 组件级：登录表单、目标设定表单、首日动作预览
+- 组件级：登录表单、最小目标设定表单、默认节奏说明卡、首日动作预览
 
 ## 3. 数据流设计
 
 - 登录后根据 `userStatus` 决定进入 onboarding 还是首页
 - 轻评估提交顺序：`PUT /profile` -> `POST /onboarding/assessment` -> `POST /onboarding/complete`
 - 首日预览只承接三件事：`先称重 / 去运动 / 晚间调整`
+- 作息、饮食偏好、失败模式、身高先用默认值兜底，不阻断首次开始
 - 全局只保存登录态；表单状态留在页面本地
 
 ## 4. 接口契约映射
@@ -60,7 +61,8 @@ DTO -> UI Model：
 
 - 轻评估尽量控制在一屏完成
 - 当前体重、目标体重、目标周期、活动基线为主字段
-- 作息和饮食偏好保留，但不作为首页主任务优先级输入
+- 首屏只展示 4 个必填项；其余信息转为默认值说明，不再要求立即填写
+- 身高保留默认值并在后续设置页补充，不阻断首次进入首页
 - 完成 onboarding 后直接进首页，不停留在复杂结果页
 
 ## 6. 埋点设计
@@ -75,13 +77,13 @@ DTO -> UI Model：
 
 ## 7. 测试方案
 
-- Component tests：登录校验、目标字段校验、首日动作预览
-- Page flow tests：登录 -> 轻评估 -> 完成 -> 首页
+- Component tests：登录校验、4 个必填字段校验、默认节奏说明卡、首日动作预览
+- Page flow tests：登录 -> 轻评估 -> 完成 -> 首页；60 秒内完成最小 onboarding
 - Contract mock tests：`userStatus`, `recommendedDailyActions`, `homeRedirect` 映射
 
 ## 8. 开发任务拆解
 
 - FE-1.1 调整登录分流
-- FE-1.2 收敛轻评估到体重 + 运动起点主字段
+- FE-1.2 收敛轻评估到 4 个主字段，并对剩余字段使用默认值兜底
 - FE-1.3 接首页跳转和首日动作预览
 - FE-1.4 补 entry 埋点和回归测试

@@ -30,7 +30,7 @@ Out of scope:
 - `GET /api/v1/profile`
   - 输出：用户基础资料、目标信息、`profileCompleted`
 - `PUT /api/v1/profile`
-  - 输入：身高、体重、目标、作息、饮食偏好
+  - 输入：当前体重、目标体重、目标周期、活动基线为最小必填；身高、作息、饮食偏好、失败模式允许由前端使用默认值兜底后再提交
   - 错误码：`INVALID_PARAMS`, `DUPLICATE_PROFILE`
 - `POST /api/v1/onboarding/assessment`
   - 输入：目标、周期、活动基线、失败模式标签
@@ -61,6 +61,7 @@ Out of scope:
 
 - 未完成 onboarding 的登录用户必须先进入轻评估，不直接进入首页
 - `targetWeightKg` 必须小于 `currentWeightKg` 且目标周期处于安全范围
+- 最小 onboarding 场景下，身高、作息、饮食偏好、失败模式允许按默认模板补齐，不得因为用户未显式填写而阻断开始
 - onboarding 完成是幂等操作；重复完成返回当前首页跳转信息
 - 免费基础版初始化默认开启基础记录、基础趋势、基础复盘摘要能力
 - 任意评估结论不得输出医疗诊断或疾病风险判定
@@ -73,15 +74,15 @@ Out of scope:
 
 ## 6. 测试方案
 
-- Unit：目标范围校验、onboarding 幂等、权益初始化逻辑
-- Integration：登录 -> 评估 -> 完成 onboarding -> 首日任务初始化
+- Unit：目标范围校验、默认值兜底、onboarding 幂等、权益初始化逻辑
+- Integration：登录 -> 最小 onboarding -> 完成 -> 首日任务初始化
 - Contract：`userStatus`, `membershipState`, `homeRedirect` 字段与 API 文档一致
 
 ## 7. 开发任务拆解
 
 - BE-1.1 登录与档案接口补齐 `userStatus`
 - BE-1.2 新增 `onboarding_assessment` / `goal_snapshot` / `membership_entitlement`
-- BE-1.3 实现 assessment 与 complete 接口
+- BE-1.3 实现最小 onboarding 所需的默认值兜底、assessment 与 complete 接口
 - BE-1.4 写入 onboarding 审计与埋点事件
 
 ## 8. 风险与回滚

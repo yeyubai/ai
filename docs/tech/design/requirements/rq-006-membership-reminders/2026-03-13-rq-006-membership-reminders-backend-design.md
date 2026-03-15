@@ -43,6 +43,7 @@ Out of scope:
 
 - 免费版默认拥有基础记录、基础趋势、基础复盘摘要
 - 会员增强只解锁深度复盘、深度周报和强提醒，不阻断核心动作
+- `upgradePrompts` 的推荐表达应围绕“解释更清楚、提醒更稳、恢复更快”，避免以“更多功能”为主卖点
 - 提醒时间不得落入静默时段，冲突时返回 `REMINDER_WINDOW_CONFLICT`
 - 会员价值触点只能出现在完成核心动作后、查看周报后、配置高级提醒时
 - 首页首个体重 / 运动动作前不得强插会员拦截
@@ -57,7 +58,7 @@ Out of scope:
 
 - Unit：静默时段冲突、权益判断、触点白名单
 - Integration：保存提醒 -> 回执读取；开启强提醒 -> 权益校验
-- Contract：`entitlements`, `upgradePrompts`, `dailyMissionReminderTimes`, `reviewReminderTime` 稳定
+- Contract：`entitlements`, `upgradePrompts`, `dailyMissionReminderTimes`, `reviewReminderTime` 稳定，且价值表达口径一致
 
 ## 7. 开发任务拆解
 

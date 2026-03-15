@@ -1,10 +1,11 @@
-﻿import {
+import {
   BadRequestException,
   ConflictException,
   HttpException,
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
+import type { CheckinActivity, CheckinMeal, CheckinSleep, CheckinWeight } from '@prisma/client';
 import { PrismaService } from 'src/shared/db/prisma.service';
 import {
   formatDateOnly,
@@ -44,40 +45,13 @@ type NormalizedActivityPayload = {
   estimatedKcal?: number;
 };
 
-type WeightRecord = {
-  id: bigint;
-  checkinDate: Date;
-  weightKg: { toString(): string };
-  isBackfill: boolean;
-  createdAt: Date;
-};
-
-type MealRecord = {
-  id: bigint;
-  checkinDate: Date;
-  mealType: string;
-  description: string;
-  isBackfill: boolean;
-  createdAt: Date;
-};
-
-type ActivityRecord = {
-  id: bigint;
-  checkinDate: Date;
-  completed: boolean;
-  durationMin: number;
-  estimatedKcal: number | null;
-  isBackfill: boolean;
-  createdAt: Date;
-};
-
-type SleepRecord = {
-  id: bigint;
-  checkinDate: Date;
-  durationMin: number;
-  isBackfill: boolean;
-  createdAt: Date;
-};
+type WeightFeedRow = Pick<CheckinWeight, 'id' | 'checkinDate' | 'weightKg' | 'isBackfill' | 'createdAt'>;
+type MealFeedRow = Pick<CheckinMeal, 'id' | 'checkinDate' | 'mealType' | 'description' | 'isBackfill' | 'createdAt'>;
+type ActivityFeedRow = Pick<
+  CheckinActivity,
+  'id' | 'checkinDate' | 'completed' | 'durationMin' | 'estimatedKcal' | 'isBackfill' | 'createdAt'
+>;
+type SleepFeedRow = Pick<CheckinSleep, 'id' | 'checkinDate' | 'durationMin' | 'isBackfill' | 'createdAt'>;
 
 @Injectable()
 export class CheckinsService {
@@ -271,7 +245,12 @@ export class CheckinsService {
   async getTodayCheckins(userId: bigint, date?: string): Promise<TodayCheckinsResponseDto> {
     const targetDate = parseDateOnly(date ?? getTodayInTimezone());
 
-    const [weight, meals, activities, sleep] = await Promise.all([
+    const [weight, meals, activities, sleep]: [
+      WeightFeedRow[],
+      MealFeedRow[],
+      ActivityFeedRow[],
+      SleepFeedRow[],
+    ] = await Promise.all([
       this.prisma.checkinWeight.findMany({
         where: { userId, deletedAt: null, checkinDate: targetDate },
         orderBy: { createdAt: 'desc' },
@@ -291,7 +270,7 @@ export class CheckinsService {
     ]);
 
     const items = [
-      ...weight.map((item: WeightRecord) => ({
+      ...weight.map((item: WeightFeedRow) => ({
         checkinId: `w_${item.id.toString()}`,
         type: 'weight' as const,
         checkinDate: formatDateOnly(item.checkinDate),
@@ -299,7 +278,7 @@ export class CheckinsService {
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
       })),
-      ...meals.map((item: MealRecord) => ({
+      ...meals.map((item: MealFeedRow) => ({
         checkinId: `m_${item.id.toString()}`,
         type: 'meal' as const,
         checkinDate: formatDateOnly(item.checkinDate),
@@ -307,15 +286,19 @@ export class CheckinsService {
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
       })),
-      ...activities.map((item: ActivityRecord) => ({
+      ...activities.map((item: ActivityFeedRow) => ({
         checkinId: `a_${item.id.toString()}`,
         type: 'activity' as const,
         checkinDate: formatDateOnly(item.checkinDate),
-        displayValue: this.formatActivityDisplayValue(item.completed, item.durationMin, item.estimatedKcal),
+        displayValue: this.formatActivityDisplayValue(
+          item.completed,
+          item.durationMin,
+          item.estimatedKcal,
+        ),
         isBackfill: item.isBackfill,
         createdAt: item.createdAt.toISOString(),
       })),
-      ...sleep.map((item: SleepRecord) => ({
+      ...sleep.map((item: SleepFeedRow) => ({
         checkinId: `s_${item.id.toString()}`,
         type: 'sleep' as const,
         checkinDate: formatDateOnly(item.checkinDate),
@@ -347,7 +330,7 @@ export class CheckinsService {
     const skip = (page - 1) * pageSize;
 
     if (type === 'weight') {
-      const [list, total] = await Promise.all([
+      const [list, total]: [WeightFeedRow[], number] = await Promise.all([
         this.prisma.checkinWeight.findMany({
           where: { userId, deletedAt: null, checkinDate: { gte: dateFrom, lte: dateTo } },
           orderBy: [{ checkinDate: 'desc' }, { createdAt: 'desc' }],
@@ -360,7 +343,7 @@ export class CheckinsService {
       ]);
 
       return {
-        list: list.map((item: WeightRecord) => ({
+        list: list.map((item: WeightFeedRow) => ({
           checkinId: `w_${item.id.toString()}`,
           type: 'weight',
           checkinDate: formatDateOnly(item.checkinDate),
@@ -373,7 +356,7 @@ export class CheckinsService {
     }
 
     if (type === 'meal') {
-      const [list, total] = await Promise.all([
+      const [list, total]: [MealFeedRow[], number] = await Promise.all([
         this.prisma.checkinMeal.findMany({
           where: { userId, deletedAt: null, checkinDate: { gte: dateFrom, lte: dateTo } },
           orderBy: [{ checkinDate: 'desc' }, { createdAt: 'desc' }],
@@ -386,7 +369,7 @@ export class CheckinsService {
       ]);
 
       return {
-        list: list.map((item: MealRecord) => ({
+        list: list.map((item: MealFeedRow) => ({
           checkinId: `m_${item.id.toString()}`,
           type: 'meal',
           checkinDate: formatDateOnly(item.checkinDate),
@@ -399,7 +382,7 @@ export class CheckinsService {
     }
 
     if (type === 'activity') {
-      const [list, total] = await Promise.all([
+      const [list, total]: [ActivityFeedRow[], number] = await Promise.all([
         this.prisma.checkinActivity.findMany({
           where: { userId, deletedAt: null, checkinDate: { gte: dateFrom, lte: dateTo } },
           orderBy: [{ checkinDate: 'desc' }, { createdAt: 'desc' }],
@@ -412,11 +395,15 @@ export class CheckinsService {
       ]);
 
       return {
-        list: list.map((item: ActivityRecord) => ({
+        list: list.map((item: ActivityFeedRow) => ({
           checkinId: `a_${item.id.toString()}`,
           type: 'activity',
           checkinDate: formatDateOnly(item.checkinDate),
-          displayValue: this.formatActivityDisplayValue(item.completed, item.durationMin, item.estimatedKcal),
+          displayValue: this.formatActivityDisplayValue(
+            item.completed,
+            item.durationMin,
+            item.estimatedKcal,
+          ),
           isBackfill: item.isBackfill,
           createdAt: item.createdAt.toISOString(),
         })),
@@ -424,7 +411,7 @@ export class CheckinsService {
       };
     }
 
-    const [list, total] = await Promise.all([
+    const [list, total]: [SleepFeedRow[], number] = await Promise.all([
       this.prisma.checkinSleep.findMany({
         where: { userId, deletedAt: null, checkinDate: { gte: dateFrom, lte: dateTo } },
         orderBy: [{ checkinDate: 'desc' }, { createdAt: 'desc' }],
@@ -437,7 +424,7 @@ export class CheckinsService {
     ]);
 
     return {
-      list: list.map((item: SleepRecord) => ({
+      list: list.map((item: SleepFeedRow) => ({
         checkinId: `s_${item.id.toString()}`,
         type: 'sleep',
         checkinDate: formatDateOnly(item.checkinDate),
@@ -591,5 +578,4 @@ export class CheckinsService {
 
     return `已完成 ${durationMin} 分钟 · ${estimatedKcal ?? 0} kcal`;
   }
-
 }

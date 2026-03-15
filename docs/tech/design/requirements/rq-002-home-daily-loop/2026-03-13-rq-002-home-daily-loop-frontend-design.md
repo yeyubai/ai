@@ -15,7 +15,7 @@ ac_refs: AC-03, AC-04, AC-05
 
 - 登录后统一 App Shell 与底部 Tab
 - `/dashboard` 首页首屏与 `/coach/plan` 说明页
-- 首页双核心 CTA、follow-up 与恢复模式表达
+- 首页单一主 CTA、主次状态卡、follow-up 与恢复模式表达
 
 Out of scope:
 - 首页聊天式交互
@@ -30,9 +30,9 @@ Out of scope:
 
 首页固定块顺序：
 1. `今日下一步` hero
-2. `体重状态 + 本周变化 + 连续执行`
-3. `体重记录卡 + 运动记录卡`
-4. `完成今天后怎么继续`
+2. `当前最关键的状态卡`
+3. `方向判断 + 轻量成就`
+4. `次级核心动作 + 今晚复盘 / 明日预览`
 
 ## 3. 数据流设计
 
@@ -40,6 +40,7 @@ Out of scope:
 - 次级说明页同样读取 `home/today`，不再单独请求旧计划接口
 - 点击动作后跳转到对应记录页或复盘页，不在首页展示“手动刷新”按钮
 - 记录或复盘成功后，通过路由回流 + query refresh 更新首页
+- `nextAction` 决定首页中部主卡展示哪个核心模块；另一个核心动作降级为次级卡
 - 共享类型：`HomeTodayResult`, `TabItem`
 
 ## 4. 接口契约映射
@@ -49,8 +50,7 @@ Out of scope:
 
 DTO -> UI Model：
 - `nextAction` -> hero 主 CTA
-- `weightStatus` -> 体重状态卡
-- `activityStatus` -> 运动状态卡
+- `weightStatus` / `activityStatus` -> 当前最关键状态卡或次级核心动作卡
 - `followUp` -> 页底 follow-up 卡
 - `recoveryMode` + `fallbackReason` -> 恢复提示条
 
@@ -69,6 +69,8 @@ DTO -> UI Model：
 交互规则：
 - 首页首屏文案必须是用户能理解的话，不使用“闭环”“单首页”等内部术语
 - 首页不展示饮食和睡眠入口
+- 首页 hero 区只允许一个强 CTA，趋势入口下沉到方向判断区块
+- 体重和运动不能同时作为首页主视觉中心，只能由 `nextAction` 决定谁优先
 - 二级页完成动作后默认回到首页
 - Tab 在登录后页面常驻显示，并适配底部安全区
 
@@ -85,13 +87,13 @@ DTO -> UI Model：
 
 ## 7. 测试方案
 
-- Component tests：hero CTA、体重卡、运动卡、恢复提示条
-- Page flow tests：首页 -> 记录页 -> 返回首页；首页 -> 复盘页 -> 返回首页
-- Contract mock tests：`weightStatus`, `activityStatus`, `followUp`, `PLAN_FALLBACK_USED` 映射
+- Component tests：hero CTA、主状态卡、次级动作卡、方向判断卡、恢复提示条
+- Page flow tests：首页 -> 记录页 -> 返回首页；首页 -> 复盘页 -> 返回首页；任意时刻只存在一个强 CTA
+- Contract mock tests：`nextAction`, `weightStatus`, `activityStatus`, `followUp`, `PLAN_FALLBACK_USED` 映射
 
 ## 8. 开发任务拆解
 
-- FE-2.1 重构首页为四块结构
+- FE-2.1 重构首页为单主动作驱动的四块结构
 - FE-2.2 接入首页 today query 与路由映射
-- FE-2.3 清理内部术语和无意义刷新入口
+- FE-2.3 清理第二主 CTA、内部术语和无意义刷新入口
 - FE-2.4 补首页埋点与恢复模式回归测试
