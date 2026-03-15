@@ -193,12 +193,12 @@
   }
 
   .route-transition-shell {
-    @apply relative min-h-full;
+    @apply relative min-h-full overflow-x-clip;
     width: 100%;
   }
 
   .route-transition-frame {
-    @apply relative z-10 min-h-full;
+    @apply relative z-10 min-h-full overflow-x-clip;
   }
 
   .route-transition-beam {

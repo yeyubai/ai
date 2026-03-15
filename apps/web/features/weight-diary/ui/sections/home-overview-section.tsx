@@ -280,7 +280,7 @@ export function HomeOverviewSection() {
       ) : null}
 
       <div
-        className="h-[calc(100dvh-var(--app-tab-bar-offset)-16px)] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="h-[calc(100dvh-var(--app-tab-bar-offset)-16px)] overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       >
         <header
@@ -445,16 +445,17 @@ export function HomeOverviewSection() {
       <Dialog open={isRecordOpen} onOpenChange={handleRecordOpenChange}>
         <DialogTrigger asChild>
           <div
-            className="pointer-events-none fixed bottom-[calc(var(--app-tab-bar-offset)+14px)] left-1/2 z-[65] flex -translate-x-1/2 justify-end"
-            style={{ width: 'min(375px, calc(100vw - 24px))' }}
+            className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--app-tab-bar-offset)+14px)] z-[65] flex justify-center px-3"
           >
-            <button
-              type="button"
-              aria-label="新增体重记录"
-              className="pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-white shadow-[0_18px_40px_-18px_rgba(15,185,196,0.95)] transition-transform hover:scale-[1.02]"
-            >
-              <Plus className="h-8 w-8" />
-            </button>
+            <div className="flex w-full max-w-[375px] justify-end">
+              <button
+                type="button"
+                aria-label="新增体重记录"
+                className="pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-white shadow-[0_18px_40px_-18px_rgba(15,185,196,0.95)] transition-transform hover:scale-[1.02]"
+              >
+                <Plus className="h-8 w-8" />
+              </button>
+            </div>
           </div>
         </DialogTrigger>
 

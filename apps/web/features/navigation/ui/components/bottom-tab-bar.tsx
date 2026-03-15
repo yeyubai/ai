@@ -16,10 +16,9 @@ export function BottomTabBar({ tabs, activeTabKey, pathname }: Props) {
   return (
     <nav
       aria-label="Bottom navigation"
-      className="pointer-events-none fixed bottom-4 left-1/2 z-[60] -translate-x-1/2"
-      style={{ width: 'min(375px, calc(100vw - 24px))' }}
+      className="pointer-events-none fixed inset-x-0 bottom-4 z-[60] flex justify-center px-3"
     >
-      <div className="pointer-events-auto w-full rounded-[30px] border border-white/50 bg-white/82 px-3 py-3 shadow-[0_22px_80px_-28px_rgba(13,148,164,0.42)] backdrop-blur-2xl">
+      <div className="pointer-events-auto w-full max-w-[375px] rounded-[30px] border border-white/50 bg-white/82 px-3 py-3 shadow-[0_22px_80px_-28px_rgba(13,148,164,0.42)] backdrop-blur-2xl">
         <LayoutGroup id="app-bottom-tabs">
           <div className="grid grid-cols-4 gap-2 pb-[max(env(safe-area-inset-bottom),0px)]">
             {tabs.map((tab) => {
