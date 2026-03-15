@@ -28,6 +28,7 @@ model User {
   sleepCheckins    CheckinSleep[]
   aiPlans          AiPlan[]
   aiReviews        AiReview[]
+  coachAnalysisSessions CoachAnalysisSession[]
 
   @@map("users")
 }
@@ -159,6 +160,35 @@ model AiReview {
 
   @@index([userId, reviewDate], map: "idx_ai_reviews_user_date")
   @@map("ai_reviews")
+}
+
+model CoachAnalysisSession {
+  id                  BigInt             @id @default(autoincrement()) @map("id")
+  userId              BigInt             @map("user_id")
+  status              String             @db.VarChar(24) @map("status")
+  sourceType          String             @db.VarChar(32) @map("source_type")
+  analysisSummaryJson Json               @map("analysis_summary_json")
+  createdAt           DateTime           @default(now()) @map("created_at")
+  updatedAt           DateTime           @updatedAt @map("updated_at")
+  deletedAt           DateTime?          @map("deleted_at")
+  user                User               @relation(fields: [userId], references: [id])
+  chatMessages        CoachChatMessage[]
+
+  @@index([userId, createdAt], map: "idx_coach_sessions_user_created_at")
+  @@index([userId, updatedAt], map: "idx_coach_sessions_user_updated_at")
+  @@map("coach_analysis_sessions")
+}
+
+model CoachChatMessage {
+  id        BigInt               @id @default(autoincrement()) @map("id")
+  sessionId BigInt               @map("session_id")
+  role      String               @db.VarChar(16) @map("role")
+  content   String               @db.LongText @map("content")
+  createdAt DateTime             @default(now()) @map("created_at")
+  session   CoachAnalysisSession @relation(fields: [sessionId], references: [id])
+
+  @@index([sessionId, createdAt], map: "idx_coach_messages_session_created_at")
+  @@map("coach_chat_messages")
 }
 
 model CheckinWeight {

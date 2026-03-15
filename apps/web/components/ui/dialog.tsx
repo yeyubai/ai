@@ -17,7 +17,7 @@ const DialogOverlay = React.forwardRef<
   <DialogPrimitive.Overlay
     ref={ref}
     className={cn(
-      'dialog-overlay-animated fixed inset-0 z-50 bg-slate-950/45 backdrop-blur-sm',
+      'dialog-overlay-animated fixed inset-0 z-[70] bg-slate-950/45 backdrop-blur-sm',
       className,
     )}
     {...props}
@@ -31,20 +31,23 @@ const DialogContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        'dialog-sheet-animated fixed inset-x-0 bottom-0 z-50 mx-auto flex h-[80dvh] w-full max-w-md flex-col rounded-t-[34px] bg-white shadow-[0_-20px_60px_-24px_rgba(15,23,42,0.35)] will-change-transform',
-        className,
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-5 top-5 rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
-        <X className="h-5 w-5" />
-        <span className="sr-only">关闭</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[75] flex justify-center">
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          'dialog-sheet-animated pointer-events-auto flex h-[80dvh] flex-col rounded-t-[34px] bg-white shadow-[0_-20px_60px_-24px_rgba(15,23,42,0.35)] will-change-transform',
+          className,
+        )}
+        style={{ width: 'min(375px, 100vw)' }}
+        {...props}
+      >
+        {children}
+        <DialogPrimitive.Close className="absolute right-5 top-5 rounded-full p-1 text-slate-500 transition hover:bg-slate-100 hover:text-slate-900">
+          <X className="h-5 w-5" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </div>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;

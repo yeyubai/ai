@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import {
   BadgePercent,
   ChevronDown,
@@ -364,6 +364,7 @@ function MetricRangePanel({
 }
 
 export function WeightEntryDetailSection({ entryId }: { entryId: string }) {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const mode = searchParams.get('mode');
   const [data, setData] = useState<WeightEntryDetail | null>(null);
@@ -427,16 +428,26 @@ export function WeightEntryDetailSection({ entryId }: { entryId: string }) {
     );
   }
 
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push('/diary');
+  };
+
   return (
     <div className="app-page space-y-4 px-4 pt-4">
       <section className="hero-panel overflow-hidden px-4 pb-5 pt-4">
         <div className="flex items-center justify-between text-white">
-          <Link
-            href="/diary"
+          <button
+            type="button"
+            onClick={handleBack}
             className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10"
           >
             <ChevronLeft className="h-5 w-5" />
-          </Link>
+          </button>
 
           <div className="text-center">
             <p className="section-eyebrow">报告详情</p>

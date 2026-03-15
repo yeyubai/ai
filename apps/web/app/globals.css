@@ -147,11 +147,19 @@
 
   html {
     @apply font-sans;
+    scrollbar-gutter: stable;
   }
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased;
     font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    scrollbar-gutter: stable;
+    overflow-x: hidden;
+  }
+
+  body[data-scroll-locked] {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
   }
 
   ::selection {
@@ -243,6 +251,23 @@
 
   .dialog-sheet-animated[data-state='closed'] {
     animation: dialog-sheet-out 220ms cubic-bezier(0.4, 0, 1, 1) forwards;
+  }
+
+  .route-transition-shell {
+    @apply relative min-h-full overflow-x-clip;
+    width: 100%;
+  }
+
+  .route-transition-frame {
+    @apply relative z-10 min-h-full overflow-x-clip;
+  }
+
+  .route-transition-beam {
+    @apply pointer-events-none absolute inset-x-4 top-0 z-20 h-24 rounded-[36px];
+    background:
+      linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0)),
+      linear-gradient(90deg, rgba(36, 211, 212, 0), rgba(36, 211, 212, 0.2), rgba(36, 211, 212, 0));
+    filter: blur(18px);
   }
 }
 

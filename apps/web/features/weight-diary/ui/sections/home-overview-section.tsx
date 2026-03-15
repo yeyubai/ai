@@ -88,7 +88,7 @@ function validateQuickRecordWeight(value: string): string | null {
   }
 
   if (parsed < QUICK_RECORD_MIN_WEIGHT || parsed > QUICK_RECORD_MAX_WEIGHT) {
-    return `体重需在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`;
+    return `体重需要在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`;
   }
 
   return null;
@@ -197,7 +197,7 @@ export function HomeOverviewSection() {
       }
     } catch (error) {
       if (isApiError(error) && error.code === 'INVALID_PARAMS') {
-        setRecordError(`体重需在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`);
+        setRecordError(`体重需要在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`);
       } else {
         setRecordError('保存失败，请稍后重试。');
       }
@@ -208,6 +208,7 @@ export function HomeOverviewSection() {
 
   const handleKeypadPress = (value: string) => {
     setRecordError(null);
+
     setWeightKg((current) => {
       if (value === 'backspace') {
         return current.slice(0, -1);
@@ -247,7 +248,7 @@ export function HomeOverviewSection() {
 
   if (sessionStatus !== 'ready' || isLoading) {
     return (
-      <div className="mx-auto w-full max-w-md px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-4">
+      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
         <div className="space-y-4">
           <Skeleton className="h-[176px] rounded-[28px]" />
           <Skeleton className="h-[560px] rounded-[32px]" />
@@ -258,7 +259,7 @@ export function HomeOverviewSection() {
 
   if (!summary || !settings || !entries) {
     return (
-      <div className="mx-auto w-full max-w-md px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-4">
+      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
         <Alert variant="destructive">
           <AlertDescription>{pageError ?? '首页暂时不可用。'}</AlertDescription>
         </Alert>
@@ -271,7 +272,7 @@ export function HomeOverviewSection() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-4">
+    <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
       {pageError ? (
         <Alert variant="destructive" className="mb-3">
           <AlertDescription>{pageError}</AlertDescription>
@@ -279,49 +280,54 @@ export function HomeOverviewSection() {
       ) : null}
 
       <div
-        className="h-[calc(100dvh-112px-env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="h-[calc(100dvh-var(--app-tab-bar-offset)-16px)] overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       >
-        <header
-          className={cn(
-            'sticky top-0 z-30 mb-[-76px] flex h-[76px] items-start justify-between px-5 pb-3 pt-4 transition-[background-color,backdrop-filter,box-shadow,color] duration-200',
-            headerSolid
-              ? 'bg-[linear-gradient(180deg,rgba(46,214,219,0.96),rgba(19,181,191,0.96))] text-white backdrop-blur-xl shadow-[0_12px_30px_-24px_rgba(15,23,42,0.28)]'
-              : 'bg-transparent text-white',
-          )}
-        >
-          <div className="flex min-w-0 items-center gap-3">
-            <NotebookText className="h-5 w-5 shrink-0" />
-            <div className="min-w-0">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
-                首页
-              </p>
-              <h1 className="mt-1 truncate text-[1.55rem] font-semibold leading-none">
-                {settings.diaryName}
-              </h1>
-            </div>
-          </div>
+        <header className="sticky top-0 z-30 mb-[-76px] h-[76px] text-white">
+          <div
+            aria-hidden="true"
+            className={cn(
+              'pointer-events-none absolute inset-y-0 left-1/2 w-screen -translate-x-1/2 transition-[background-color,backdrop-filter,box-shadow] duration-200',
+              headerSolid
+                ? 'bg-[linear-gradient(180deg,rgba(46,214,219,0.96),rgba(19,181,191,0.96))] backdrop-blur-xl shadow-[0_12px_30px_-24px_rgba(15,23,42,0.28)]'
+                : 'bg-transparent',
+            )}
+          />
 
-          <div className="flex items-center gap-2">
-            <Link
-              href="/diary"
-              className={cn(
-                'inline-flex h-10 items-center gap-2 rounded-2xl px-3 text-sm font-medium transition-colors',
-                headerSolid
-                  ? 'border border-white/35 bg-white/10 text-white/95'
-                  : 'border border-white/35 text-white/95',
-              )}
-            >
-              <CalendarDays className="h-4 w-4" />
-              日历
-            </Link>
-            <Link
-              href="/me"
-              aria-label="更多"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-white/90"
-            >
-              <EllipsisVertical className="h-5 w-5" />
-            </Link>
+          <div className="relative z-10 flex h-full items-start justify-between px-5 pb-3 pt-4">
+            <div className="flex min-w-0 items-center gap-3">
+              <NotebookText className="h-5 w-5 shrink-0" />
+              <div className="min-w-0">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-white/70">
+                  首页
+                </p>
+                <h1 className="mt-1 truncate text-[1.55rem] font-semibold leading-none">
+                  {settings.diaryName}
+                </h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <Link
+                href="/diary"
+                className={cn(
+                  'inline-flex h-10 items-center gap-2 rounded-2xl px-3 text-sm font-medium transition-colors',
+                  headerSolid
+                    ? 'border border-white/35 bg-white/10 text-white/95'
+                    : 'border border-white/35 text-white/95',
+                )}
+              >
+                <CalendarDays className="h-4 w-4" />
+                日历
+              </Link>
+              <Link
+                href="/me"
+                aria-label="更多"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-2xl text-white/90"
+              >
+                <EllipsisVertical className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </header>
 
@@ -338,11 +344,11 @@ export function HomeOverviewSection() {
               </div>
 
               <Link
-                href="/me"
+                href="/me/goal"
                 className="inline-flex items-center gap-2 rounded-2xl bg-white/14 px-3 py-2 text-sm font-medium text-white"
               >
                 <Goal className="h-4 w-4" />
-                设置目标
+                设定目标
               </Link>
             </div>
 
@@ -382,7 +388,7 @@ export function HomeOverviewSection() {
         </section>
 
         <section
-          className="sticky z-20 mt-3 min-h-[calc(100dvh-112px-env(safe-area-inset-bottom)-76px)] rounded-[30px] bg-[linear-gradient(180deg,rgba(242,246,248,0.995),rgba(233,238,241,0.995))] px-4 pb-[calc(176px+env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_60px_-40px_rgba(15,23,42,0.35)]"
+          className="sticky z-20 mt-3 min-h-[calc(100dvh-var(--app-tab-bar-offset)-76px-16px)] rounded-[30px] bg-[linear-gradient(180deg,rgba(242,246,248,0.995),rgba(233,238,241,0.995))] px-4 pb-[calc(var(--app-tab-bar-offset)+86px)] pt-5 shadow-[0_-18px_60px_-40px_rgba(15,23,42,0.35)]"
           style={{ top: `${HEADER_HEIGHT}px` }}
         >
           <div className="mx-auto max-w-md space-y-4">
@@ -443,13 +449,17 @@ export function HomeOverviewSection() {
 
       <Dialog open={isRecordOpen} onOpenChange={handleRecordOpenChange}>
         <DialogTrigger asChild>
-          <button
-            type="button"
-            aria-label="新增体重记录"
-            className="fixed bottom-[calc(120px+env(safe-area-inset-bottom))] right-5 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-white shadow-[0_18px_40px_-18px_rgba(15,185,196,0.95)] transition-transform hover:scale-[1.02]"
-          >
-            <Plus className="h-8 w-8" />
-          </button>
+          <div className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--app-tab-bar-offset)+14px)] z-[65] flex justify-center px-3">
+            <div className="flex w-full max-w-[375px] justify-end">
+              <button
+                type="button"
+                aria-label="新增体重记录"
+                className="pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-white shadow-[0_18px_40px_-18px_rgba(15,185,196,0.95)] transition-transform hover:scale-[1.02]"
+              >
+                <Plus className="h-8 w-8" />
+              </button>
+            </div>
+          </div>
         </DialogTrigger>
 
         <DialogContent className="overflow-hidden px-5 pb-0 pt-4">

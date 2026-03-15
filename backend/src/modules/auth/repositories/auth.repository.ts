@@ -214,6 +214,11 @@ export class AuthRepository {
         data: { userId: memberUserId },
       });
 
+      await tx.coachAnalysisSession.updateMany({
+        where: { userId: guestUserId, deletedAt: null },
+        data: { userId: memberUserId },
+      });
+
       await tx.authSession.updateMany({
         where: { userId: guestUserId, deletedAt: null },
         data: { deletedAt: new Date() },
