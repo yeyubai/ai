@@ -117,11 +117,19 @@
 
   html {
     @apply font-sans;
+    scrollbar-gutter: stable;
   }
 
   body {
     @apply min-h-screen bg-background text-foreground antialiased;
     font-family: "PingFang SC", "Microsoft YaHei", "Segoe UI", sans-serif;
+    scrollbar-gutter: stable;
+    overflow-x: hidden;
+  }
+
+  body[data-scroll-locked] {
+    padding-right: 0 !important;
+    margin-right: 0 !important;
   }
 
   ::selection {
@@ -186,11 +194,11 @@
 
   .route-transition-shell {
     @apply relative min-h-full;
+    width: 100%;
   }
 
   .route-transition-frame {
-    @apply relative z-10 min-h-full will-change-[opacity,transform,filter];
-    transform-origin: top center;
+    @apply relative z-10 min-h-full;
   }
 
   .route-transition-beam {

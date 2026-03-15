@@ -88,7 +88,7 @@ function validateQuickRecordWeight(value: string): string | null {
   }
 
   if (parsed < QUICK_RECORD_MIN_WEIGHT || parsed > QUICK_RECORD_MAX_WEIGHT) {
-    return `体重需在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`;
+    return `体重需要在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`;
   }
 
   return null;
@@ -197,7 +197,7 @@ export function HomeOverviewSection() {
       }
     } catch (error) {
       if (isApiError(error) && error.code === 'INVALID_PARAMS') {
-        setRecordError(`体重需在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`);
+        setRecordError(`体重需要在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`);
       } else {
         setRecordError('保存失败，请稍后重试。');
       }
@@ -208,6 +208,7 @@ export function HomeOverviewSection() {
 
   const handleKeypadPress = (value: string) => {
     setRecordError(null);
+
     setWeightKg((current) => {
       if (value === 'backspace') {
         return current.slice(0, -1);
@@ -247,7 +248,7 @@ export function HomeOverviewSection() {
 
   if (sessionStatus !== 'ready' || isLoading) {
     return (
-      <div className="mx-auto w-full max-w-md px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-4">
+      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
         <div className="space-y-4">
           <Skeleton className="h-[176px] rounded-[28px]" />
           <Skeleton className="h-[560px] rounded-[32px]" />
@@ -258,7 +259,7 @@ export function HomeOverviewSection() {
 
   if (!summary || !settings || !entries) {
     return (
-      <div className="mx-auto w-full max-w-md px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-4">
+      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
         <Alert variant="destructive">
           <AlertDescription>{pageError ?? '首页暂时不可用。'}</AlertDescription>
         </Alert>
@@ -271,7 +272,7 @@ export function HomeOverviewSection() {
   );
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 pb-[calc(112px+env(safe-area-inset-bottom))] pt-4">
+    <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
       {pageError ? (
         <Alert variant="destructive" className="mb-3">
           <AlertDescription>{pageError}</AlertDescription>
@@ -279,7 +280,7 @@ export function HomeOverviewSection() {
       ) : null}
 
       <div
-        className="h-[calc(100dvh-112px-env(safe-area-inset-bottom))] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="h-[calc(100dvh-var(--app-tab-bar-offset)-16px)] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       >
         <header
@@ -338,11 +339,11 @@ export function HomeOverviewSection() {
               </div>
 
               <Link
-                href="/me"
+                href="/me/goal"
                 className="inline-flex items-center gap-2 rounded-2xl bg-white/14 px-3 py-2 text-sm font-medium text-white"
               >
                 <Goal className="h-4 w-4" />
-                设置目标
+                设定目标
               </Link>
             </div>
 
@@ -382,7 +383,7 @@ export function HomeOverviewSection() {
         </section>
 
         <section
-          className="sticky z-20 mt-3 min-h-[calc(100dvh-112px-env(safe-area-inset-bottom)-76px)] rounded-[30px] bg-[linear-gradient(180deg,rgba(242,246,248,0.995),rgba(233,238,241,0.995))] px-4 pb-[calc(176px+env(safe-area-inset-bottom))] pt-5 shadow-[0_-18px_60px_-40px_rgba(15,23,42,0.35)]"
+          className="sticky z-20 mt-3 min-h-[calc(100dvh-var(--app-tab-bar-offset)-76px-16px)] rounded-[30px] bg-[linear-gradient(180deg,rgba(242,246,248,0.995),rgba(233,238,241,0.995))] px-4 pb-[calc(var(--app-tab-bar-offset)+86px)] pt-5 shadow-[0_-18px_60px_-40px_rgba(15,23,42,0.35)]"
           style={{ top: `${HEADER_HEIGHT}px` }}
         >
           <div className="mx-auto max-w-md space-y-4">
@@ -443,13 +444,18 @@ export function HomeOverviewSection() {
 
       <Dialog open={isRecordOpen} onOpenChange={handleRecordOpenChange}>
         <DialogTrigger asChild>
-          <button
-            type="button"
-            aria-label="新增体重记录"
-            className="fixed bottom-[calc(120px+env(safe-area-inset-bottom))] right-5 z-40 flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-white shadow-[0_18px_40px_-18px_rgba(15,185,196,0.95)] transition-transform hover:scale-[1.02]"
+          <div
+            className="pointer-events-none fixed bottom-[calc(var(--app-tab-bar-offset)+14px)] left-1/2 z-[65] flex -translate-x-1/2 justify-end"
+            style={{ width: 'min(375px, calc(100vw - 24px))' }}
           >
-            <Plus className="h-8 w-8" />
-          </button>
+            <button
+              type="button"
+              aria-label="新增体重记录"
+              className="pointer-events-auto flex h-16 w-16 items-center justify-center rounded-full bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-white shadow-[0_18px_40px_-18px_rgba(15,185,196,0.95)] transition-transform hover:scale-[1.02]"
+            >
+              <Plus className="h-8 w-8" />
+            </button>
+          </div>
         </DialogTrigger>
 
         <DialogContent className="overflow-hidden px-5 pb-0 pt-4">
