@@ -57,6 +57,14 @@ export class MeService {
     userId: bigint,
     payload: UpdateUserProfileRequestDto,
   ): Promise<UserProfileResponseDto> {
+    const existingGoal = await this.prisma.weightGoal.findFirst({
+      where: { userId, deletedAt: null },
+      select: {
+        startWeightKg: true,
+        targetWeightKg: true,
+      },
+    });
+
     await this.prisma.userProfile.upsert({
       where: { userId },
       update: {
@@ -74,8 +82,8 @@ export class MeService {
         sex: payload.sex ?? null,
         birthDate: payload.birthDate ? parseDateOnly(payload.birthDate) : null,
         avatarUrl: payload.avatarUrl ?? null,
-        currentWeightKg: 0,
-        targetWeightKg: 0,
+        currentWeightKg: existingGoal?.startWeightKg ?? 0,
+        targetWeightKg: existingGoal?.targetWeightKg ?? 0,
       },
     });
 
@@ -113,22 +121,44 @@ export class MeService {
       });
     }
 
-    await this.prisma.weightGoal.upsert({
-      where: { userId },
-      update: {
-        startWeightKg: payload.startWeightKg,
-        targetWeightKg: payload.targetWeightKg,
-        targetDate: payload.targetDate ? parseDateOnly(payload.targetDate) : null,
-        weightUnit: payload.weightUnit,
-        deletedAt: null,
-      },
-      create: {
-        userId,
-        startWeightKg: payload.startWeightKg,
-        targetWeightKg: payload.targetWeightKg,
-        targetDate: payload.targetDate ? parseDateOnly(payload.targetDate) : null,
-        weightUnit: payload.weightUnit,
-      },
+    await this.prisma.$transaction(async (tx) => {
+      await tx.weightGoal.upsert({
+        where: { userId },
+        update: {
+          startWeightKg: payload.startWeightKg,
+          targetWeightKg: payload.targetWeightKg,
+          targetDate: payload.targetDate ? parseDateOnly(payload.targetDate) : null,
+          weightUnit: payload.weightUnit,
+          deletedAt: null,
+        },
+        create: {
+          userId,
+          startWeightKg: payload.startWeightKg,
+          targetWeightKg: payload.targetWeightKg,
+          targetDate: payload.targetDate ? parseDateOnly(payload.targetDate) : null,
+          weightUnit: payload.weightUnit,
+        },
+      });
+
+      await tx.userSetting.upsert({
+        where: { userId },
+        update: {
+          weightUnit: payload.weightUnit,
+          deletedAt: null,
+        },
+        create: {
+          userId,
+          weightUnit: payload.weightUnit,
+        },
+      });
+
+      await tx.userProfile.updateMany({
+        where: { userId, deletedAt: null },
+        data: {
+          currentWeightKg: payload.startWeightKg,
+          targetWeightKg: payload.targetWeightKg,
+        },
+      });
     });
 
     await this.syncProfileCompleted(userId);

@@ -9,10 +9,17 @@ import {
   type WheelPickerOption,
 } from '@ncdai/react-wheel-picker';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useAuthStore } from '@/features/auth/model/auth.store';
 import {
   ME_NUMBER_PICKER_CONFIG,
+  isMeWeightPickerField,
+  resolveMeNumberPickerUnit,
   type MeNumberPickerField,
 } from '../../config/me-number-picker.config';
+import {
+  convertKgToWeightUnit,
+  convertWeightUnitToKg,
+} from '../../config/weight-unit';
 import { useMeFormDraftStore } from '../../model/me-form-draft.store';
 
 const WHEEL_VISIBLE_COUNT = 12;
@@ -150,11 +157,23 @@ function DigitColumn({
 
 export function MeNumberPickerSection({ field }: { field: MeNumberPickerField }) {
   const router = useRouter();
+  const token = useAuthStore((state) => state.token);
+  const sessionStatus = useAuthStore((state) => state.sessionStatus);
   const config = ME_NUMBER_PICKER_CONFIG[field];
   const profileDraft = useMeFormDraftStore((state) => state.profileDraft);
   const goalDraft = useMeFormDraftStore((state) => state.goalDraft);
+  const ensureDraftOwner = useMeFormDraftStore((state) => state.ensureDraftOwner);
   const updateProfileDraft = useMeFormDraftStore((state) => state.updateProfileDraft);
   const updateGoalDraft = useMeFormDraftStore((state) => state.updateGoalDraft);
+  const weightUnit = 'kg' as const;
+
+  useEffect(() => {
+    if (sessionStatus !== 'ready') {
+      return;
+    }
+
+    ensureDraftOwner(token);
+  }, [ensureDraftOwner, sessionStatus, token]);
 
   const currentValue = useMemo(() => {
     if (field === 'profile-height') {
@@ -162,11 +181,15 @@ export function MeNumberPickerSection({ field }: { field: MeNumberPickerField })
     }
 
     if (field === 'goal-start-weight') {
-      return goalDraft?.startWeightKg ?? null;
+      return goalDraft?.startWeightKg === null || goalDraft?.startWeightKg === undefined
+        ? null
+        : convertKgToWeightUnit(goalDraft.startWeightKg, weightUnit);
     }
 
-    return goalDraft?.targetWeightKg ?? null;
-  }, [field, goalDraft, profileDraft]);
+    return goalDraft?.targetWeightKg === null || goalDraft?.targetWeightKg === undefined
+      ? null
+      : convertKgToWeightUnit(goalDraft.targetWeightKg, weightUnit);
+  }, [field, goalDraft, profileDraft, weightUnit]);
 
   const canApply = useMemo(() => {
     if (field === 'profile-height') {
@@ -176,20 +199,44 @@ export function MeNumberPickerSection({ field }: { field: MeNumberPickerField })
     return goalDraft !== null;
   }, [field, goalDraft, profileDraft]);
 
-  const [draftValue, setDraftValue] = useState<number>(currentValue ?? config.fallbackValue);
+  const range = useMemo(() => {
+    if (!isMeWeightPickerField(field)) {
+      return {
+        min: config.min,
+        max: config.max,
+        fallbackValue: config.fallbackValue,
+      };
+    }
+
+    return {
+      min: convertKgToWeightUnit(config.min, weightUnit),
+      max: convertKgToWeightUnit(config.max, weightUnit),
+      fallbackValue: convertKgToWeightUnit(config.fallbackValue, weightUnit),
+    };
+  }, [config.fallbackValue, config.max, config.min, field, weightUnit]);
+
+  const [draftValue, setDraftValue] = useState<number>(
+    currentValue ?? range.fallbackValue,
+  );
 
   useEffect(() => {
-    setDraftValue(currentValue ?? config.fallbackValue);
-  }, [config.fallbackValue, currentValue]);
+    setDraftValue(currentValue ?? range.fallbackValue);
+  }, [currentValue, range.fallbackValue]);
 
   const normalizedValue =
     config.mode === 'integer'
-      ? normalizeInteger(draftValue, config.min, config.max)
-      : normalizeDecimal(draftValue, config.min, config.max);
+      ? normalizeInteger(draftValue, range.min, range.max)
+      : normalizeDecimal(draftValue, range.min, range.max);
   const places = useMemo(() => getDigitPlaces(config.mode), [config.mode]);
   const labels = useMemo(() => getDigitLabels(config.mode), [config.mode]);
-  const minScaled = useMemo(() => toScaledValue(config.mode, config.min), [config.min, config.mode]);
-  const maxScaled = useMemo(() => toScaledValue(config.mode, config.max), [config.max, config.mode]);
+  const minScaled = useMemo(
+    () => toScaledValue(config.mode, range.min),
+    [config.mode, range.min],
+  );
+  const maxScaled = useMemo(
+    () => toScaledValue(config.mode, range.max),
+    [config.mode, range.max],
+  );
   const scaledValue = useMemo(
     () => toScaledValue(config.mode, normalizedValue),
     [config.mode, normalizedValue],
@@ -234,27 +281,32 @@ export function MeNumberPickerSection({ field }: { field: MeNumberPickerField })
       return;
     }
 
+    const appliedValue = isMeWeightPickerField(field)
+      ? convertWeightUnitToKg(normalizedValue, weightUnit)
+      : normalizedValue;
+
     if (field === 'profile-height') {
       updateProfileDraft((draft) => ({
         ...draft,
-        heightCm: normalizedValue,
+        heightCm: appliedValue,
       }));
     } else if (field === 'goal-start-weight') {
       updateGoalDraft((draft) => ({
         ...draft,
-        startWeightKg: normalizedValue,
+        startWeightKg: appliedValue,
       }));
     } else {
       updateGoalDraft((draft) => ({
         ...draft,
-        targetWeightKg: normalizedValue,
+        targetWeightKg: appliedValue,
       }));
     }
 
     router.replace(config.returnTo);
   };
 
-  const displayValue = `${formatPreview(config.mode, normalizedValue)} ${config.unit}`;
+  const displayUnit = resolveMeNumberPickerUnit(field, weightUnit);
+  const displayValue = `${formatPreview(config.mode, normalizedValue)} ${displayUnit}`;
 
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-var(--app-tab-bar-offset))] w-full max-w-md flex-col bg-[linear-gradient(180deg,#ffffff_0%,#f8fcfd_100%)]">

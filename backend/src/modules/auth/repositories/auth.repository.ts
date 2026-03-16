@@ -190,6 +190,9 @@ export class AuthRepository {
             data: {
               diaryName: guestSettings.diaryName || memberSettings.diaryName,
               theme: guestSettings.theme || memberSettings.theme,
+              weightUnit: guestSettings.weightUnit || memberSettings.weightUnit,
+              timezone: guestSettings.timezone || memberSettings.timezone,
+              locale: guestSettings.locale || memberSettings.locale,
             },
           });
           await tx.userSetting.update({

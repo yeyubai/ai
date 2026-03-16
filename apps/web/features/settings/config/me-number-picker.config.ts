@@ -1,3 +1,6 @@
+import type { WeightGoal } from '../types/settings.types';
+import { formatWeightByUnit, getWeightUnitLabel } from './weight-unit';
+
 export type MeNumberPickerMode = 'integer' | 'decimal';
 
 export const ME_NUMBER_PICKER_FIELDS = [
@@ -11,7 +14,7 @@ export type MeNumberPickerField = (typeof ME_NUMBER_PICKER_FIELDS)[number];
 export type MeNumberPickerConfig = {
   title: string;
   description: string;
-  unit: string;
+  unit: 'cm' | 'weight';
   placeholder: string;
   min: number;
   max: number;
@@ -40,7 +43,7 @@ export const ME_NUMBER_PICKER_CONFIG: Record<
   'goal-start-weight': {
     title: '当前体重',
     description: '按位调整当前体重，保存后会作为趋势起点。',
-    unit: 'kg',
+    unit: 'weight',
     placeholder: '选择当前体重',
     min: 20,
     max: 300,
@@ -52,7 +55,7 @@ export const ME_NUMBER_PICKER_CONFIG: Record<
   'goal-target-weight': {
     title: '目标体重',
     description: '按位调整目标体重，保存后会作为目标参考。',
-    unit: 'kg',
+    unit: 'weight',
     placeholder: '选择目标体重',
     min: 20,
     max: 300,
@@ -69,17 +72,43 @@ export function isMeNumberPickerField(
   return ME_NUMBER_PICKER_FIELDS.includes(value as MeNumberPickerField);
 }
 
-export function formatMeNumberPickerValue(
-  config: MeNumberPickerConfig,
-  value: number | null,
+export function isMeWeightPickerField(
+  field: MeNumberPickerField,
+): field is Exclude<MeNumberPickerField, 'profile-height'> {
+  return field !== 'profile-height';
+}
+
+export function resolveMeNumberPickerUnit(
+  field: MeNumberPickerField,
+  weightUnit: WeightGoal['weightUnit'] = 'kg',
 ): string {
+  const config = ME_NUMBER_PICKER_CONFIG[field];
+
+  return config.unit === 'weight' ? getWeightUnitLabel(weightUnit) : config.unit;
+}
+
+export function formatMeNumberPickerValue(
+  field: MeNumberPickerField,
+  value: number | null,
+  options?: {
+    weightUnit?: WeightGoal['weightUnit'];
+  },
+): string {
+  const config = ME_NUMBER_PICKER_CONFIG[field];
+
   if (value === null) {
     return config.placeholder;
   }
 
-  if (config.mode === 'integer') {
-    return `${Math.round(value)} ${config.unit}`;
+  if (isMeWeightPickerField(field)) {
+    return formatWeightByUnit(value, options?.weightUnit ?? 'kg', 2) ?? config.placeholder;
   }
 
-  return `${value.toFixed(2)} ${config.unit}`;
+  const unitLabel = resolveMeNumberPickerUnit(field, options?.weightUnit);
+
+  if (config.mode === 'integer') {
+    return `${Math.round(value)} ${unitLabel}`;
+  }
+
+  return `${value.toFixed(2)} ${unitLabel}`;
 }

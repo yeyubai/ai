@@ -1,4 +1,5 @@
-﻿import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { PrismaService } from 'src/shared/db/prisma.service';
 import { JourneyStateService } from 'src/shared/state/journey-state.service';
 import { DeleteStatusResponseDto } from '../dto/delete-status-response.dto';
 import { ExportTaskResponseDto } from '../dto/export-task-response.dto';
@@ -7,14 +8,59 @@ import { UpdateSettingsRequestDto } from '../dto/update-settings-request.dto';
 
 @Injectable()
 export class SettingsService {
-  constructor(private readonly journeyState: JourneyStateService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly journeyState: JourneyStateService,
+  ) {}
 
-  getSettings(userId: bigint): SettingsResponseDto {
-    return this.journeyState.getSettings(userId);
+  async getSettings(userId: bigint): Promise<SettingsResponseDto> {
+    const settings = await this.prisma.userSetting.findFirst({
+      where: { userId, deletedAt: null },
+      select: {
+        weightUnit: true,
+        timezone: true,
+        locale: true,
+      },
+    });
+
+    return {
+      weightUnit: (settings?.weightUnit as SettingsResponseDto['weightUnit'] | undefined) ?? 'kg',
+      timezone: settings?.timezone ?? 'Asia/Shanghai',
+      locale: settings?.locale ?? 'zh-CN',
+    };
   }
 
-  updateSettings(userId: bigint, payload: UpdateSettingsRequestDto): SettingsResponseDto {
-    return this.journeyState.updateSettings(userId, payload);
+  async updateSettings(
+    userId: bigint,
+    payload: UpdateSettingsRequestDto,
+  ): Promise<SettingsResponseDto> {
+    await this.prisma.$transaction(async (tx) => {
+      await tx.userSetting.upsert({
+        where: { userId },
+        update: {
+          weightUnit: payload.weightUnit,
+          timezone: payload.timezone,
+          locale: payload.locale,
+          deletedAt: null,
+        },
+        create: {
+          userId,
+          weightUnit: payload.weightUnit ?? 'kg',
+          timezone: payload.timezone ?? 'Asia/Shanghai',
+          locale: payload.locale ?? 'zh-CN',
+        },
+      });
+
+      if (payload.weightUnit) {
+        await tx.weightGoal.updateMany({
+          where: { userId, deletedAt: null },
+          data: { weightUnit: payload.weightUnit },
+        });
+      }
+    });
+
+    this.journeyState.updateSettings(userId, payload);
+    return this.getSettings(userId);
   }
 
   createExport(userId: bigint, _format: string): ExportTaskResponseDto {
@@ -75,4 +121,3 @@ export class SettingsService {
     return { canceled };
   }
 }
-

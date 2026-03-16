@@ -3,20 +3,20 @@
 import Link from 'next/link';
 import { ChevronRight } from 'lucide-react';
 import {
-  ME_NUMBER_PICKER_CONFIG,
   formatMeNumberPickerValue,
   type MeNumberPickerField,
 } from '../../config/me-number-picker.config';
+import type { WeightGoal } from '../../types/settings.types';
 
 export function WheelNumberField({
   field,
   value,
+  weightUnit,
 }: {
   field: MeNumberPickerField;
   value: number | null;
+  weightUnit?: WeightGoal['weightUnit'];
 }) {
-  const config = ME_NUMBER_PICKER_CONFIG[field];
-
   return (
     <Link
       href={`/me/picker/${field}`}
@@ -27,7 +27,7 @@ export function WheelNumberField({
           value === null ? 'text-slate-400' : 'text-slate-900'
         }`}
       >
-        {formatMeNumberPickerValue(config, value)}
+        {formatMeNumberPickerValue(field, value, { weightUnit })}
       </span>
 
       <span className="flex items-center gap-1 text-[12px] font-medium text-slate-400">

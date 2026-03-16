@@ -52,6 +52,24 @@ export class ProfileRepository {
     });
   }
 
+  async findActiveGoalByUserId(userId: bigint): Promise<{
+    userId: bigint;
+    startWeightKg: Decimal;
+    targetWeightKg: Decimal;
+  } | null> {
+    return this.prisma.weightGoal.findFirst({
+      where: {
+        userId,
+        deletedAt: null,
+      },
+      select: {
+        userId: true,
+        startWeightKg: true,
+        targetWeightKg: true,
+      },
+    });
+  }
+
   async runInTransaction<T>(
     handler: (tx: Prisma.TransactionClient) => Promise<T>,
   ): Promise<T> {
@@ -75,6 +93,28 @@ export class ProfileRepository {
         heightCm: payload.heightCm,
         currentWeightKg: payload.currentWeightKg,
         targetWeightKg: payload.targetWeightKg,
+      },
+    });
+  }
+
+  async upsertGoal(
+    tx: Prisma.TransactionClient,
+    payload: UpdateProfilePayload,
+  ): Promise<void> {
+    await tx.weightGoal.upsert({
+      where: { userId: payload.userId },
+      update: {
+        startWeightKg: payload.currentWeightKg,
+        targetWeightKg: payload.targetWeightKg,
+        weightUnit: 'kg',
+        deletedAt: null,
+      },
+      create: {
+        userId: payload.userId,
+        startWeightKg: payload.currentWeightKg,
+        targetWeightKg: payload.targetWeightKg,
+        targetDate: null,
+        weightUnit: 'kg',
       },
     });
   }

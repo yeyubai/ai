@@ -5,10 +5,13 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 import type { UserProfile, WeightGoal } from '../types/settings.types';
 
 type MeFormDraftState = {
+  draftOwnerKey: string | null;
   profileDraft: UserProfile | null;
   profileDirty: boolean;
   goalDraft: WeightGoal | null;
   goalDirty: boolean;
+  ensureDraftOwner: (ownerKey: string | null) => void;
+  resetDrafts: () => void;
   hydrateProfileDraft: (draft: UserProfile) => void;
   updateProfileDraft: (updater: (draft: UserProfile) => UserProfile) => void;
   markProfileSaved: (draft: UserProfile) => void;
@@ -17,13 +20,29 @@ type MeFormDraftState = {
   markGoalSaved: (draft: WeightGoal) => void;
 };
 
+function buildDraftState(draftOwnerKey: string | null) {
+  return {
+    draftOwnerKey,
+    profileDraft: null,
+    profileDirty: false,
+    goalDraft: null,
+    goalDirty: false,
+  };
+}
+
 export const useMeFormDraftStore = create<MeFormDraftState>()(
   persist(
     (set) => ({
-      profileDraft: null,
-      profileDirty: false,
-      goalDraft: null,
-      goalDirty: false,
+      ...buildDraftState(null),
+      ensureDraftOwner: (ownerKey) =>
+        set((state) => {
+          if (state.draftOwnerKey === ownerKey) {
+            return state;
+          }
+
+          return buildDraftState(ownerKey);
+        }),
+      resetDrafts: () => set(buildDraftState(null)),
       hydrateProfileDraft: (draft) =>
         set((state) => {
           if (state.profileDirty && state.profileDraft) {

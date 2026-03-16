@@ -7,15 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/features/auth/model/auth.store';
+import { isApiError } from '@/lib/api/types';
 import {
   fetchGoal,
   fetchProfile,
@@ -23,7 +17,6 @@ import {
   updateProfile,
 } from '../../api/me.api';
 import { useMeFormDraftStore } from '../../model/me-form-draft.store';
-import type { WeightGoal } from '../../types/settings.types';
 import { MeDetailShell } from '../components/me-detail-shell';
 import { WheelNumberField } from '../components/wheel-number-field';
 
@@ -39,22 +32,35 @@ function getAccountLabel(userRole: 'guest' | 'member' | null): string {
   return '未知';
 }
 
+function getSaveErrorMessage(prefix: string, error: unknown): string {
+  const detail = isApiError(error) ? error.message : '请稍后重试。';
+  return `${prefix}保存失败：${detail}`;
+}
+
 export function MeProfileSection() {
   const token = useAuthStore((state) => state.token);
   const sessionStatus = useAuthStore((state) => state.sessionStatus);
   const userRole = useAuthStore((state) => state.userRole);
   const profile = useMeFormDraftStore((state) => state.profileDraft);
   const goal = useMeFormDraftStore((state) => state.goalDraft);
+  const ensureDraftOwner = useMeFormDraftStore((state) => state.ensureDraftOwner);
   const hydrateProfileDraft = useMeFormDraftStore((state) => state.hydrateProfileDraft);
   const hydrateGoalDraft = useMeFormDraftStore((state) => state.hydrateGoalDraft);
   const updateProfileDraft = useMeFormDraftStore((state) => state.updateProfileDraft);
-  const updateGoalDraft = useMeFormDraftStore((state) => state.updateGoalDraft);
   const markProfileSaved = useMeFormDraftStore((state) => state.markProfileSaved);
   const markGoalSaved = useMeFormDraftStore((state) => state.markGoalSaved);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (sessionStatus !== 'ready') {
+      return;
+    }
+
+    ensureDraftOwner(token);
+  }, [ensureDraftOwner, sessionStatus, token]);
 
   useEffect(() => {
     if (!token || sessionStatus !== 'ready') {
@@ -65,6 +71,7 @@ export function MeProfileSection() {
     const load = async () => {
       try {
         setError(null);
+        setMessage(null);
         setIsLoading(true);
 
         const [nextProfile, nextGoal] = await Promise.all([
@@ -77,7 +84,10 @@ export function MeProfileSection() {
         }
 
         hydrateProfileDraft(nextProfile);
-        hydrateGoalDraft(nextGoal);
+        hydrateGoalDraft({
+          ...nextGoal,
+          weightUnit: 'kg',
+        });
       } catch {
         if (active) {
           setError('资料页加载失败，请稍后重试。');
@@ -95,52 +105,74 @@ export function MeProfileSection() {
     };
   }, [hydrateGoalDraft, hydrateProfileDraft, sessionStatus, token]);
 
-  const handleWeightUnitChange = (value: WeightGoal['weightUnit'] | null) => {
-    if (!value) {
-      return;
-    }
-
-    updateGoalDraft((current) => ({
-      ...current,
-      weightUnit: value,
-    }));
-  };
-
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!profile || !goal) {
       return;
     }
 
-    if (!goal.startWeightKg || !goal.targetWeightKg) {
+    if (goal.startWeightKg === null || goal.targetWeightKg === null) {
+      setMessage(null);
       setError('请先补齐当前体重和目标体重。');
       return;
     }
 
+    const profilePayload = {
+      nickname: profile.nickname ?? undefined,
+      heightCm: profile.heightCm ?? undefined,
+      sex: profile.sex ?? undefined,
+      birthDate: profile.birthDate ?? undefined,
+      avatarUrl: profile.avatarUrl ?? undefined,
+    };
+    const goalPayload = {
+      startWeightKg: goal.startWeightKg,
+      targetWeightKg: goal.targetWeightKg,
+      targetDate: goal.targetDate ?? undefined,
+      weightUnit: 'kg' as const,
+    };
+
     try {
       setIsSubmitting(true);
+      setError(null);
+      setMessage(null);
 
-      const [nextProfile, nextGoal] = await Promise.all([
-        updateProfile({
-          nickname: profile.nickname ?? undefined,
-          heightCm: profile.heightCm ?? undefined,
-          sex: profile.sex ?? undefined,
-          birthDate: profile.birthDate ?? undefined,
-          avatarUrl: profile.avatarUrl ?? undefined,
-        }),
-        updateGoal({
-          startWeightKg: goal.startWeightKg,
-          targetWeightKg: goal.targetWeightKg,
-          targetDate: goal.targetDate ?? undefined,
-          weightUnit: goal.weightUnit,
-        }),
+      const [profileResult, goalResult] = await Promise.allSettled([
+        updateProfile(profilePayload),
+        updateGoal(goalPayload),
       ]);
 
-      markProfileSaved(nextProfile);
-      markGoalSaved(nextGoal);
-      setMessage('资料与目标已保存。');
-      setError(null);
+      const successMessages: string[] = [];
+      const errorMessages: string[] = [];
+
+      if (profileResult.status === 'fulfilled') {
+        markProfileSaved(profileResult.value);
+        successMessages.push('基础资料已保存');
+      } else {
+        errorMessages.push(getSaveErrorMessage('基础资料', profileResult.reason));
+      }
+
+      if (goalResult.status === 'fulfilled') {
+        markGoalSaved({
+          ...goalResult.value,
+          weightUnit: 'kg',
+        });
+        successMessages.push('体重目标已保存');
+      } else {
+        errorMessages.push(getSaveErrorMessage('体重目标', goalResult.reason));
+      }
+
+      if (successMessages.length === 2) {
+        setMessage('资料与目标已保存。');
+        setError(null);
+        return;
+      }
+
+      setMessage(
+        successMessages.length > 0 ? `${successMessages.join('；')}。` : null,
+      );
+      setError(errorMessages.length > 0 ? errorMessages.join('；') : null);
     } catch {
+      setMessage(null);
       setError('保存失败，请稍后重试。');
     } finally {
       setIsSubmitting(false);
@@ -233,25 +265,28 @@ export function MeProfileSection() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label>当前体重</Label>
-                <WheelNumberField field="goal-start-weight" value={goal.startWeightKg} />
+                <WheelNumberField
+                  field="goal-start-weight"
+                  value={goal.startWeightKg}
+                  weightUnit="kg"
+                />
               </div>
               <div className="space-y-2">
                 <Label>目标体重</Label>
-                <WheelNumberField field="goal-target-weight" value={goal.targetWeightKg} />
+                <WheelNumberField
+                  field="goal-target-weight"
+                  value={goal.targetWeightKg}
+                  weightUnit="kg"
+                />
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>单位</Label>
-              <Select value={goal.weightUnit} onValueChange={handleWeightUnitChange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="kg">公斤</SelectItem>
-                  <SelectItem value="lb">磅</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input value="公斤（kg）" readOnly className="bg-slate-50" />
+              <p className="text-[12px] text-slate-500">
+                当前版本统一按公斤记录，先避免不同页面之间的单位混用。
+              </p>
             </div>
           </CardContent>
         </Card>

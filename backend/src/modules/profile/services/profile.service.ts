@@ -17,15 +17,28 @@ export class ProfileService {
       throw new UnauthorizedException('AUTH_EXPIRED');
     }
 
-    const profile = await this.profileRepository.findActiveProfileByUserId(userId);
+    const [profile, goal] = await Promise.all([
+      this.profileRepository.findActiveProfileByUserId(userId),
+      this.profileRepository.findActiveGoalByUserId(userId),
+    ]);
     const extras = this.journeyState.getProfileExtras(userId);
+    const currentWeightKg = goal
+      ? Number(goal.startWeightKg)
+      : profile
+        ? Number(profile.currentWeightKg)
+        : null;
+    const targetWeightKg = goal
+      ? Number(goal.targetWeightKg)
+      : profile
+        ? Number(profile.targetWeightKg)
+        : null;
 
     return {
       phone: user.phone,
       profileCompleted: user.profileCompleted,
       heightCm: profile?.heightCm ?? null,
-      currentWeightKg: profile ? Number(profile.currentWeightKg) : null,
-      targetWeightKg: profile ? Number(profile.targetWeightKg) : null,
+      currentWeightKg,
+      targetWeightKg,
       goalWeeks: extras.goalWeeks,
       workRestPattern: extras.workRestPattern,
       dietPreference: extras.dietPreference,
@@ -38,7 +51,7 @@ export class ProfileService {
     userId: bigint,
     payload: UpdateProfileRequestDto,
   ): Promise<UserProfileDto> {
-    if (payload.targetWeightKg > payload.currentWeightKg) {
+    if (payload.targetWeightKg >= payload.currentWeightKg) {
       throw new BadRequestException('INVALID_PARAMS');
     }
 
@@ -49,6 +62,12 @@ export class ProfileService {
 
     await this.profileRepository.runInTransaction(async (tx) => {
       await this.profileRepository.upsertProfile(tx, {
+        userId,
+        heightCm: payload.heightCm,
+        currentWeightKg: payload.currentWeightKg,
+        targetWeightKg: payload.targetWeightKg,
+      });
+      await this.profileRepository.upsertGoal(tx, {
         userId,
         heightCm: payload.heightCm,
         currentWeightKg: payload.currentWeightKg,

@@ -23,8 +23,12 @@ export class HomeService {
     const todayDate = parseDateOnly(today);
     const extras = this.journeyState.getProfileExtras(userId);
     const activityTargets = this.getActivityTargets(extras.activityBaseline);
-    const [profile, review, membership, weightStatus, activityStatus] = await Promise.all([
+    const [profile, goal, review, membership, weightStatus, activityStatus] = await Promise.all([
       this.prisma.userProfile.findFirst({ where: { userId, deletedAt: null } }),
+      this.prisma.weightGoal.findFirst({
+        where: { userId, deletedAt: null },
+        select: { targetWeightKg: true },
+      }),
       Promise.resolve(this.journeyState.getReview(userId, today)),
       Promise.resolve(this.journeyState.getMembershipStatus(userId)),
       this.getWeightStatus(userId, today),
@@ -85,7 +89,7 @@ export class HomeService {
       },
       weightStatus: {
         ...weightStatus,
-        targetWeightKg: profile ? Number(profile.targetWeightKg) : null,
+        targetWeightKg: goal ? Number(goal.targetWeightKg) : null,
       },
       activityStatus,
       nextAction: {

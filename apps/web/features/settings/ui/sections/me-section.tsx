@@ -23,6 +23,11 @@ import {
   fetchSettings,
   requestExport,
 } from '../../api/me.api';
+import {
+  formatWeightByUnit,
+  formatWeightNumberByUnit,
+  getWeightUnitLabel,
+} from '../../config/weight-unit';
 import type { UserProfile, UserSettings, WeightGoal } from '../../types/settings.types';
 
 function SummaryLinkCard({
@@ -95,6 +100,7 @@ export function MeSection() {
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const weightUnit = 'kg' as const;
 
   useEffect(() => {
     if (!token || sessionStatus !== 'ready') {
@@ -118,7 +124,10 @@ export function MeSection() {
         }
 
         setProfile(nextProfile);
-        setGoal(nextGoal);
+        setGoal({
+          ...nextGoal,
+          weightUnit,
+        });
         setSettings(nextSettings);
         setSummary(nextSummary);
       } catch {
@@ -216,8 +225,16 @@ export function MeSection() {
               />
               <MetricCell
                 label="体重变化"
-                value={summary.deltaFromStart?.toFixed(2) ?? '--'}
-                unit={summary.deltaFromStart === null ? undefined : 'kg'}
+                value={
+                  summary.deltaFromStart === null
+                    ? '--'
+                    : formatWeightNumberByUnit(summary.deltaFromStart, weightUnit, 2)
+                }
+                unit={
+                  summary.deltaFromStart === null
+                    ? undefined
+                    : getWeightUnitLabel(weightUnit)
+                }
                 withDivider
               />
             </div>
@@ -239,7 +256,7 @@ export function MeSection() {
           title="资料与目标"
           value={
             goal.targetWeightKg
-              ? `目标 ${goal.targetWeightKg.toFixed(1)} kg`
+              ? `目标 ${formatWeightByUnit(goal.targetWeightKg, weightUnit, 1)}`
               : '待完善'
           }
           description="集中维护昵称、身高与体重目标。"
