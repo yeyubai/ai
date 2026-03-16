@@ -1,0 +1,64 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e4]:
+    - banner [ref=e5]:
+      - generic [ref=e6]:
+        - button "返回" [ref=e7] [cursor=pointer]:
+          - img [ref=e8]
+        - generic [ref=e10]:
+          - paragraph [ref=e11]: 身高
+          - generic [ref=e12]: 170 cm
+        - button "完成" [ref=e13] [cursor=pointer]
+    - generic [ref=e14]:
+      - alert [ref=e15]:
+        - generic [ref=e16]: 请从资料页或目标页进入选择器。
+      - generic [ref=e17]:
+        - generic [ref=e19]:
+          - generic [ref=e22]:
+            - list:
+              - listitem [ref=e23]: "1"
+              - listitem [ref=e24]: "2"
+            - list [ref=e26]:
+              - listitem [ref=e27]: "1"
+              - listitem [ref=e28]: "2"
+          - generic [ref=e31]:
+            - list:
+              - listitem: "2"
+              - listitem [ref=e32]: "3"
+              - listitem [ref=e33]: "4"
+              - listitem [ref=e34]: "5"
+              - listitem [ref=e35]: "6"
+              - listitem [ref=e36]: "7"
+              - listitem [ref=e37]: "8"
+              - listitem [ref=e38]: "9"
+            - list [ref=e40]:
+              - listitem [ref=e41]: "0"
+              - listitem [ref=e42]: "1"
+              - listitem [ref=e43]: "2"
+              - listitem [ref=e44]: "3"
+              - listitem [ref=e45]: "4"
+              - listitem [ref=e46]: "5"
+              - listitem [ref=e47]: "6"
+              - listitem [ref=e48]: "7"
+              - listitem [ref=e49]: "8"
+              - listitem [ref=e50]: "9"
+          - generic [ref=e53]:
+            - list:
+              - listitem [ref=e54]: "0"
+              - listitem [ref=e55]: "1"
+              - listitem [ref=e56]: "2"
+              - listitem [ref=e57]: "3"
+              - listitem [ref=e58]: "4"
+              - listitem: "5"
+            - list [ref=e60]:
+              - listitem [ref=e61]: "0"
+              - listitem [ref=e62]: "1"
+              - listitem [ref=e63]: "2"
+              - listitem [ref=e64]: "3"
+              - listitem [ref=e65]: "4"
+              - listitem [ref=e66]: "5"
+              - listitem [ref=e67]: "6"
+              - listitem [ref=e68]: "7"
+              - listitem [ref=e69]: "8"
+              - listitem [ref=e70]: "9"
+        - generic [ref=e71]: 轻滑数字即可调整
+  - alert [ref=e72]

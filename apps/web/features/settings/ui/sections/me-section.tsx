@@ -7,7 +7,6 @@ import {
   Download,
   Palette,
   Sparkles,
-  Target,
   UserRound,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -200,8 +199,8 @@ export function MeSection() {
               </h1>
               <p className="mt-3 max-w-[18rem] text-[14px] leading-6 text-slate-600">
                 {userRole === 'guest'
-                  ? '当前为游客模式，后续登录可同步这台设备上的记录与目标。'
-                  : '在这里管理个人资料、目标、主题和导出能力。'}
+                  ? '当前是游客模式，登录后可以继续沿用这台设备上的记录和目标。'
+                  : '在这里统一管理资料、目标、主题和导出。'}
               </p>
             </div>
           </div>
@@ -237,20 +236,17 @@ export function MeSection() {
         <SummaryLinkCard
           href="/me/profile"
           icon={<UserRound className="h-5 w-5" />}
-          title="个人资料"
-          value={profile.heightCm ? `${profile.heightCm} cm` : '待完善'}
-          description={profile.nickname?.trim() || '补齐昵称、身高等基础信息。'}
-        />
-        <SummaryLinkCard
-          href="/me/goal"
-          icon={<Target className="h-5 w-5" />}
-          title="目标与体重"
+          title="资料与目标"
           value={
-            goal.startWeightKg && goal.targetWeightKg
-              ? `${goal.startWeightKg.toFixed(1)} -> ${goal.targetWeightKg.toFixed(1)}`
+            goal.targetWeightKg
+              ? `目标 ${goal.targetWeightKg.toFixed(1)} kg`
               : '待完善'
           }
-          description="查看当前体重、目标体重和单位设置。"
+          description={
+            profile.nickname?.trim()
+              ? `${profile.nickname.trim()}，身高、当前体重和目标体重一起维护。`
+              : '把昵称、身高、当前体重和目标体重放到一页里调整。'
+          }
         />
         <SummaryLinkCard
           href="/me/preferences"

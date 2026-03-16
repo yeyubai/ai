@@ -1,5 +1,5 @@
-import { MeGoalSection } from '@/features/settings';
+import { redirect } from 'next/navigation';
 
 export default function MeGoalPage() {
-  return <MeGoalSection />;
+  redirect('/me/profile');
 }
