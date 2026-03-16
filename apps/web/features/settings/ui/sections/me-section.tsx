@@ -199,8 +199,8 @@ export function MeSection() {
               </h1>
               <p className="mt-3 max-w-[18rem] text-[14px] leading-6 text-slate-600">
                 {userRole === 'guest'
-                  ? '当前是游客模式，登录后可以继续沿用这台设备上的记录和目标。'
-                  : '在这里统一管理资料、目标、主题和导出。'}
+                  ? '当前以游客身份使用，登录后可同步本机记录与目标。'
+                  : '在这里管理个人资料、目标设置与数据导出。'}
               </p>
             </div>
           </div>
@@ -242,11 +242,7 @@ export function MeSection() {
               ? `目标 ${goal.targetWeightKg.toFixed(1)} kg`
               : '待完善'
           }
-          description={
-            profile.nickname?.trim()
-              ? `${profile.nickname.trim()}，身高、当前体重和目标体重一起维护。`
-              : '把昵称、身高、当前体重和目标体重放到一页里调整。'
-          }
+          description="集中维护昵称、身高与体重目标。"
         />
         <SummaryLinkCard
           href="/me/preferences"
@@ -266,7 +262,9 @@ export function MeSection() {
             <p className="font-semibold text-slate-900">导出与账号</p>
           </div>
           <p className="text-sm leading-6 text-muted-foreground">
-            导出能力当前保留任务入口。登录账号后，也可以在这里同步游客数据或退出登录。
+            {userRole === 'guest'
+              ? '可创建导出任务，并在登录后同步当前设备上的记录。'
+              : '可创建导出任务，并管理当前账号状态。'}
           </p>
           <div className="flex flex-wrap gap-3">
             <Button type="button" onClick={() => void handleExport()} className="rounded-2xl">

@@ -332,7 +332,7 @@ export function HomeOverviewSection() {
         </header>
 
         <section className="sticky top-0 z-0">
-          <div className="hero-panel min-h-[188px] overflow-hidden px-4 pb-4 pt-[88px]">
+          <div className="hero-panel min-h-[188px] overflow-hidden px-4 pb-4 pt-[88px] shadow-none">
             <div className="flex items-end justify-between gap-4">
               <div className="min-w-0">
                 <div className="flex items-end gap-3">
