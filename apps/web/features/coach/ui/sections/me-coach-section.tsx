@@ -177,7 +177,10 @@ export function MeCoachSection() {
   }
 
   return (
-    <MeDetailShell title="高级私教" description="先做单次体型分析，再进入专用聊天页继续追问。">
+    <MeDetailShell
+      title="高级私教"
+      description="上传一张体型照，先拿到分析结果，再继续追问更具体的问题。"
+    >
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -215,7 +218,7 @@ export function MeCoachSection() {
               <ImagePlus className="h-8 w-8 text-primary" />
               <p className="mt-4 text-[15px] font-semibold text-slate-900">选择一张体型照片</p>
               <p className="mt-2 text-sm leading-6 text-slate-500">
-                支持拍照或相册选择，首版只分析单张图片。
+                支持拍照或相册选择，建议使用单人、清晰、光线稳定的照片。
               </p>
             </button>
           )}
@@ -319,7 +322,7 @@ export function MeCoachSection() {
       <Card className="glass-card border-none">
         <CardContent className="p-5">
           <p className="text-sm leading-6 text-slate-500">
-            说明：当前页只负责上传和分析结果查看；长对话会进入独立聊天页，避免内容堆在底部影响阅读。
+            分析完成后，可以继续追问腰腹、体态和训练节奏等问题，聊天记录会单独保存，回看也更方便。
           </p>
         </CardContent>
       </Card>
