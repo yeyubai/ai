@@ -159,7 +159,7 @@ export function MeProfileSection() {
 
   if (!profile || !goal) {
     return (
-      <MeDetailShell title="资料与目标" description="把基础资料和体重目标放到一起维护。">
+      <MeDetailShell title="资料与目标">
         <Alert variant="destructive">
           <AlertDescription>{error ?? '资料页暂时不可用。'}</AlertDescription>
         </Alert>
@@ -168,7 +168,7 @@ export function MeProfileSection() {
   }
 
   return (
-    <MeDetailShell title="资料与目标" description="基础资料和目标放在一起，改完一次保存就好。">
+    <MeDetailShell title="资料与目标">
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>

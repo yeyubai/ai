@@ -9,7 +9,7 @@ export function MeDetailShell({
   children,
 }: {
   title: string;
-  description: string;
+  description?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -25,7 +25,9 @@ export function MeDetailShell({
         <div>
           <p className="text-sm text-slate-500">我的</p>
           <h1 className="mt-1 text-[1.75rem] font-semibold text-slate-950">{title}</h1>
-          <p className="mt-1 text-sm text-slate-500">{description}</p>
+          {description ? (
+            <p className="mt-1 text-sm text-slate-500">{description}</p>
+          ) : null}
         </div>
       </div>
 
