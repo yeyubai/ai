@@ -11,13 +11,23 @@ type Props = {
 };
 
 const pageTransition = {
-  duration: 0.4,
+  duration: 0.26,
   ease: [0.22, 1, 0.36, 1] as const,
 };
 
-const beamTransition = {
-  duration: 0.68,
-  ease: [0.22, 1, 0.36, 1] as const,
+const pageVariants = {
+  initial: {
+    opacity: 0,
+    x: 28,
+  },
+  animate: {
+    opacity: 1,
+    x: 0,
+  },
+  exit: {
+    opacity: 0,
+    x: -28,
+  },
 };
 
 export function RouteTransitionShell({ pathname, children, className }: Props) {
@@ -27,34 +37,12 @@ export function RouteTransitionShell({ pathname, children, className }: Props) {
         <m.div
           key={`route-layer-${pathname}`}
           className="route-transition-frame"
-          initial={{
-            opacity: 0,
-            clipPath: 'inset(0 0 10% 0 round 32px)',
-            filter: 'saturate(0.92) brightness(0.985)',
-          }}
-          animate={{
-            opacity: 1,
-            clipPath: 'inset(0 0 0% 0 round 32px)',
-            filter: 'saturate(1) brightness(1)',
-          }}
-          exit={{
-            opacity: 0.72,
-            clipPath: 'inset(2% 0 0 0 round 32px)',
-            filter: 'saturate(1.02) brightness(1.01)',
-          }}
+          variants={pageVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
           transition={pageTransition}
         >
-          <m.div
-            aria-hidden="true"
-            className="route-transition-beam"
-            initial={{ opacity: 0, x: '-20%', scaleX: 0.9 }}
-            animate={{
-              opacity: [0, 0.82, 0],
-              x: ['-20%', '-4%', '18%'],
-              scaleX: [0.9, 1, 1.08],
-            }}
-            transition={beamTransition}
-          />
           {children}
         </m.div>
       </AnimatePresence>

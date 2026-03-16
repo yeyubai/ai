@@ -195,18 +195,13 @@
   .route-transition-shell {
     @apply relative min-h-full overflow-x-clip;
     width: 100%;
+    isolation: isolate;
   }
 
   .route-transition-frame {
-    @apply relative z-10 min-h-full overflow-x-clip;
-  }
-
-  .route-transition-beam {
-    @apply pointer-events-none absolute inset-x-4 top-0 z-20 h-24 rounded-[36px];
-    background:
-      linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0)),
-      linear-gradient(90deg, rgba(36, 211, 212, 0), rgba(36, 211, 212, 0.2), rgba(36, 211, 212, 0));
-    filter: blur(18px);
+    @apply relative z-10 min-h-full w-full overflow-x-clip;
+    backface-visibility: hidden;
+    will-change: transform, opacity;
   }
 }
 
