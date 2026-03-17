@@ -1,21 +1,6 @@
-﻿import { apiClient } from '@/lib/api/client';
+import { apiClient } from '@/lib/api/client';
 import type { ApiResponse } from '@/lib/api/types';
-
-export type ReviewResult = {
-  reviewSummary: {
-    score: number;
-    highlights: string[];
-    gaps: string[];
-  };
-  tomorrowPreview: {
-    focus: string[];
-    maxTasks: number;
-  };
-  recoveryMode: boolean;
-  fallbackReason: string | null;
-  confidence: number;
-  responseCode: string | number;
-};
+import type { ReviewResult } from '../types/review.types';
 
 export async function createEveningReview(date: string): Promise<ReviewResult> {
   const response = await apiClient.post<ApiResponse<Omit<ReviewResult, 'responseCode'>>>(

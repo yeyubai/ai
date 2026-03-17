@@ -1,4 +1,6 @@
-﻿export type ProgressRangeData = {
+export type ProgressRange = 'weekly' | 'monthly';
+
+export type ProgressRangeData = {
   weightTrendPoints: Array<{
     date: string;
     weightKg: number | null;
@@ -24,4 +26,9 @@ export type WeeklyReportData = {
     show: boolean;
     reason: string;
   };
+};
+
+export type ProgressInsightResourceData = {
+  progress: ProgressRangeData;
+  report: WeeklyReportData;
 };

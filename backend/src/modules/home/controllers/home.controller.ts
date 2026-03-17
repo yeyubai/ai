@@ -3,7 +3,6 @@ import { CurrentUserId } from 'src/modules/auth/decorators/current-user-id.decor
 import { SessionAuthGuard } from 'src/modules/auth/guards/session-auth.guard';
 import { CompleteHomeActionRequestDto } from '../dto/complete-home-action-request.dto';
 import { CompleteHomeActionResponseDto } from '../dto/complete-home-action-response.dto';
-import { HomeTodayResponseDto } from '../dto/home-today-response.dto';
 import { HomeService } from '../services/home.service';
 
 @Controller('home')

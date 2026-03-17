@@ -4,6 +4,7 @@ import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
 import { LazyMotion, MotionConfig, domAnimation } from 'motion/react';
 import { usePathname } from 'next/navigation';
+import { useEnsureSessionReady } from '@/features/auth/hooks/use-ensure-session-ready';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { APP_TABS, resolveActiveTabKey } from '../../config/tab.config';
 import { trackTabEvent } from '../../utils/tab-tracking';
@@ -35,6 +36,8 @@ export function AppShell({ children }: Props) {
   const logout = useAuthStore((state) => state.logout);
   const ensureGuestSession = useAuthStore((state) => state.ensureGuestSession);
 
+  useEnsureSessionReady(!pathname.startsWith('/auth'));
+
   const isTabBarVisible = useMemo(
     () => shouldShowTabBar(pathname, token),
     [pathname, token],
@@ -47,12 +50,6 @@ export function AppShell({ children }: Props) {
 
     return resolveActiveTabKey(pathname);
   }, [isTabBarVisible, pathname]);
-
-  useEffect(() => {
-    if (!token && !pathname.startsWith('/auth')) {
-      void ensureGuestSession();
-    }
-  }, [ensureGuestSession, pathname, token]);
 
   useEffect(() => {
     const handleAuthExpired = () => {

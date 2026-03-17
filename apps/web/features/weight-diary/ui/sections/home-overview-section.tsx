@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   CalendarDays,
   EllipsisVertical,
@@ -10,7 +10,6 @@ import {
   PencilLine,
   Plus,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
@@ -22,17 +21,14 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useEnsureSessionReady } from '@/features/auth/hooks/use-ensure-session-ready';
 import { useAuthStore } from '@/features/auth/model/auth.store';
-import { fetchSettings } from '@/features/settings/api/me.api';
-import type { UserSettings } from '@/features/settings/types/settings.types';
 import { isApiError } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
-import {
-  createWeightEntry,
-  fetchTodaySummary,
-  fetchWeightEntries,
-} from '../../api/weights.api';
-import type { WeightEntryGroups, WeightTodaySummary } from '../../types/weight-diary.types';
+import { StatusAlert } from '@/shared/feedback/status-alert';
+import { weightDiaryMessages } from '../../copy/weight-diary.messages';
+import { useHomeOverviewResource } from '../../hooks/use-home-overview-resource';
+import { useQuickWeightEntryAction } from '../../hooks/use-quick-weight-entry-action';
 import { WeightEntryListCard } from '../components/weight-entry-list-card';
 
 const HEADER_HEIGHT = 76;
@@ -88,87 +84,102 @@ function validateQuickRecordWeight(value: string): string | null {
   }
 
   if (parsed < QUICK_RECORD_MIN_WEIGHT || parsed > QUICK_RECORD_MAX_WEIGHT) {
-    return `体重需要在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`;
+    return weightDiaryMessages.home.invalidWeightRange;
   }
 
   return null;
 }
 
 export function HomeOverviewSection() {
+  useEnsureSessionReady();
+
   const token = useAuthStore((state) => state.token);
   const sessionStatus = useAuthStore((state) => state.sessionStatus);
-  const [summary, setSummary] = useState<WeightTodaySummary | null>(null);
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [entries, setEntries] = useState<WeightEntryGroups | null>(null);
-  const [pageError, setPageError] = useState<string | null>(null);
+  const ensureGuestSession = useAuthStore((state) => state.ensureGuestSession);
   const [recordError, setRecordError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRecordOpen, setIsRecordOpen] = useState(false);
   const [weightKg, setWeightKg] = useState('');
   const [scrollTop, setScrollTop] = useState(0);
 
+  const homeOverviewResource = useHomeOverviewResource(
+    Boolean(token) && sessionStatus === 'ready',
+  );
+  const quickWeightEntryAction = useQuickWeightEntryAction();
   const todayDate = useMemo(() => getTodayDateString(), []);
   const keypadKeys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', 'backspace'];
 
   const metricsCollapse = Math.min(scrollTop, 72);
   const metricsScale = Math.max(0, 1 - metricsCollapse / 72);
   const headerSolid = scrollTop > 20;
-
-  useEffect(() => {
-    if (!token || sessionStatus !== 'ready') {
-      return;
+  const recordFeedbackMessage = useMemo(() => {
+    if (recordError) {
+      return recordError;
     }
 
-    let active = true;
+    if (quickWeightEntryAction.error?.code === 'INVALID_PARAMS') {
+      return weightDiaryMessages.home.invalidWeightRange;
+    }
 
-    const load = async () => {
-      try {
-        setPageError(null);
-        setIsLoading(true);
+    return quickWeightEntryAction.error?.displayMessage ?? null;
+  }, [
+    quickWeightEntryAction.error?.code,
+    quickWeightEntryAction.error?.displayMessage,
+    recordError,
+  ]);
 
-        const [nextSummary, nextSettings, nextEntries] = await Promise.all([
-          fetchTodaySummary(),
-          fetchSettings(),
-          fetchWeightEntries(),
-        ]);
+  if (
+    sessionStatus === 'loading' ||
+    sessionStatus === 'idle' ||
+    (homeOverviewResource.isLoading && !homeOverviewResource.data)
+  ) {
+    return (
+      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
+        <div className="space-y-4">
+          <Skeleton className="h-[176px] rounded-[28px]" />
+          <Skeleton className="h-[560px] rounded-[32px]" />
+        </div>
+      </div>
+    );
+  }
 
-        if (!active) {
-          return;
-        }
+  if (sessionStatus === 'error') {
+    return (
+      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
+        <div className="space-y-4">
+          <StatusAlert
+            variant="destructive"
+            message="当前会话建立失败，请重试后再查看首页。"
+          />
+          <Button
+            type="button"
+            className="w-fit rounded-2xl"
+            onClick={() => void ensureGuestSession()}
+          >
+            重新建立会话
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
-        setSummary(nextSummary);
-        setSettings(nextSettings);
-        setEntries(nextEntries);
-      } catch {
-        if (!active) {
-          return;
-        }
+  if (!homeOverviewResource.data) {
+    return (
+      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
+        <StatusAlert
+          variant="destructive"
+          message={
+            homeOverviewResource.error?.displayMessage ??
+            weightDiaryMessages.home.unavailable
+          }
+        />
+      </div>
+    );
+  }
 
-        setPageError('首页加载失败，请稍后重试。');
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void load();
-
-    return () => {
-      active = false;
-    };
-  }, [sessionStatus, token]);
-
-  const refreshWeightData = async () => {
-    const [nextSummary, nextEntries] = await Promise.all([
-      fetchTodaySummary(),
-      fetchWeightEntries(),
-    ]);
-
-    setSummary(nextSummary);
-    setEntries(nextEntries);
-  };
+  const { summary, settings, entries } = homeOverviewResource.data;
+  const historyGroups = entries.groups.filter(
+    (group) => group.date !== summary.todayEntry?.entryDate,
+  );
 
   const handleQuickRecord = async () => {
     const validationError = validateQuickRecordWeight(weightKg);
@@ -178,36 +189,25 @@ export function HomeOverviewSection() {
     }
 
     setRecordError(null);
-    setIsSubmitting(true);
 
-    try {
-      await createWeightEntry({
-        entryDate: todayDate,
-        measuredAt: `${todayDate}T${getCurrentTimeString()}:00+08:00`,
-        weightKg: Number(weightKg),
-      });
+    const createdEntry = await quickWeightEntryAction.run({
+      entryDate: todayDate,
+      measuredAt: `${todayDate}T${getCurrentTimeString()}:00+08:00`,
+      weightKg: Number(weightKg),
+    });
 
-      setWeightKg('');
-      setIsRecordOpen(false);
-
-      try {
-        await refreshWeightData();
-      } catch {
-        setPageError('记录已保存，但首页刷新失败，请稍后重试。');
-      }
-    } catch (error) {
-      if (isApiError(error) && error.code === 'INVALID_PARAMS') {
-        setRecordError(`体重需要在 ${QUICK_RECORD_MIN_WEIGHT}-${QUICK_RECORD_MAX_WEIGHT}kg 之间。`);
-      } else {
-        setRecordError('保存失败，请稍后重试。');
-      }
-    } finally {
-      setIsSubmitting(false);
+    if (!createdEntry) {
+      return;
     }
+
+    setWeightKg('');
+    setIsRecordOpen(false);
+    void homeOverviewResource.reload();
   };
 
   const handleKeypadPress = (value: string) => {
     setRecordError(null);
+    quickWeightEntryAction.reset();
 
     setWeightKg((current) => {
       if (value === 'backspace') {
@@ -240,43 +240,21 @@ export function HomeOverviewSection() {
   const handleRecordOpenChange = (open: boolean) => {
     setIsRecordOpen(open);
     setRecordError(null);
+    quickWeightEntryAction.reset();
 
     if (!open) {
       setWeightKg('');
     }
   };
 
-  if (sessionStatus !== 'ready' || isLoading) {
-    return (
-      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
-        <div className="space-y-4">
-          <Skeleton className="h-[176px] rounded-[28px]" />
-          <Skeleton className="h-[560px] rounded-[32px]" />
-        </div>
-      </div>
-    );
-  }
-
-  if (!summary || !settings || !entries) {
-    return (
-      <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
-        <Alert variant="destructive">
-          <AlertDescription>{pageError ?? '首页暂时不可用。'}</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
-
-  const historyGroups = entries.groups.filter(
-    (group) => group.date !== summary.todayEntry?.entryDate,
-  );
-
   return (
     <div className="mx-auto w-full max-w-md px-4 pb-[calc(var(--app-tab-bar-offset)+20px)] pt-4">
-      {pageError ? (
-        <Alert variant="destructive" className="mb-3">
-          <AlertDescription>{pageError}</AlertDescription>
-        </Alert>
+      {homeOverviewResource.error?.displayMessage ? (
+        <StatusAlert
+          variant="destructive"
+          className="mb-3"
+          message={homeOverviewResource.error.displayMessage}
+        />
       ) : null}
 
       <div
@@ -480,7 +458,7 @@ export function HomeOverviewSection() {
                   <span
                     className={cn(
                       'text-[4.2rem] font-semibold leading-none tracking-[-0.08em]',
-                      recordError ? 'text-rose-500' : 'text-slate-500',
+                      recordFeedbackMessage ? 'text-rose-500' : 'text-slate-500',
                     )}
                   >
                     {weightKg.trim() ? weightKg : '0'}
@@ -490,10 +468,12 @@ export function HomeOverviewSection() {
                 <p
                   className={cn(
                     'mt-1 text-xs',
-                    recordError ? 'font-medium text-rose-500' : 'text-slate-400',
+                    recordFeedbackMessage
+                      ? 'font-medium text-rose-500'
+                      : 'text-slate-400',
                   )}
                 >
-                  {recordError ?? '用数字键盘快速补充今天的体重，支持 20-300kg。'}
+                  {recordFeedbackMessage ?? '用数字键盘快速补充今天的体重，支持 20-300kg。'}
                 </p>
               </div>
             </div>
@@ -516,9 +496,9 @@ export function HomeOverviewSection() {
                 type="button"
                 className="h-12 w-full rounded-[22px] bg-[linear-gradient(180deg,#24d3d4,#0faab7)] text-lg font-semibold text-white hover:opacity-95"
                 onClick={() => void handleQuickRecord()}
-                disabled={isSubmitting || !weightKg.trim()}
+                disabled={quickWeightEntryAction.isPending || !weightKg.trim()}
               >
-                {isSubmitting ? '记录中...' : '记录'}
+                {quickWeightEntryAction.isPending ? '记录中...' : '记录'}
               </Button>
             </div>
           </div>

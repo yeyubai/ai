@@ -12,14 +12,17 @@ export function WheelNumberField({
   field,
   value,
   weightUnit,
+  ariaLabelledBy,
 }: {
   field: MeNumberPickerField;
   value: number | null;
   weightUnit?: WeightGoal['weightUnit'];
+  ariaLabelledBy?: string;
 }) {
   return (
     <Link
       href={`/me/picker/${field}`}
+      aria-labelledby={ariaLabelledBy}
       className="flex min-h-[3.35rem] w-full items-center justify-between gap-3 rounded-[20px] border border-cyan-100/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(242,252,252,0.98))] px-4 py-3 text-left shadow-[0_16px_32px_-28px_rgba(15,170,183,0.45)] transition duration-200 hover:border-cyan-200 hover:bg-white"
     >
       <span

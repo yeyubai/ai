@@ -64,6 +64,7 @@ export class SettingsService {
   }
 
   createExport(userId: bigint, _format: string): ExportTaskResponseDto {
+    void _format;
     const task = this.journeyState.createExportTask(userId);
     return {
       taskId: task.taskId,

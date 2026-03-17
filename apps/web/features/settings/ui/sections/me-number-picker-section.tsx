@@ -165,7 +165,7 @@ export function MeNumberPickerSection({ field }: { field: MeNumberPickerField })
   const ensureDraftOwner = useMeFormDraftStore((state) => state.ensureDraftOwner);
   const updateProfileDraft = useMeFormDraftStore((state) => state.updateProfileDraft);
   const updateGoalDraft = useMeFormDraftStore((state) => state.updateGoalDraft);
-  const weightUnit = 'kg' as const;
+  const weightUnit = goalDraft?.weightUnit ?? 'kg';
 
   useEffect(() => {
     if (sessionStatus !== 'ready') {
@@ -350,30 +350,30 @@ export function MeNumberPickerSection({ field }: { field: MeNumberPickerField })
         <div className="flex h-full flex-col justify-center">
           <div className="rounded-[34px] border border-cyan-100/80 bg-white/82 px-4 py-7 shadow-[0_24px_48px_-38px_rgba(15,170,183,0.4)] backdrop-blur-xl">
             <div className="flex items-center justify-center gap-2">
-                {digitColumns.slice(0, 3).map((column, index) => (
-                  <DigitColumn
-                    key={`${field}-${column.label}-${index}`}
-                    value={column.value}
-                    onValueChange={(nextDigit) => handleDigitChange(index, nextDigit)}
-                    options={column.options}
-                    className={column.widthClass}
-                  />
-                ))}
+              {digitColumns.slice(0, 3).map((column, index) => (
+                <DigitColumn
+                  key={`${field}-${column.label}-${index}`}
+                  value={column.value}
+                  onValueChange={(nextDigit) => handleDigitChange(index, nextDigit)}
+                  options={column.options}
+                  className={column.widthClass}
+                />
+              ))}
 
-                {config.mode === 'decimal' ? (
-                  <>
-                    <div className="pb-[1px] text-[1.9rem] font-semibold text-slate-300">.</div>
-                    {digitColumns.slice(3).map((column, index) => (
-                      <DigitColumn
-                        key={`${field}-${column.label}-${index + 3}`}
-                        value={column.value}
-                        onValueChange={(nextDigit) => handleDigitChange(index + 3, nextDigit)}
-                        options={column.options}
-                        className={column.widthClass}
-                      />
-                    ))}
-                  </>
-                ) : null}
+              {config.mode === 'decimal' ? (
+                <>
+                  <div className="pb-[1px] text-[1.9rem] font-semibold text-slate-300">.</div>
+                  {digitColumns.slice(3).map((column, index) => (
+                    <DigitColumn
+                      key={`${field}-${column.label}-${index + 3}`}
+                      value={column.value}
+                      onValueChange={(nextDigit) => handleDigitChange(index + 3, nextDigit)}
+                      options={column.options}
+                      className={column.widthClass}
+                    />
+                  ))}
+                </>
+              ) : null}
             </div>
           </div>
 

@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import {
   ChevronRight,
   Download,
@@ -9,26 +9,21 @@ import {
   Sparkles,
   UserRound,
 } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useEnsureSessionReady } from '@/features/auth/hooks/use-ensure-session-ready';
 import { useAuthStore } from '@/features/auth/model/auth.store';
-import { fetchTodaySummary } from '@/features/weight-diary/api/weights.api';
-import type { WeightTodaySummary } from '@/features/weight-diary/types/weight-diary.types';
+import { PageSkeleton } from '@/shared/feedback/page-skeleton';
+import { StatusAlert } from '@/shared/feedback/status-alert';
 import { cn } from '@/lib/utils';
-import {
-  fetchGoal,
-  fetchProfile,
-  fetchSettings,
-  requestExport,
-} from '../../api/me.api';
+import { meMessages } from '../../copy/me.messages';
 import {
   formatWeightByUnit,
   formatWeightNumberByUnit,
   getWeightUnitLabel,
 } from '../../config/weight-unit';
-import type { UserProfile, UserSettings, WeightGoal } from '../../types/settings.types';
+import { useMeOverviewResource } from '../../hooks/use-me-overview-resource';
+import { useRequestMeExportAction } from '../../hooks/use-request-me-export-action';
 
 function SummaryLinkCard({
   href,
@@ -81,118 +76,102 @@ function MetricCell({
         <span className="text-[1.5rem] font-semibold leading-none tracking-[-0.03em] text-slate-950">
           {value}
         </span>
-        {unit ? <span className="pb-1 text-[12px] font-medium text-slate-500">{unit}</span> : null}
+        {unit ? (
+          <span className="pb-1 text-[12px] font-medium text-slate-500">{unit}</span>
+        ) : null}
       </div>
-      <p className="mt-2 whitespace-nowrap text-[12px] font-medium text-slate-600">{label}</p>
+      <p className="mt-2 whitespace-nowrap text-[12px] font-medium text-slate-600">
+        {label}
+      </p>
     </div>
   );
 }
 
 export function MeSection() {
+  useEnsureSessionReady();
+
   const token = useAuthStore((state) => state.token);
   const sessionStatus = useAuthStore((state) => state.sessionStatus);
   const userRole = useAuthStore((state) => state.userRole);
   const logout = useAuthStore((state) => state.logout);
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [goal, setGoal] = useState<WeightGoal | null>(null);
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [summary, setSummary] = useState<WeightTodaySummary | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const ensureGuestSession = useAuthStore((state) => state.ensureGuestSession);
   const [message, setMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const weightUnit = 'kg' as const;
+  const overviewResource = useMeOverviewResource(
+    Boolean(token) && sessionStatus === 'ready',
+  );
+  const exportAction = useRequestMeExportAction();
 
-  useEffect(() => {
-    if (!token || sessionStatus !== 'ready') {
-      return;
-    }
-
-    let active = true;
-    const load = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const [nextProfile, nextGoal, nextSettings, nextSummary] = await Promise.all([
-          fetchProfile(),
-          fetchGoal(),
-          fetchSettings(),
-          fetchTodaySummary(),
-        ]);
-
-        if (!active) {
-          return;
-        }
-
-        setProfile(nextProfile);
-        setGoal({
-          ...nextGoal,
-          weightUnit,
-        });
-        setSettings(nextSettings);
-        setSummary(nextSummary);
-      } catch {
-        if (!active) {
-          return;
-        }
-
-        setError('我的页面加载失败，请稍后重试。');
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    void load();
-    return () => {
-      active = false;
-    };
-  }, [sessionStatus, token]);
+  const errorMessage = useMemo(() => {
+    return (
+      exportAction.error?.displayMessage ??
+      overviewResource.error?.displayMessage ??
+      null
+    );
+  }, [
+    exportAction.error?.displayMessage,
+    overviewResource.error?.displayMessage,
+  ]);
 
   const handleExport = async () => {
-    try {
-      const task = await requestExport();
+    setMessage(null);
+    const task = await exportAction.run(undefined);
+    if (task) {
       setMessage(task.message);
-      setError(null);
-    } catch {
-      setError('创建导出任务失败，请稍后重试。');
     }
   };
 
-  if (sessionStatus !== 'ready' || isLoading) {
+  if (sessionStatus === 'loading' || sessionStatus === 'idle' || overviewResource.isLoading) {
+    return (
+      <PageSkeleton
+        blocks={[
+          'h-[180px] rounded-[30px]',
+          'h-[104px] rounded-[30px]',
+          'h-[104px] rounded-[30px]',
+        ]}
+      />
+    );
+  }
+
+  if (sessionStatus === 'error') {
     return (
       <div className="app-page space-y-4">
-        <Skeleton className="h-[180px] rounded-[30px]" />
-        <Skeleton className="h-[104px] rounded-[30px]" />
-        <Skeleton className="h-[104px] rounded-[30px]" />
+        <StatusAlert
+          variant="destructive"
+          message="当前会话建立失败，请重试。"
+        />
+        <Button
+          type="button"
+          className="w-fit rounded-2xl"
+          onClick={() => void ensureGuestSession()}
+        >
+          重新建立会话
+        </Button>
       </div>
     );
   }
 
-  if (!profile || !goal || !settings || !summary) {
+  if (!overviewResource.data) {
     return (
       <div className="app-page">
-        <Alert variant="destructive">
-          <AlertDescription>{error ?? '我的页面暂时不可用。'}</AlertDescription>
-        </Alert>
+        <StatusAlert
+          variant="destructive"
+          message={errorMessage ?? meMessages.overview.unavailable}
+        />
       </div>
     );
   }
 
-  const displayName = profile.nickname?.trim() || (userRole === 'guest' ? '游客' : '体重用户');
+  const { profile, goal, settings, summary } = overviewResource.data;
+  const weightUnit = settings.weightUnit;
+  const displayName =
+    profile.nickname?.trim() || (userRole === 'guest' ? '游客' : '体重用户');
 
   return (
     <div className="app-page space-y-4">
-      {error ? (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {errorMessage ? (
+        <StatusAlert variant="destructive" message={errorMessage} />
       ) : null}
-      {message ? (
-        <Alert>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      ) : null}
+      {message ? <StatusAlert message={message} /> : null}
 
       <Card className="overflow-hidden rounded-[30px] border border-white/55 bg-[linear-gradient(180deg,rgba(244,251,252,0.98),rgba(234,246,248,0.98))] shadow-[0_24px_60px_-34px_rgba(15,170,183,0.32)] backdrop-blur-xl">
         <CardContent className="p-6">
@@ -284,8 +263,13 @@ export function MeSection() {
               : '可创建导出任务，并管理当前账号状态。'}
           </p>
           <div className="flex flex-wrap gap-3">
-            <Button type="button" onClick={() => void handleExport()} className="rounded-2xl">
-              创建导出任务
+            <Button
+              type="button"
+              onClick={() => void handleExport()}
+              className="rounded-2xl"
+              disabled={exportAction.isPending}
+            >
+              {exportAction.isPending ? '创建中...' : '创建导出任务'}
             </Button>
             {userRole === 'guest' ? (
               <Button
@@ -297,7 +281,12 @@ export function MeSection() {
                 登录并同步游客数据
               </Button>
             ) : (
-              <Button type="button" variant="outline" onClick={() => logout()} className="rounded-2xl">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => logout()}
+                className="rounded-2xl"
+              >
                 退出登录
               </Button>
             )}

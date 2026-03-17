@@ -1,4 +1,3 @@
-import { Prisma } from '@prisma/client';
 import type { Decimal, InputJsonValue, JsonValue } from '@prisma/client/runtime/library';
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/shared/db/prisma.service';

@@ -1,8 +1,7 @@
 'use client';
 
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, useEffect, useMemo, useState } from 'react';
 import { Palette } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -14,105 +13,108 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Skeleton } from '@/components/ui/skeleton';
+import { useEnsureSessionReady } from '@/features/auth/hooks/use-ensure-session-ready';
 import { useAuthStore } from '@/features/auth/model/auth.store';
-import { fetchSettings, updateSettings } from '../../api/me.api';
+import { PageSkeleton } from '@/shared/feedback/page-skeleton';
+import { StatusAlert } from '@/shared/feedback/status-alert';
+import { meMessages } from '../../copy/me.messages';
+import { useMeSettingsResource } from '../../hooks/use-me-settings-resource';
+import { useSaveMeSettingsAction } from '../../hooks/use-save-me-settings-action';
 import type { UserSettings } from '../../types/settings.types';
 import { MeDetailShell } from '../components/me-detail-shell';
 
 export function MePreferencesSection() {
+  useEnsureSessionReady();
+
   const token = useAuthStore((state) => state.token);
   const sessionStatus = useAuthStore((state) => state.sessionStatus);
-  const [settings, setSettings] = useState<UserSettings | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [message, setMessage] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const ensureGuestSession = useAuthStore((state) => state.ensureGuestSession);
+  const [settingsDraft, setSettingsDraft] = useState<UserSettings | null>(null);
+  const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const settingsResource = useMeSettingsResource(
+    Boolean(token) && sessionStatus === 'ready',
+  );
+  const saveSettingsAction = useSaveMeSettingsAction();
 
   useEffect(() => {
-    if (!token || sessionStatus !== 'ready') {
+    if (!settingsResource.data) {
       return;
     }
 
-    let active = true;
-    const load = async () => {
-      try {
-        setError(null);
-        setIsLoading(true);
-        const nextSettings = await fetchSettings();
-        if (active) {
-          setSettings(nextSettings);
-        }
-      } catch {
-        if (active) {
-          setError('页面设置加载失败，请稍后重试。');
-        }
-      } finally {
-        if (active) {
-          setIsLoading(false);
-        }
-      }
-    };
+    setSettingsDraft(settingsResource.data);
+  }, [settingsResource.data]);
 
-    void load();
-    return () => {
-      active = false;
-    };
-  }, [sessionStatus, token]);
+  const errorMessage = useMemo(() => {
+    return (
+      saveSettingsAction.error?.displayMessage ??
+      settingsResource.error?.displayMessage ??
+      null
+    );
+  }, [
+    saveSettingsAction.error?.displayMessage,
+    settingsResource.error?.displayMessage,
+  ]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!settings) {
+    if (!settingsDraft) {
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      const nextSettings = await updateSettings({
-        diaryName: settings.diaryName,
-        theme: settings.theme,
-      });
-      setSettings(nextSettings);
-      setMessage('页面设置已保存。');
-      setError(null);
-    } catch {
-      setError('保存页面设置失败，请稍后重试。');
-    } finally {
-      setIsSubmitting(false);
+    setSubmitMessage(null);
+
+    const nextSettings = await saveSettingsAction.run(settingsDraft);
+    if (nextSettings) {
+      setSettingsDraft(nextSettings);
+      setSubmitMessage(meMessages.preferences.saveSuccess);
     }
   };
 
-  if (sessionStatus !== 'ready' || isLoading) {
+  if (sessionStatus === 'loading' || sessionStatus === 'idle' || settingsResource.isLoading) {
     return (
-      <div className="app-page space-y-4">
-        <Skeleton className="h-16 rounded-2xl" />
-        <Skeleton className="h-[280px] rounded-[30px]" />
-      </div>
+      <PageSkeleton
+        blocks={['h-16 rounded-2xl', 'h-[280px] rounded-[30px]']}
+      />
     );
   }
 
-  if (!settings) {
+  if (sessionStatus === 'error') {
     return (
       <MeDetailShell title="日记与皮肤" description="调整你的日记名称和主题。">
-        <Alert variant="destructive">
-          <AlertDescription>{error ?? '页面设置暂时不可用。'}</AlertDescription>
-        </Alert>
+        <div className="space-y-4">
+          <StatusAlert
+            variant="destructive"
+            message="当前会话建立失败，请重试后再加载页面设置。"
+          />
+          <Button
+            type="button"
+            className="w-fit rounded-2xl"
+            onClick={() => void ensureGuestSession()}
+          >
+            重新建立会话
+          </Button>
+        </div>
+      </MeDetailShell>
+    );
+  }
+
+  if (!settingsDraft) {
+    return (
+      <MeDetailShell title="日记与皮肤" description="调整你的日记名称和主题。">
+        <StatusAlert
+          variant="destructive"
+          message={errorMessage ?? meMessages.preferences.unavailable}
+        />
       </MeDetailShell>
     );
   }
 
   return (
     <MeDetailShell title="日记与皮肤" description="让你的日记页更像你自己。">
-      {error ? (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
+      {errorMessage ? (
+        <StatusAlert variant="destructive" message={errorMessage} />
       ) : null}
-      {message ? (
-        <Alert>
-          <AlertDescription>{message}</AlertDescription>
-        </Alert>
-      ) : null}
+      {submitMessage ? <StatusAlert message={submitMessage} /> : null}
 
       <form onSubmit={handleSubmit}>
         <Card className="glass-card border-none">
@@ -125,11 +127,12 @@ export function MePreferencesSection() {
             </div>
 
             <div className="space-y-2">
-              <Label>日记名称</Label>
+              <Label htmlFor="me-diary-name">日记名称</Label>
               <Input
-                value={settings.diaryName}
+                id="me-diary-name"
+                value={settingsDraft.diaryName}
                 onChange={(event) =>
-                  setSettings((current) =>
+                  setSettingsDraft((current) =>
                     current ? { ...current, diaryName: event.target.value } : current,
                   )
                 }
@@ -137,16 +140,16 @@ export function MePreferencesSection() {
             </div>
 
             <div className="space-y-2">
-              <Label>主题</Label>
+              <Label htmlFor="me-theme-select">主题</Label>
               <Select
-                value={settings.theme}
+                value={settingsDraft.theme}
                 onValueChange={(value) =>
-                  setSettings((current) =>
+                  setSettingsDraft((current) =>
                     current ? { ...current, theme: value as UserSettings['theme'] } : current,
                   )
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger id="me-theme-select">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -157,8 +160,12 @@ export function MePreferencesSection() {
               </Select>
             </div>
 
-            <Button type="submit" className="rounded-2xl" disabled={isSubmitting}>
-              {isSubmitting ? '保存中...' : '保存页面设置'}
+            <Button
+              type="submit"
+              className="rounded-2xl"
+              disabled={saveSettingsAction.isPending}
+            >
+              {saveSettingsAction.isPending ? '保存中...' : '保存页面设置'}
             </Button>
           </CardContent>
         </Card>

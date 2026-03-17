@@ -89,7 +89,11 @@ export class HomeService {
       },
       weightStatus: {
         ...weightStatus,
-        targetWeightKg: goal ? Number(goal.targetWeightKg) : null,
+        targetWeightKg: goal
+          ? Number(goal.targetWeightKg)
+          : profile
+            ? Number(profile.targetWeightKg)
+            : null,
       },
       activityStatus,
       nextAction: {

@@ -4,7 +4,6 @@ import {
   HttpStatus,
   Injectable,
 } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
 import type { InputJsonValue, JsonObject, JsonValue } from '@prisma/client/runtime/library';
 import { LlmClient } from 'src/shared/llm/llm.client';
 import { AiPayloadSource, AiPlanResponseDto } from '../dto/ai-plan-response.dto';

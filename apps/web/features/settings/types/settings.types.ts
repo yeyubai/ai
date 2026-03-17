@@ -17,6 +17,7 @@ export type WeightGoal = {
 export type UserSettings = {
   diaryName: string;
   theme: 'aqua-mist' | 'sea-breeze' | 'paper-light';
+  weightUnit: 'kg' | 'lb';
   exportEnabled: boolean;
 };
 

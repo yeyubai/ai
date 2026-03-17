@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import { PrismaService } from 'src/shared/db/prisma.service';
 import { formatDateOnly, parseDateOnly } from 'src/shared/utils/date.utils';
+import { convertWeightValueToKg } from 'src/shared/utils/weight-unit.utils';
 import { ExportTaskResponseDto } from '../dto/export-task-response.dto';
 import { UpdateUserProfileRequestDto } from '../dto/update-user-profile-request.dto';
 import { UpdateUserSettingsRequestDto } from '../dto/update-user-settings-request.dto';
@@ -121,20 +122,29 @@ export class MeService {
       });
     }
 
+    const normalizedStartWeightKg = convertWeightValueToKg(
+      payload.startWeightKg,
+      payload.weightUnit,
+    );
+    const normalizedTargetWeightKg = convertWeightValueToKg(
+      payload.targetWeightKg,
+      payload.weightUnit,
+    );
+
     await this.prisma.$transaction(async (tx) => {
       await tx.weightGoal.upsert({
         where: { userId },
         update: {
-          startWeightKg: payload.startWeightKg,
-          targetWeightKg: payload.targetWeightKg,
+          startWeightKg: normalizedStartWeightKg,
+          targetWeightKg: normalizedTargetWeightKg,
           targetDate: payload.targetDate ? parseDateOnly(payload.targetDate) : null,
           weightUnit: payload.weightUnit,
           deletedAt: null,
         },
         create: {
           userId,
-          startWeightKg: payload.startWeightKg,
-          targetWeightKg: payload.targetWeightKg,
+          startWeightKg: normalizedStartWeightKg,
+          targetWeightKg: normalizedTargetWeightKg,
           targetDate: payload.targetDate ? parseDateOnly(payload.targetDate) : null,
           weightUnit: payload.weightUnit,
         },
@@ -155,8 +165,8 @@ export class MeService {
       await tx.userProfile.updateMany({
         where: { userId, deletedAt: null },
         data: {
-          currentWeightKg: payload.startWeightKg,
-          targetWeightKg: payload.targetWeightKg,
+          currentWeightKg: normalizedStartWeightKg,
+          targetWeightKg: normalizedTargetWeightKg,
         },
       });
     });
@@ -171,12 +181,14 @@ export class MeService {
       select: {
         diaryName: true,
         theme: true,
+        weightUnit: true,
       },
     });
 
     return {
       diaryName: settings?.diaryName ?? '体重日记',
       theme: (settings?.theme as UserSettingsResponseDto['theme'] | undefined) ?? 'aqua-mist',
+      weightUnit: (settings?.weightUnit as UserSettingsResponseDto['weightUnit'] | undefined) ?? 'kg',
       exportEnabled: true,
     };
   }

@@ -101,12 +101,36 @@ export class ProfileRepository {
     tx: Prisma.TransactionClient,
     payload: UpdateProfilePayload,
   ): Promise<void> {
+    const [existingGoal, settings] = await Promise.all([
+      tx.weightGoal.findFirst({
+        where: {
+          userId: payload.userId,
+          deletedAt: null,
+        },
+        select: {
+          weightUnit: true,
+        },
+      }),
+      tx.userSetting.findFirst({
+        where: {
+          userId: payload.userId,
+          deletedAt: null,
+        },
+        select: {
+          weightUnit: true,
+        },
+      }),
+    ]);
+    const weightUnit = (existingGoal?.weightUnit ?? settings?.weightUnit ?? 'kg') as
+      | 'kg'
+      | 'lb';
+
     await tx.weightGoal.upsert({
       where: { userId: payload.userId },
       update: {
         startWeightKg: payload.currentWeightKg,
         targetWeightKg: payload.targetWeightKg,
-        weightUnit: 'kg',
+        weightUnit,
         deletedAt: null,
       },
       create: {
@@ -114,7 +138,7 @@ export class ProfileRepository {
         startWeightKg: payload.currentWeightKg,
         targetWeightKg: payload.targetWeightKg,
         targetDate: null,
-        weightUnit: 'kg',
+        weightUnit,
       },
     });
   }

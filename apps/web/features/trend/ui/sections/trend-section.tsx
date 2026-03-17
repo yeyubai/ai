@@ -7,6 +7,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/features/auth/model/auth.store';
+import { fetchSettings } from '@/features/settings/api/me.api';
+import {
+  formatWeightNumberByUnit,
+  getWeightUnitLabel,
+  getWeightUnitName,
+} from '@/features/settings/config/weight-unit';
+import type { UserSettings } from '@/features/settings/types/settings.types';
 import { fetchWeightStats, fetchWeightTrend } from '@/features/weight-diary/api/weights.api';
 import { MiniLineChart } from '@/features/weight-diary/ui/components/mini-line-chart';
 import type { WeightStats, WeightTrend } from '@/features/weight-diary/types/weight-diary.types';
@@ -24,12 +31,35 @@ function formatMetric(value: number | null): string {
   return value === null ? '--' : value.toFixed(2);
 }
 
+function TrendMetric({
+  label,
+  value,
+  unit,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+}) {
+  return (
+    <div>
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="mt-2 flex items-end gap-2">
+        <p className="text-4xl font-semibold">{value}</p>
+        {unit ? (
+          <span className="pb-1 text-sm font-medium text-slate-500">{unit}</span>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function TrendSection() {
   const token = useAuthStore((state) => state.token);
   const sessionStatus = useAuthStore((state) => state.sessionStatus);
   const [range, setRange] = useState<Range>('7d');
   const [trend, setTrend] = useState<WeightTrend | null>(null);
   const [stats, setStats] = useState<WeightStats | null>(null);
+  const [settings, setSettings] = useState<UserSettings | null>(null);
   const [selectedPoint, setSelectedPoint] = useState<WeightTrend['points'][number] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -45,18 +75,21 @@ export function TrendSection() {
       setError(null);
       setTrend(null);
       setStats(null);
+      setSettings(null);
 
       try {
-        const [nextTrend, nextStats] = await Promise.all([
+        const [nextTrend, nextStats, nextSettings] = await Promise.all([
           fetchWeightTrend(range),
           fetchWeightStats(range),
+          fetchSettings(),
         ]);
         if (!active) {
           return;
         }
         setTrend(nextTrend);
         setStats(nextStats);
-        setSelectedPoint(nextTrend.points[nextTrend.points.length - 1] ?? null);
+        setSettings(nextSettings);
+        setSelectedPoint(null);
       } catch {
         if (!active) {
           return;
@@ -84,7 +117,7 @@ export function TrendSection() {
     );
   }
 
-  if (!trend || !stats) {
+  if (!trend || !stats || !settings) {
     return (
       <div className="app-page">
         <Alert variant="destructive">
@@ -94,6 +127,9 @@ export function TrendSection() {
     );
   }
 
+  const weightUnit = settings.weightUnit;
+  const weightUnitLabel = getWeightUnitLabel(weightUnit);
+
   return (
     <div className="app-page space-y-4">
       {error ? (
@@ -102,13 +138,16 @@ export function TrendSection() {
         </Alert>
       ) : null}
 
-      <section className="hero-panel overflow-hidden p-5">
+      <section className="hero-panel overflow-hidden border border-white/15 p-5 shadow-none">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <ChartSpline className="h-6 w-6" />
             <div>
               <p className="text-sm text-white/75">趋势</p>
               <h1 className="text-4xl font-semibold">体重</h1>
+              <p className="mt-1 text-sm text-white/70">
+                当前按 {getWeightUnitName(weightUnit)}（{weightUnitLabel}）展示
+              </p>
             </div>
           </div>
         </div>
@@ -132,37 +171,55 @@ export function TrendSection() {
 
         <div className="mt-6">
           <MiniLineChart points={trend.points} onSelect={setSelectedPoint} />
+          <p className="mt-4 text-center text-sm text-white/72">
+            点按折线上的节点，可查看当天记录
+          </p>
         </div>
       </section>
 
       <Card className="glass-card border-none">
         <CardContent className="grid gap-4 p-5 sm:grid-cols-4">
-          <div>
-            <p className="text-sm text-muted-foreground">记录天数</p>
-            <p className="mt-2 text-4xl font-semibold">{stats.recordDays}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">数值变化</p>
-            <p className="mt-2 text-4xl font-semibold">{formatMetric(stats.netChangeKg)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">最高</p>
-            <p className="mt-2 text-4xl font-semibold">{formatMetric(stats.highestWeightKg)}</p>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">最低</p>
-            <p className="mt-2 text-4xl font-semibold">{formatMetric(stats.lowestWeightKg)}</p>
-          </div>
+          <TrendMetric label="记录天数" value={`${stats.recordDays}`} />
+          <TrendMetric
+            label="数值变化"
+            value={
+              stats.netChangeKg === null
+                ? '--'
+                : formatWeightNumberByUnit(stats.netChangeKg, weightUnit, 2)
+            }
+            unit={stats.netChangeKg === null ? undefined : weightUnitLabel}
+          />
+          <TrendMetric
+            label="最高"
+            value={
+              stats.highestWeightKg === null
+                ? '--'
+                : formatWeightNumberByUnit(stats.highestWeightKg, weightUnit, 2)
+            }
+            unit={stats.highestWeightKg === null ? undefined : weightUnitLabel}
+          />
+          <TrendMetric
+            label="最低"
+            value={
+              stats.lowestWeightKg === null
+                ? '--'
+                : formatWeightNumberByUnit(stats.lowestWeightKg, weightUnit, 2)
+            }
+            unit={stats.lowestWeightKg === null ? undefined : weightUnitLabel}
+          />
         </CardContent>
       </Card>
 
       {selectedPoint ? (
-        <div className="glass-card fixed inset-x-5 bottom-[calc(112px+env(safe-area-inset-bottom))] z-30 mx-auto max-w-md p-5">
+        <Card className="glass-card border-none">
+          <CardContent className="p-5">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-sm text-muted-foreground">当天数据</p>
               <p className="mt-2 text-2xl font-semibold text-slate-950">
-                {selectedPoint.weightKg === null ? '--' : `${selectedPoint.weightKg.toFixed(2)} 公斤`}
+                {selectedPoint.weightKg === null
+                  ? '--'
+                  : `${formatWeightNumberByUnit(selectedPoint.weightKg, weightUnit, 2)} ${weightUnitLabel}`}
               </p>
               <p className="mt-1 text-sm text-muted-foreground">{selectedPoint.date}</p>
             </div>
@@ -170,7 +227,8 @@ export function TrendSection() {
               <X className="h-4 w-4" />
             </Button>
           </div>
-        </div>
+          </CardContent>
+        </Card>
       ) : null}
     </div>
   );

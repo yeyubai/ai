@@ -13,6 +13,10 @@ export function getWeightUnitLabel(unit: WeightUnit): string {
   return unit;
 }
 
+export function getWeightUnitName(unit: WeightUnit): string {
+  return unit === 'kg' ? '公斤' : '磅';
+}
+
 export function convertKgToWeightUnit(
   valueKg: number,
   unit: WeightUnit,

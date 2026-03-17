@@ -15,6 +15,20 @@ type CreateSessionPayload = {
   expiresAt: Date;
 };
 
+const DEFAULT_SETTINGS_VALUES = {
+  weightUnit: 'kg',
+  timezone: 'Asia/Shanghai',
+  locale: 'zh-CN',
+} as const;
+
+function preferCustomizedGuestSetting<T extends string>(
+  guestValue: T,
+  memberValue: T,
+  defaultValue: T,
+): T {
+  return guestValue === defaultValue ? memberValue : guestValue;
+}
+
 @Injectable()
 export class AuthRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -190,9 +204,21 @@ export class AuthRepository {
             data: {
               diaryName: guestSettings.diaryName || memberSettings.diaryName,
               theme: guestSettings.theme || memberSettings.theme,
-              weightUnit: guestSettings.weightUnit || memberSettings.weightUnit,
-              timezone: guestSettings.timezone || memberSettings.timezone,
-              locale: guestSettings.locale || memberSettings.locale,
+              weightUnit: preferCustomizedGuestSetting(
+                guestSettings.weightUnit,
+                memberSettings.weightUnit,
+                DEFAULT_SETTINGS_VALUES.weightUnit,
+              ),
+              timezone: preferCustomizedGuestSetting(
+                guestSettings.timezone,
+                memberSettings.timezone,
+                DEFAULT_SETTINGS_VALUES.timezone,
+              ),
+              locale: preferCustomizedGuestSetting(
+                guestSettings.locale,
+                memberSettings.locale,
+                DEFAULT_SETTINGS_VALUES.locale,
+              ),
             },
           });
           await tx.userSetting.update({

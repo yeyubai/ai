@@ -131,11 +131,25 @@ export const useAuthStore = create<AuthState>()(
         }
       },
       ensureGuestSession: async () => {
-        if (get().token || get().sessionStatus === 'loading') {
+        const currentState = get();
+
+        if (currentState.sessionStatus === 'loading') {
           return;
         }
 
-        set({ sessionStatus: 'loading' });
+        if (hasUsableSession(currentState.token, currentState.expiresAt)) {
+          if (currentState.sessionStatus !== 'ready') {
+            set({ sessionStatus: 'ready', loginError: null, traceId: null });
+          }
+          return;
+        }
+
+        set({
+          ...buildClearedSessionState(),
+          sessionStatus: 'loading',
+          loginError: null,
+          traceId: null,
+        });
         try {
           const result = await postGuestSession();
           set({
