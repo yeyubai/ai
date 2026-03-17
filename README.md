@@ -16,6 +16,10 @@
 - 同时启动前后端：`npm run dev`
 - 单独启动前端：`npm run dev:web`
 - 单独启动后端：`npm run dev:backend`
+- 安装原生端依赖：`npm run install:native`
+- 初始化 Android 容器：`npm run native:android:add`
+- 同步原生工程配置：`npm run native:sync`
+- 打开 Android 工程：`npm run native:open:android`
 - Windows 下如果 PowerShell 拦截 `npm`，直接用：`npm.cmd run setup` / `npm.cmd run dev`
 - 也可以直接运行根目录脚本：`.\setup.cmd` / `.\dev.cmd`
 
@@ -25,6 +29,7 @@
 - 前端默认端口：`3000`
 - 后端默认端口：`3001`
 - 后端启动前需要先准备好 `backend/.env` 和可用的 MySQL 数据库连接
+- 原生 Android 构建需要本机具备 JDK 与 Android Studio；`apps/native` 当前默认用于内部测试阶段的容器接入
 
 ## 顶层目录说明
 

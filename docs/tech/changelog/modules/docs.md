@@ -1,4 +1,19 @@
-﻿# Module Changelog: docs
+# Module Changelog: docs
+
+## 2026-03-17 | 2026-03-17-android-hybrid-app-architecture-plan
+- Summary: 新增 Android 首版混合 App 架构方案文档，明确当前项目采用 `Capacitor + Android 壳 + 现有 Next.js Web + 现有 NestJS API` 的首版路径，并固化范围、分层、存储策略、环境发布方式和分阶段计划。
+- Files:
+  - `docs/tech/architecture/2026-03-17-android-hybrid-app-architecture-plan.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本次为架构方案文档新增，不涉及代码实现或 `apps/native` 工程落地。
+
+## 2026-03-17 | 2026-03-17-native-scaffold-changelog-sync
+- Summary: 追加 2026-03-17 对话日志，记录 Android / Capacitor P0 原生端骨架落地与仓库脚本同步结果。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条仅同步文档留痕；对应代码改动已分别记录在 global 与 native 模块日志中。
 
 ## 2026-03-12 | 2026-03-12-root-deps-strategy-optimize
 - Summary: 记录根目录依赖策略优化，明确“根脚本调度 + 子项目本地安装”的工程约定。

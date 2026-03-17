@@ -1,0 +1,24 @@
+{
+  "name": "@ai/native",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "android:add": "node ./scripts/ensure-android-project.cjs",
+    "cap:copy": "cap copy android",
+    "cap:sync": "cap sync android",
+    "cap:open:android": "cap open android",
+    "doctor": "cap doctor"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.2.0",
+    "@capacitor/app": "^8.0.1",
+    "@capacitor/browser": "^8.0.2",
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/share": "^8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.2.0",
+    "dotenv": "^16.6.1",
+    "typescript": "^5.7.2"
+  }
+}
