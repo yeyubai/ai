@@ -1,5 +1,66 @@
 ﻿# Module Changelog: frontend
 
+## 2026-03-17 | 2026-03-17-session-storage-adapter-p1
+- Summary: 为混合 App P1 落地 Web 侧 `SessionStorageAdapter`，收口 `auth-store` 读写、兼容旧持久化格式，并让 API client 不再直接访问 `localStorage`。
+- Files:
+  - `apps/web/lib/session/session-storage.ts`
+  - `apps/web/features/auth/model/auth.store.ts`
+  - `apps/web/lib/api/client.ts`
+  - `docs/tech/design/requirements/index.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 本次优先完成会话访问抽象，暂未接入 Native 安全存储实现。
+
+## 2026-03-17 | 2026-03-17-platform-bridge-p2
+- Summary: 新增 Web 侧 `PlatformBridge` 抽象，统一封装分享、外链与 App 信息读取，并在“我的”页接入导出任务分享与环境展示作为首批混合能力落点。
+- Files:
+  - `apps/web/lib/platform/platform-bridge.ts`
+  - `apps/web/lib/platform/index.ts`
+  - `apps/web/features/settings/ui/sections/me-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 当前 bridge 已切到官方 Capacitor JS API，并保留浏览器降级路径。
+
+## 2026-03-17 | 2026-03-17-native-secure-session-p3
+- Summary: 为混合 App P3 接入 Native 会话安全存储，在 Capacitor 容器中通过 `@aparajita/capacitor-secure-storage` 持久化登录态，并调整根路由 hydration 时序与 API client 的异步 token 读取。
+- Files:
+  - `apps/web/lib/session/session-storage.ts`
+  - `apps/web/features/auth/model/auth.store.ts`
+  - `apps/web/lib/api/client.ts`
+  - `apps/web/app/page.tsx`
+  - `apps/web/package.json`
+  - `apps/web/package-lock.json`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该实现仅在 Native 容器中启用 secure storage；浏览器环境仍保留现有 `localStorage` 路径。
+
+## 2026-03-17 | 2026-03-17-web-version-meta-p3
+- Summary: 为 Web 端 metadata 增加 `ai-web-app-version`，供 Native release 闸门读取当前 Web 版本并执行最低兼容检查。
+- Files:
+  - `apps/web/app/layout.tsx`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该版本标记目前用于 Native release 兼容检查，不影响现有 Web 页面行为。
+
+## 2026-03-17 | 2026-03-17-app-build-display-p3
+- Summary: 在“我的”页补充 App build 信息展示，便于混合 App 联调时快速确认当前运行环境和版本。
+- Files:
+  - `apps/web/features/settings/ui/sections/me-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 版本信息仍来自 `PlatformBridge.getAppInfo()`，Web 环境下会按降级路径展示。
+
+## 2026-03-17 | 2026-03-17-native-shell-controller-p2
+- Summary: 新增 `NativeShellController`，在 Native 容器中统一设置状态栏样式并在页面准备好后隐藏启动页。
+- Files:
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/app/layout.tsx`
+  - `apps/web/package.json`
+  - `apps/web/package-lock.json`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该能力只在 Capacitor Native 容器中生效，浏览器环境会直接跳过。
+
 ## 2026-03-12 | 2026-03-12-prd-design-first-workflow
 - Summary: 前端规则新增“设计先行 + 后端先行”约束，前端编码必须依赖后端契约定稿与前端设计文档。
 - Files:

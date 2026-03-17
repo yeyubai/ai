@@ -1,14 +1,31 @@
 apply plugin: 'com.android.application'
 
+def escapeBuildConfigString = { value ->
+    def normalized = value == null ? '' : value
+    return "\"${normalized.replace('\\', '\\\\').replace('"', '\\"')}\""
+}
+
+def nativeAppMode = System.getenv('NATIVE_APP_MODE') ?: 'debug'
+def nativeMinWebAppVersion = System.getenv('NATIVE_MIN_WEB_APP_VERSION') ?: ''
+def nativeReleaseUpdateUrl = System.getenv('NATIVE_RELEASE_UPDATE_URL') ?: ''
+def nativeReleaseSupportUrl = System.getenv('NATIVE_RELEASE_SUPPORT_URL') ?: ''
+
 android {
     namespace = "com.aiweightcoach.android"
     compileSdk = rootProject.ext.compileSdkVersion
+    buildFeatures {
+        buildConfig true
+    }
     defaultConfig {
         applicationId "com.aiweightcoach.android"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 1
         versionName "1.0"
+        buildConfigField "String", "NATIVE_APP_MODE", escapeBuildConfigString(nativeAppMode)
+        buildConfigField "String", "MIN_WEB_APP_VERSION", escapeBuildConfigString(nativeMinWebAppVersion)
+        buildConfigField "String", "RELEASE_UPDATE_URL", escapeBuildConfigString(nativeReleaseUpdateUrl)
+        buildConfigField "String", "RELEASE_SUPPORT_URL", escapeBuildConfigString(nativeReleaseSupportUrl)
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.

@@ -1,11 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ChevronRight,
   Download,
   Palette,
+  Share2,
   Sparkles,
   UserRound,
 } from 'lucide-react';
@@ -15,6 +16,7 @@ import { useEnsureSessionReady } from '@/features/auth/hooks/use-ensure-session-
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { PageSkeleton } from '@/shared/feedback/page-skeleton';
 import { StatusAlert } from '@/shared/feedback/status-alert';
+import { platformBridge, type PlatformAppInfo } from '@/lib/platform';
 import { cn } from '@/lib/utils';
 import { meMessages } from '../../copy/me.messages';
 import {
@@ -96,10 +98,26 @@ export function MeSection() {
   const logout = useAuthStore((state) => state.logout);
   const ensureGuestSession = useAuthStore((state) => state.ensureGuestSession);
   const [message, setMessage] = useState<string | null>(null);
+  const [latestExportTaskId, setLatestExportTaskId] = useState<string | null>(null);
+  const [appInfo, setAppInfo] = useState<PlatformAppInfo | null>(null);
   const overviewResource = useMeOverviewResource(
     Boolean(token) && sessionStatus === 'ready',
   );
   const exportAction = useRequestMeExportAction();
+
+  useEffect(() => {
+    let active = true;
+
+    void platformBridge.getAppInfo().then((info) => {
+      if (active) {
+        setAppInfo(info);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const errorMessage = useMemo(() => {
     return (
@@ -117,6 +135,22 @@ export function MeSection() {
     const task = await exportAction.run(undefined);
     if (task) {
       setMessage(task.message);
+      setLatestExportTaskId(task.taskId);
+    }
+  };
+
+  const handleShareExport = async () => {
+    if (!latestExportTaskId || !message) {
+      return;
+    }
+
+    const shared = await platformBridge.share({
+      title: 'AI Weight Coach 导出任务',
+      text: `${message}\n任务 ID：${latestExportTaskId}`,
+    });
+
+    if (!shared) {
+      setMessage('当前环境暂不支持系统分享，已保留导出任务信息。');
     }
   };
 
@@ -271,6 +305,16 @@ export function MeSection() {
             >
               {exportAction.isPending ? '创建中...' : '创建导出任务'}
             </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => void handleShareExport()}
+              className="rounded-2xl"
+              disabled={!latestExportTaskId || !message}
+            >
+              <Share2 className="mr-2 h-4 w-4" />
+              分享任务信息
+            </Button>
             {userRole === 'guest' ? (
               <Button
                 type="button"
@@ -291,6 +335,13 @@ export function MeSection() {
               </Button>
             )}
           </div>
+          {appInfo ? (
+            <p className="text-xs leading-5 text-slate-400">
+              当前环境：{appInfo.isNative ? `${appInfo.platform} app` : 'web'}，版本{' '}
+              {appInfo.version ?? '--'}
+              {appInfo.build ? `（build ${appInfo.build}）` : ''}
+            </p>
+          ) : null}
         </CardContent>
       </Card>
     </div>

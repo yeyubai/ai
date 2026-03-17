@@ -1,5 +1,13 @@
 # Module Changelog: global
 
+## 2026-03-17 | 2026-03-17-root-readme-architecture-refresh
+- Summary: 重写根目录 README，按当前 `apps/web + backend + apps/native` 的混合架构重新说明项目定位、脚本入口、Native 联调路径和文档阅读顺序。
+- Files:
+  - `README.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/global.md`
+- Notes: 本次更新的是仓库级入口文档，不改变实际代码结构与脚本行为。
+
 ## 2026-03-17 | 2026-03-17-native-shell-root-scripts
 - Summary: 为原生端新增根目录安装与 Android 容器脚本，补充 Android 相关忽略项，并在根 README 中加入混合 App 初始化说明。
 - Files:

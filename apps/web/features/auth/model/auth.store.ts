@@ -3,6 +3,12 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import { isApiError } from '@/lib/api/types';
+import {
+  authSessionStateStorage,
+  hasUsableSession,
+  resolveInitialSessionStatus,
+  type StoredSession,
+} from '@/lib/session/session-storage';
 import { postGuestSession, postLogin } from '../api/auth.api';
 import type { LoginRequest, UserRole, UserStatus } from '../types/auth.types';
 
@@ -27,25 +33,10 @@ type AuthState = {
   logout: () => void;
 };
 
-type PersistedAuthState = Pick<
-  AuthState,
-  'token' | 'refreshToken' | 'expiresIn' | 'expiresAt' | 'userStatus' | 'userRole'
->;
+type PersistedAuthState = StoredSession;
 
 function calculateExpiresAt(expiresIn: number): number {
   return Date.now() + expiresIn * 1000;
-}
-
-function hasUsableSession(token: string | null, expiresAt: number | null): boolean {
-  if (!token) {
-    return false;
-  }
-
-  if (typeof expiresAt !== 'number') {
-    return false;
-  }
-
-  return expiresAt > Date.now();
 }
 
 function buildSessionState(result: {
@@ -98,7 +89,7 @@ export const useAuthStore = create<AuthState>()(
       userStatus: null,
       userRole: null,
       loginStatus: 'idle',
-      sessionStatus: 'idle',
+      sessionStatus: resolveInitialSessionStatus(),
       loginError: null,
       traceId: null,
       login: async (payload) => {
@@ -182,7 +173,7 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-store',
-      storage: createJSONStorage(() => localStorage),
+      storage: createJSONStorage(() => authSessionStateStorage),
       partialize: (state): PersistedAuthState => ({
         token: state.token,
         refreshToken: state.refreshToken,

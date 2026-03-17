@@ -1,9 +1,95 @@
 # Module Changelog: docs
 
-## 2026-03-17 | 2026-03-17-android-hybrid-app-architecture-plan
+## 2026-03-17 | 2026-03-17-root-readme-architecture-sync
+- Summary: 同步根目录 README 的架构重写留痕，记录项目入口文档已按当前混合架构更新。
+- Files:
+  - `README.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/global.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条主要同步项目说明文档变更，不引入新的架构决策。
+
+## 2026-03-17 | 2026-03-17-hybrid-app-p1-delivery-sync
+- Summary: 同步混合 App P1 工程落地文档，更新 Native 工程轨道状态、README 配置说明与当日会话留痕，记录会话抽象和 Native 模式边界的首批实现。
+- Files:
+  - `apps/native/README.md`
+  - `docs/tech/design/requirements/index.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/native.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条主要同步工程进度与文档口径，不引入新的方案决策。
+
+## 2026-03-17 | 2026-03-17-hybrid-app-p2-platform-bridge-sync
+- Summary: 记录混合 App P2 平台桥首批落地，补充当日会话留痕并同步 bridge 已进入页面级消费阶段。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条为实现留痕同步，当前未新增新的架构文档。
+
+## 2026-03-17 | 2026-03-17-hybrid-app-p3-secure-storage-sync
+- Summary: 同步混合 App P3 Native 安全存储接入留痕，更新 README 与模块日志，记录 secure storage 插件和异步会话 hydration 的首批实现。
+- Files:
+  - `apps/native/README.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/native.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条主要同步已完成实现，不新增新的方案文档。
+
+## 2026-03-17 | 2026-03-17-hybrid-app-p3-fallback-gate-sync
+- Summary: 同步混合 App P3 release fallback 与版本闸门实现留痕，记录 Android 本地维护页和最低 Web 版本校验的首批落地。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/native.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 当前已完成 typecheck、sync 和 doctor；Android 编译仍受本机 `JAVA_HOME` 缺失阻塞。
+
+## 2026-03-17 | 2026-03-17-hybrid-app-p3-recovery-links-sync
+- Summary: 同步混合 App P3 fallback 恢复入口补强留痕，记录更新/帮助链接和 App build 信息展示的后续实现。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/native.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 当前主要补强恢复路径和信息可见性，不新增新的架构文档。
+
+## 2026-03-17 | 2026-03-17-hybrid-app-p2-shell-chrome-sync
+- Summary: 同步混合 App P2 壳层状态栏与启动页初始化留痕，记录 NativeShellController 与相关 Capacitor 插件的接入。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/native.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条为实现同步留痕，不新增新的方案文档。
+
+## 2026-03-17 | 2026-03-17-android-runbook-sync
+- Summary: 同步 Android 联调入口、环境样例和本地联调手册留痕，记录仓库已具备更完整的安卓开发执行入口。
+- Files:
+  - `apps/native/README.md`
+  - `docs/tech/runbooks/android-hybrid-app-local-debug.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/native.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条主要同步执行入口与文档，不新增新的架构决策。
+
+## 2026-03-17 | 2026-03-17-android-hybrid-app-plan-tighten
+- Summary: 收紧 Android 混合 App 方案边界，明确调试入口不等同正式交付、前移 `SessionStorageAdapter`、缩小 P0 阻塞范围，并新增 Native 工程执行清单与需求索引入口。
+- Files:
+  - `docs/tech/architecture/android-hybrid-app-plan.md`
+  - `docs/tech/architecture/android-hybrid-app-delivery-checklist.md`
+  - `docs/tech/design/requirements/index.md`
+  - `apps/native/README.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本次调整只收口方案与执行路径，不改变 Native 代码行为。
+
+## 2026-03-17 | 2026-03-17-android-hybrid-app-plan
 - Summary: 新增 Android 首版混合 App 架构方案文档，明确当前项目采用 `Capacitor + Android 壳 + 现有 Next.js Web + 现有 NestJS API` 的首版路径，并固化范围、分层、存储策略、环境发布方式和分阶段计划。
 - Files:
-  - `docs/tech/architecture/2026-03-17-android-hybrid-app-architecture-plan.md`
+  - `docs/tech/architecture/android-hybrid-app-plan.md`
   - `docs/tech/changelog/conversations/2026-03-17.md`
   - `docs/tech/changelog/modules/docs.md`
 - Notes: 本次为架构方案文档新增，不涉及代码实现或 `apps/native` 工程落地。
