@@ -5,9 +5,14 @@
   "scripts": {
     "postinstall": "node ./scripts/fix-gradle-deprecations.cjs",
     "android:add": "node ./scripts/ensure-android-project.cjs",
+    "android:sync": "node ./scripts/sync-android-project.cjs",
     "android:assemble:debug": "node ./scripts/run-android-gradle.cjs assembleDebug",
+    "ios:add": "node ./scripts/ensure-ios-project.cjs",
+    "ios:sync": "node ./scripts/sync-ios-project.cjs",
     "cap:copy": "cap copy android",
     "cap:sync": "node ./scripts/sync-android-project.cjs",
+    "cap:sync:android": "node ./scripts/sync-android-project.cjs",
+    "cap:open:ios": "cap open ios",
     "cap:open:android": "cap open android",
     "doctor": "cap doctor"
   },
@@ -17,6 +22,7 @@
     "@capacitor/app": "^8.0.1",
     "@capacitor/browser": "^8.0.2",
     "@capacitor/core": "^8.2.0",
+    "@capacitor/ios": "^8.0.2",
     "@capacitor/share": "^8.0.1",
     "@capacitor/splash-screen": "^8.0.1",
     "@capacitor/status-bar": "^8.0.1"

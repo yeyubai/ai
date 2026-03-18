@@ -2,6 +2,7 @@ import 'dotenv/config';
 import type { CapacitorConfig } from '@capacitor/cli';
 
 type NativeAppMode = 'debug' | 'test' | 'release';
+const DEFAULT_NATIVE_APP_ID = 'com.aiweightcoach.app';
 
 function resolveAppMode(): NativeAppMode {
   const mode = process.env.NATIVE_APP_MODE?.trim().toLowerCase();
@@ -54,7 +55,7 @@ function buildServerConfig(mode: NativeAppMode): CapacitorConfig['server'] {
 const appMode = resolveAppMode();
 
 const config: CapacitorConfig = {
-  appId: process.env.NATIVE_APP_ID ?? 'com.aiweightcoach.android',
+  appId: process.env.NATIVE_APP_ID ?? DEFAULT_NATIVE_APP_ID,
   appName: process.env.NATIVE_APP_NAME ?? 'AI Weight Coach',
   webDir: 'web',
   server: buildServerConfig(appMode),

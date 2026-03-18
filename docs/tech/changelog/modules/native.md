@@ -1,5 +1,21 @@
 # Module Changelog: native
 
+## 2026-03-18 | 2026-03-18-ios-prep-cross-platform-native-shell
+- Summary: 将 `apps/native` 收口为 Android / iOS 共用的原生壳配置：默认 bundle id 改为平台中性值，补齐分环境样例文件，并新增 iOS 工程创建 / 同步 / 打开脚本入口，为后续 TestFlight 接入做仓库级准备。
+- Files:
+  - `apps/native/capacitor.config.ts`
+  - `apps/native/.env.example`
+  - `apps/native/.env.debug.example`
+  - `apps/native/.env.test.example`
+  - `apps/native/.env.release.example`
+  - `apps/native/package.json`
+  - `apps/native/scripts/ensure-ios-project.cjs`
+  - `apps/native/scripts/sync-ios-project.cjs`
+  - `package.json`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/native.md`
+- Notes: 当前未生成 `apps/native/ios`；iOS 脚本会在非 macOS 环境下给出明确报错，而不是隐式失败。
+
 ## 2026-03-18 | 2026-03-18-capacitor-gradle-deprecation-auto-fix
 - Summary: 新增 Gradle 兼容性自动修复脚本，自动处理 Capacitor Android 插件和生成工程里的旧 DSL，减少 `Deprecated Gradle features were used in this build` 警告反复出现。
 - Files:

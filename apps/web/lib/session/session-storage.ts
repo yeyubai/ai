@@ -23,6 +23,12 @@ type SessionStorageAdapter = {
   clearSession: () => void | Promise<void>;
 };
 
+function logSecureStorageFailure(action: 'read' | 'write' | 'remove', error: unknown) {
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn(`[session-storage] Native secure storage ${action} failed.`, error);
+  }
+}
+
 function getBrowserStorage(): Storage | null {
   if (typeof window === 'undefined') {
     return null;
@@ -164,23 +170,36 @@ export const browserSessionStorageAdapter: SessionStorageAdapter = {
 
 export const nativeSessionStorageAdapter: SessionStorageAdapter = {
   async getSession() {
-    const rawValue = await SecureStorage.getItem(AUTH_SESSION_STORAGE_KEY);
-    if (!rawValue) {
+    try {
+      const rawValue = await SecureStorage.getItem(AUTH_SESSION_STORAGE_KEY);
+      if (!rawValue) {
+        return null;
+      }
+
+      return parseStoredSession(rawValue);
+    } catch (error) {
+      logSecureStorageFailure('read', error);
       return null;
     }
-
-    return parseStoredSession(rawValue);
   },
   async saveSession(session) {
-    if (isSessionEmpty(session)) {
-      await SecureStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
-      return;
-    }
+    try {
+      if (isSessionEmpty(session)) {
+        await SecureStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+        return;
+      }
 
-    await SecureStorage.setItem(AUTH_SESSION_STORAGE_KEY, serializeSession(session));
+      await SecureStorage.setItem(AUTH_SESSION_STORAGE_KEY, serializeSession(session));
+    } catch (error) {
+      logSecureStorageFailure('write', error);
+    }
   },
   async clearSession() {
-    await SecureStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    try {
+      await SecureStorage.removeItem(AUTH_SESSION_STORAGE_KEY);
+    } catch (error) {
+      logSecureStorageFailure('remove', error);
+    }
   },
 };
 

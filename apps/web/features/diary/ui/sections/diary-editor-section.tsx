@@ -192,8 +192,8 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
   }
 
   return (
-    <div className="min-h-[100dvh] bg-white pb-[calc(138px+env(safe-area-inset-bottom))]">
-      <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col px-4 pt-4">
+    <div className="min-h-[var(--app-viewport-height)] bg-white pb-[calc(138px+var(--app-safe-area-bottom)+var(--native-keyboard-inset))]">
+      <div className="mx-auto flex min-h-[var(--app-viewport-height)] w-full max-w-md flex-col px-4 pt-4">
         <div className="flex items-center justify-between">
           <Link
             href="/diary"
@@ -248,7 +248,7 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
         />
       </div>
 
-      <div className="fixed inset-x-0 bottom-[calc(72px+env(safe-area-inset-bottom))] z-30 mx-auto w-full max-w-md border-t border-slate-100 bg-white/96 px-4 pb-3 pt-2 backdrop-blur">
+      <div className="native-keyboard-surface fixed inset-x-0 bottom-[calc(16px+var(--app-safe-area-bottom)+var(--native-keyboard-inset))] z-30 mx-auto w-full max-w-md border-t border-slate-100 bg-white/96 px-4 pb-3 pt-2 backdrop-blur">
         <div className="grid grid-cols-8 gap-1">
           <button type="button" className="h-11 rounded-xl text-[22px] text-slate-700" onClick={() => applyCommand('removeFormat')}>A</button>
           <button type="button" className="h-11 rounded-xl text-[18px] text-slate-700" onClick={() => applyCommand('formatBlock', 'p')}>Aa</button>

@@ -1,5 +1,16 @@
 # Module Changelog: docs
 
+## 2026-03-18 | 2026-03-18-ios-prep-doc-sync
+- Summary: 更新根 README、原生壳 README、混合 App 联调手册与架构文档，将文档口径从 Android-only 收口为 Android / iOS 共用方案，并补充 TestFlight 前置约束与 iOS 无 Mac 阶段的执行边界。
+- Files:
+  - `README.md`
+  - `apps/native/README.md`
+  - `docs/tech/runbooks/android-hybrid-app-local-debug.md`
+  - `docs/tech/architecture/android-hybrid-app-plan.md`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 当前文档阶段只覆盖仓库级准备与后续接入路径，不代表 iOS 工程已经生成或完成 Xcode 验收。
+
 ## 2026-03-18 | 2026-03-18-emulator-local-debug-log
 - Summary: 追加 2026-03-18 对话日志，记录 Android 模拟器本地联调所需的 Native 调试地址、本地 CORS 配置与前端 API 默认地址兼容策略。
 - Files:

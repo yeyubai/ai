@@ -1,52 +1,105 @@
 # 原生壳
 
-这个包承载混合 App 的 Android 原生容器。
+这个包承载混合 App 的原生容器，当前已落地 Android 工程，并为后续 iOS / TestFlight 接入预留统一配置和脚本入口。
 
 ## 范围
 
-- 以 Android 内部测试为优先
 - 基于 Capacitor 的 WebView 容器
-- 现有 `apps/web` 继续作为主要业务 UI
+- `apps/web` 继续作为主要业务 UI
+- Android 继续作为当前已跑通的平台
+- iOS 按同一套架构扩展，不重写第二套业务前端
+
+## 当前状态
+
+- 已有 `apps/native/android`
+- 当前仓库还没有 `apps/native/ios`
+- iOS 工程需要在 macOS + Xcode 环境中执行 `cap add ios`
 
 ## 前置条件
 
 - Node.js 20+
-- JDK
-- Android Studio
+- Android 联调需要：
+  - JDK
+  - Android Studio
+- iOS 落地需要：
+  - macOS
+  - Xcode
 
-## 初始化
+## 环境文件
 
-1. 在仓库根目录安装原生端依赖：
-   - `npm run install:native`
-2. 创建 Android 工程：
-   - `npm run native:android:add`
-3. 为原生壳配置可访问的 Web 地址：
-   - 将 `.env.example` 复制为 `.env`
-   - 设置 `NATIVE_APP_MODE=debug` 或 `NATIVE_APP_MODE=test`
-   - 设置 `NATIVE_WEB_APP_URL`
-4. 如果要模拟 release 配置：
-   - 设置 `NATIVE_APP_MODE=release`
-   - 设置 `NATIVE_RELEASE_WEB_APP_URL=https://...`
-   - 可选设置 `NATIVE_MIN_WEB_APP_VERSION`，用于限制最低兼容的 Web 版本
-   - 可选设置 `NATIVE_RELEASE_UPDATE_URL` 和 `NATIVE_RELEASE_SUPPORT_URL`，让 fallback 页面提供更新和帮助入口
-5. 同步原生工程：
-   - `npm run native:sync`
-6. 打开 Android Studio：
-   - `npm run native:open:android`
-7. 需要命令行编译 Debug 包时：
-   - `npm run native:android:assemble:debug`
+推荐直接从以下样例复制：
 
-## 说明
+- `apps/native/.env.debug.example`
+- `apps/native/.env.test.example`
+- `apps/native/.env.release.example`
+
+关键变量说明：
+
+- `NATIVE_APP_ID`
+  - 默认使用跨平台 bundle id 根：`com.aiweightcoach.app`
+  - 该默认值用于跨平台配置与后续新平台接入；当前已存在的 `apps/native/android` 仍保留历史包名 `com.aiweightcoach.android`，本阶段不做 Android 包名重命名迁移
+- `NATIVE_APP_MODE`
+  - `debug | test | release`
+- `NATIVE_WEB_APP_URL`
+  - 仅供 `debug` / `test`
+- `NATIVE_RELEASE_WEB_APP_URL`
+  - 仅供 `release`
+- `NATIVE_MIN_WEB_APP_VERSION`
+  - release 最低兼容 Web 版本
+- `NATIVE_RELEASE_UPDATE_URL`
+  - fallback 页更新入口
+- `NATIVE_RELEASE_SUPPORT_URL`
+  - fallback 页帮助入口
+
+`debug` 模式下常见地址约定：
+
+- iOS 模拟器：`http://localhost:3000`
+- Android 模拟器：`http://10.0.2.2:3000`
+- 真机：宿主机局域网地址
+
+## 常用命令
+
+- 安装原生端依赖：
+  - `npm run install:native`
+- 新增 Android 工程：
+  - `npm run native:android:add`
+- 同步 Android 工程：
+  - `npm run native:android:sync`
+- 打开 Android Studio：
+  - `npm run native:open:android`
+- 编译 Android Debug 包：
+  - `npm run native:android:assemble:debug`
+- 预留 iOS 工程创建入口：
+  - `npm run native:ios:add`
+- 预留 iOS 工程同步入口：
+  - `npm run native:ios:sync`
+- 预留 Xcode 打开入口：
+  - `npm run native:open:ios`
+- Capacitor 环境检查：
+  - `npm run native:doctor`
+
+说明：
+
+- `native:ios:add` / `native:ios:sync` / `native:open:ios` 需要在 macOS + Xcode 环境执行。
+- 当前 `native:sync` 仍保留为 Android 同步兼容入口，避免影响已跑通的 Android 联调流程。
+
+## 运行边界
 
 - `NATIVE_WEB_APP_URL` 只用于内部测试和类 live reload 联调。
-- `NATIVE_WEB_APP_URL` 不能当作正式交付入口；release 构建应使用固定 HTTPS 地址，不允许随意覆盖。
-- 当前 Android manifest 允许明文流量，所以 `http://10.0.2.2:3000` 这类本地联调地址可以工作；release 模式应关闭 cleartext 并收紧网络白名单。
-- 占位用的 `web/` 目录主要用于满足 P0 阶段 Capacitor 的本地资源要求。
-- 会话访问已经统一经过 `SessionStorageAdapter`；当 Web 应用运行在原生 Capacitor 容器中时，登录态会持久化到安全存储，而不是直接落在 WebView `localStorage`。
-- release 模式现在已经包含本地 fallback / 维护页，并支持通过 `NATIVE_MIN_WEB_APP_VERSION` 做最低 Web 版本校验，也可以通过 `NATIVE_RELEASE_UPDATE_URL` 和 `NATIVE_RELEASE_SUPPORT_URL` 向用户提供恢复路径。
-- 推荐直接使用分环境样例文件：
-  - `apps/native/.env.debug.example`
-  - `apps/native/.env.test.example`
-  - `apps/native/.env.release.example`
-- 本地联调与验收流程见：
+- `release` 模式必须使用固定 HTTPS 入口，不允许继续依赖本地或明文调试地址。
+- 当前会话访问已经统一经过 `SessionStorageAdapter`；当 Web 应用运行在原生 Capacitor 容器中时，登录态会持久化到安全存储，而不是直接落在 WebView `localStorage`。
+- release 模式已包含本地 fallback / 维护页，并支持最低 Web 版本校验。
+- iOS 首版默认只对齐 Android 首版的原生能力边界：
+  - 启动页
+  - 图标
+  - 状态栏样式
+  - 外链打开
+  - 基础分享
+  - 登录态安全存储
+
+## 参考文档
+
+- 架构方案：
+  - `docs/tech/architecture/android-hybrid-app-plan.md`
+- 联调 / 准备手册：
   - `docs/tech/runbooks/android-hybrid-app-local-debug.md`

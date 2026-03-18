@@ -1,19 +1,19 @@
-# 体重日记（Next.js + NestJS + Android 混合 App）
+# 体重日记（Next.js + NestJS + 混合 App）
 
 本仓库当前的技术方向已经明确为：
 
 - `apps/web`：唯一业务 UI 主体，面向移动端交互
 - `backend`：独立 API 服务，承载鉴权、记录、进度与用户数据
-- `apps/native`：Android 混合 App 原生壳，负责容器、桥接与发布边界
+- `apps/native`：跨平台混合 App 原生壳，负责容器、桥接与发布边界
 
-当前不是 React Native 双端重写路线，而是 `Web + API + Capacitor Android 壳` 的混合架构路线。
+当前不是 React Native 双端重写路线，而是 `Web + API + Capacitor 原生壳` 的混合架构路线。
 
 ## 当前架构
 
 ```mermaid
 flowchart LR
     A["apps/web\nNext.js 14 + React 18"] --> B["backend\nNestJS + Prisma + MySQL"]
-    C["apps/native\nCapacitor Android 壳"] --> A
+    C["apps/native\nCapacitor Android / iOS 壳"] --> A
     C --> D["原生能力\n状态栏 / 启动页 / 分享 / 外链 / 安全存储"]
     A --> E["PlatformBridge\n原生能力抽象"]
     A --> F["SessionStorageAdapter\nWeb localStorage / Native 安全存储"]
@@ -51,11 +51,12 @@ flowchart LR
 - `Prisma`
 - `MySQL`
 
-### Android Native
+### Native Shell
 
 - `Capacitor 8`
 - `@capacitor/app`
 - `@capacitor/browser`
+- `@capacitor/ios`
 - `@capacitor/share`
 - `@capacitor/status-bar`
 - `@capacitor/splash-screen`
@@ -66,6 +67,7 @@ flowchart LR
 `apps/native` 现在已经不是纯骨架，已落地以下能力：
 
 - Android 容器工程可生成、可同步、可打开
+- iOS 工程入口脚本已补齐，可在 macOS 上生成、同步、打开
 - `debug / test / release` 三种运行模式
 - Native 安全存储接入
 - `PlatformBridge` 基础能力：
@@ -86,7 +88,7 @@ flowchart LR
 ├─ .codex/                   # 项目规则、评审清单、skills
 ├─ apps/
 │  ├─ web/                   # Next.js Web 端，唯一业务 UI 主体
-│  └─ native/                # Android 混合 App 原生壳
+│  └─ native/                # Android / iOS 混合 App 原生壳
 ├─ backend/                  # NestJS + Prisma + MySQL
 ├─ ai/                       # AI 资产（prompts/evals/datasets/outputs）
 ├─ docs/                     # 产品 / 技术 / API / AI 文档
@@ -107,16 +109,20 @@ flowchart LR
 - 单独启动后端：`npm run dev:backend`
 - 安装原生端依赖：`npm run install:native`
 - 初始化 Android 容器：`npm run native:android:add`
-- 同步原生工程：`npm run native:sync`
+- 同步 Android 原生工程：`npm run native:android:sync`
+- 初始化 iOS 工程：`npm run native:ios:add`
+- 同步 iOS 原生工程：`npm run native:ios:sync`
 - 原生健康检查：`npm run native:doctor`
 - 编译 Android Debug 包：`npm run native:android:assemble:debug`
 - 打开 Android Studio：`npm run native:open:android`
+- 打开 Xcode：`npm run native:open:ios`
+- 兼容旧 Android 同步入口：`npm run native:sync`
 
 Windows 下如果 PowerShell 拦截 `npm`，请使用：
 
 - `npm.cmd run setup`
 - `npm.cmd run dev`
-- `npm.cmd run native:sync`
+- `npm.cmd run native:android:sync`
 
 ### 端口约定
 
@@ -127,6 +133,7 @@ Windows 下如果 PowerShell 拦截 `npm`，请使用：
 
 - 后端启动前需要先准备 `backend/.env` 和可用的 MySQL 连接
 - Android 本地编译依赖本机 JDK 与 Android Studio
+- iOS 工程生成与编译依赖 macOS 与 Xcode
 - `npm run dev` 会自动清理常见的开发端口占用，减少反复重启时的手工处理
 
 ## Native 联调
@@ -157,23 +164,29 @@ Windows 下如果 PowerShell 拦截 `npm`，请使用：
 
 1. 启动前后端：`npm.cmd run dev`
 2. 准备 `apps/native/.env`
-3. 执行：`npm.cmd run native:sync`
+3. Android 联调执行：`npm.cmd run native:android:sync`
 4. 执行：`npm.cmd run native:doctor`
 5. 需要命令行编译时执行：`npm.cmd run native:android:assemble:debug`
 6. 执行：`npm.cmd run native:open:android`
 
+iOS 接入准备：
+
+- 在 macOS 上执行：`npm run native:ios:add`
+- 同步 iOS 工程：`npm run native:ios:sync`
+- 打开 Xcode：`npm run native:open:ios`
+
 完整联调手册见：
 
-- [Android 本地联调手册](/D:/project/my/ai/ai/docs/tech/runbooks/android-hybrid-app-local-debug.md)
+- [Android 本地联调与 iOS 接入手册](/D:/project/my/ai/ai/docs/tech/runbooks/android-hybrid-app-local-debug.md)
 
 ## 文档入口
 
 ### 架构与执行
 
 - [项目结构](/D:/project/my/ai/ai/docs/tech/architecture/project-structure.md)
-- [Android 混合 App 方案](/D:/project/my/ai/ai/docs/tech/architecture/android-hybrid-app-plan.md)
+- [Android / iOS 首版混合 App 方案](/D:/project/my/ai/ai/docs/tech/architecture/android-hybrid-app-plan.md)
 - [Android 混合 App 执行清单](/D:/project/my/ai/ai/docs/tech/architecture/android-hybrid-app-delivery-checklist.md)
-- [Android 本地联调手册](/D:/project/my/ai/ai/docs/tech/runbooks/android-hybrid-app-local-debug.md)
+- [Android 本地联调与 iOS 接入手册](/D:/project/my/ai/ai/docs/tech/runbooks/android-hybrid-app-local-debug.md)
 
 ### 需求与进度
 
@@ -194,8 +207,8 @@ Windows 下如果 PowerShell 拦截 `npm`，请使用：
 
 ## 建议阅读顺序
 
-1. [Android 混合 App 方案](/D:/project/my/ai/ai/docs/tech/architecture/android-hybrid-app-plan.md)
+1. [Android / iOS 首版混合 App 方案](/D:/project/my/ai/ai/docs/tech/architecture/android-hybrid-app-plan.md)
 2. [Android 混合 App 执行清单](/D:/project/my/ai/ai/docs/tech/architecture/android-hybrid-app-delivery-checklist.md)
 3. [需求设计进度](/D:/project/my/ai/ai/docs/tech/design/requirements/index.md)
-4. [Android 本地联调手册](/D:/project/my/ai/ai/docs/tech/runbooks/android-hybrid-app-local-debug.md)
+4. [Android 本地联调与 iOS 接入手册](/D:/project/my/ai/ai/docs/tech/runbooks/android-hybrid-app-local-debug.md)
 5. [Changelog 说明](/D:/project/my/ai/ai/docs/tech/changelog/README.md)

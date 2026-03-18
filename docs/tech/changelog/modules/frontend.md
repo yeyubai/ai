@@ -1,5 +1,32 @@
 ﻿# Module Changelog: frontend
 
+## 2026-03-18 | 2026-03-18-ios-viewport-keyboard-adaptation
+- Summary: 为 iOS 首次接入补齐 Web 壳层的动态视口、safe-area 和键盘态适配：根布局输出 `viewport-fit=cover`，`NativeShellController` 同步原生平台/键盘状态到 CSS 变量，底部 Tab 与悬浮按钮在键盘弹起时自动隐藏，日记编辑器等页面改为基于统一视口变量计算高度与底部间距；同时为 Native 安全存储增加失败不炸页面的兜底。
+- Files:
+  - `apps/web/app/layout.tsx`
+  - `apps/web/app/globals.css`
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/features/navigation/ui/components/app-shell.tsx`
+  - `apps/web/features/navigation/ui/components/bottom-tab-bar.tsx`
+  - `apps/web/features/diary/ui/components/diary-floating-add-button.tsx`
+  - `apps/web/features/weight-diary/ui/components/floating-add-button.tsx`
+  - `apps/web/features/diary/ui/sections/diary-editor-section.tsx`
+  - `apps/web/features/diary/ui/sections/diary-section.tsx`
+  - `apps/web/features/settings/ui/sections/me-number-picker-section.tsx`
+  - `apps/web/features/weight-diary/ui/sections/home-overview-section.tsx`
+  - `apps/web/lib/session/session-storage.ts`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 这一轮只处理仓库中可先迁移的跨端逻辑，不依赖 Xcode；真实 iOS 模拟器与真机表现仍需后续在 macOS 环境实测。
+
+## 2026-03-18 | 2026-03-18-ios-shell-status-bar-guard
+- Summary: 为原生壳控制器补齐平台分支，明确状态栏背景色仅在 Android 路径设置，避免后续 iOS 接入时继续沿用 Android 风格背景色策略。
+- Files:
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该改动不改变现有 Android 样式，只是为 iOS 首版接入提前收口平台差异。
+
 ## 2026-03-18 | 2026-03-18-weight-detail-range-fallback-tone
 - Summary: 修正记录详情页体重区间轴的降级态展示，避免缺少判定条件时整条轴变成纯灰，并让其直接复用体脂区间轴的同组颜色值；同时收紧提示文案说明当前为通用分段样式。
 - Files:

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { AppShell } from '@/features/navigation';
 import { NativeShellController } from '@/shared/native-shell/native-shell-controller';
 import { cn } from '@/lib/utils';
@@ -13,12 +13,18 @@ export const metadata: Metadata = {
   },
 };
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="zh-CN" className={cn('font-sans')}>
-      <body className={cn('min-h-screen font-sans')}>
+      <body className={cn('font-sans')}>
         <NativeShellController />
         <AppShell>{children}</AppShell>
       </body>

@@ -72,7 +72,7 @@ export function DiarySection() {
   }
 
   return (
-    <div className="app-page min-h-[calc(100dvh-96px-env(safe-area-inset-bottom))] bg-white px-4 pb-[calc(120px+env(safe-area-inset-bottom))] pt-4">
+    <div className="app-page min-h-[calc(var(--app-viewport-height)-96px-var(--app-safe-area-bottom))] bg-white px-4 pb-[calc(120px+var(--app-safe-area-bottom))] pt-4">
       <div className="flex items-center justify-between px-1">
         <div className="w-10" />
         <div className="text-center">
