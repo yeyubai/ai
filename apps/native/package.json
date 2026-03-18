@@ -3,10 +3,11 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "postinstall": "node ./scripts/fix-gradle-deprecations.cjs",
     "android:add": "node ./scripts/ensure-android-project.cjs",
     "android:assemble:debug": "node ./scripts/run-android-gradle.cjs assembleDebug",
     "cap:copy": "cap copy android",
-    "cap:sync": "cap sync android",
+    "cap:sync": "node ./scripts/sync-android-project.cjs",
     "cap:open:android": "cap open android",
     "doctor": "cap doctor"
   },

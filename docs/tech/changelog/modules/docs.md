@@ -1,5 +1,26 @@
 # Module Changelog: docs
 
+## 2026-03-18 | 2026-03-18-emulator-local-debug-log
+- Summary: 追加 2026-03-18 对话日志，记录 Android 模拟器本地联调所需的 Native 调试地址、本地 CORS 配置与前端 API 默认地址兼容策略。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条仅同步文档留痕；对应实现和本地配置分别记录在 frontend 与 native 模块日志中。
+
+## 2026-03-18 | 2026-03-18-gradle-deprecation-cleanup-log
+- Summary: 追加 2026-03-18 对话日志，记录 Android 原生工程中旧 Gradle DSL 的清理与 Gradle 9 兼容性 warning 收敛。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条仅同步文档留痕；对应工程配置改动记录在 native 模块日志。
+
+## 2026-03-18 | 2026-03-18-gradle-wrapper-sync-log
+- Summary: 新增 2026-03-18 对话日志，记录 Android Studio Gradle Sync 下载失败的排查与 wrapper 稳定性调整。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条仅同步文档留痕；对应工程配置改动记录在 native 模块日志。
+
 ## 2026-03-17 | 2026-03-17-root-readme-architecture-sync
 - Summary: 同步根目录 README 的架构重写留痕，记录项目入口文档已按当前混合架构更新。
 - Files:

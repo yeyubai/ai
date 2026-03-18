@@ -1,4 +1,21 @@
-﻿# Module Changelog: backend
+# Module Changelog: backend
+
+## 2026-03-18 | 2026-03-18-home-module-registration-fix
+- Summary: 修复后端首页模块未注册到根应用的问题，恢复 `/api/v1/home/today` 与首页动作完成接口的路由挂载；同时为 `HomeModule` 补齐 `JourneyStateModule` 依赖，消除移动端联调时的 404 与 Nest DI 启动错误。
+- Files:
+  - `backend/src/app.module.ts`
+  - `backend/src/modules/home/home.module.ts`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/backend.md`
+- Notes: 本次仅补齐 NestJS 模块装配，不涉及 Home 领域逻辑改写。
+
+## 2026-03-18 | 2026-03-18-hybrid-dev-cors-origin-broadening
+- Summary: 为混合 App 本地联调放宽开发态 CORS 来源匹配，除显式配置外额外允许 `localhost`、`10.0.2.2`、常见私网 IPv4 以及 `capacitor://localhost` / `ionic://localhost` 等本地容器来源，修复 Android WebView 初始化 guest session 时被 CORS 拦截的问题。
+- Files:
+  - `backend/src/main.ts`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/backend.md`
+- Notes: 该逻辑仅在非 production 下启用额外的本地来源放行；生产环境仍以显式配置 origin 为准。
 
 ## 2026-03-12 | 2026-03-12-backend-local-deps-fix
 - Summary: 修正依赖安装位置，在 `backend` 目录本地安装依赖，避免仅根 workspace 可用。

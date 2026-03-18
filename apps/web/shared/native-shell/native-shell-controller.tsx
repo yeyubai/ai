@@ -7,6 +7,7 @@ import { StatusBar, Style } from '@capacitor/status-bar';
 import { useEffect } from 'react';
 
 const NATIVE_STATUS_BAR_COLOR = '#F5FBFC';
+type AppListenerHandle = Awaited<ReturnType<typeof App.addListener>>;
 
 async function applyNativeShellChrome() {
   if (!Capacitor.isNativePlatform()) {
@@ -53,11 +54,11 @@ export function NativeShellController() {
     void applyNativeShellChrome();
     void hideNativeSplash();
 
-    let listener: Awaited<ReturnType<typeof App.addListener>> | null = null;
+    let listener: AppListenerHandle | null = null;
 
     void App.addListener('resume', () => {
       void applyNativeShellChrome();
-    }).then((handle) => {
+    }).then((handle: AppListenerHandle) => {
       listener = handle;
     });
 

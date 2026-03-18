@@ -1,5 +1,31 @@
 ﻿# Module Changelog: frontend
 
+## 2026-03-18 | 2026-03-18-weight-detail-range-fallback-tone
+- Summary: 修正记录详情页体重区间轴的降级态展示，避免缺少判定条件时整条轴变成纯灰，并让其直接复用体脂区间轴的同组颜色值；同时收紧提示文案说明当前为通用分段样式。
+- Files:
+  - `apps/web/features/weight-diary/ui/sections/weight-entry-detail-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 仅调整详情页前端表现层，不影响 BMI / 体脂计算和后端返回结构。
+
+## 2026-03-18 | 2026-03-18-root-loading-error-fallback
+- Summary: 为首页根路由补充混合 App 初始化中的可见加载态与失败重试兜底，避免 guest session 初始化失败时页面只呈现白屏。
+- Files:
+  - `apps/web/app/page.tsx`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 根路由仍保留原有“会话就绪后跳转 `/home`”逻辑，只是在等待或失败时提供可见反馈。
+
+## 2026-03-18 | 2026-03-18-emulator-api-base-url-fallback
+- Summary: 为 Android 模拟器本地联调调整 API client 默认地址解析逻辑，在未显式配置 `NEXT_PUBLIC_API_BASE_URL` 时自动跟随当前页面 hostname 并默认指向 `:3001`。
+- Files:
+  - `apps/web/lib/api/client.ts`
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/types/capacitor-shims.d.ts`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该改动兼容宿主机浏览器的 `localhost` 和 Android 模拟器的 `10.0.2.2`，不影响已有显式环境变量配置；同时补充 Capacitor shim 类型以打通当前前端类型检查。
+
 ## 2026-03-17 | 2026-03-17-session-storage-adapter-p1
 - Summary: 为混合 App P1 落地 Web 侧 `SessionStorageAdapter`，收口 `auth-store` 读写、兼容旧持久化格式，并让 API client 不再直接访问 `localStorage`。
 - Files:

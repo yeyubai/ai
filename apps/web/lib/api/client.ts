@@ -24,8 +24,23 @@ async function readAccessTokenFromStorage(): Promise<string | null> {
   return session.token;
 }
 
+function resolveApiBaseUrl(): string {
+  const configuredBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (configuredBaseUrl) {
+    return configuredBaseUrl;
+  }
+
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const host = window.location.hostname || 'localhost';
+    return `${protocol}//${host}:3001/api/v1`;
+  }
+
+  return 'http://localhost:3001/api/v1';
+}
+
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api/v1',
+  baseURL: resolveApiBaseUrl(),
   timeout: 10000,
 });
 
