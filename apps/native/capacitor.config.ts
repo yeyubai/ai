@@ -59,6 +59,12 @@ const config: CapacitorConfig = {
   appName: process.env.NATIVE_APP_NAME ?? 'AI Weight Coach',
   webDir: 'web',
   server: buildServerConfig(appMode),
+  plugins: {
+    Keyboard: {
+      resize: 'native',
+      resizeOnFullScreen: true,
+    },
+  },
 };
 
 export default config;

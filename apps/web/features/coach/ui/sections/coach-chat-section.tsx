@@ -1,12 +1,13 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { ArrowLeft, LoaderCircle, MessageCircleMore, RefreshCcw } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuthStore } from '@/features/auth/model/auth.store';
 import { isApiError } from '@/lib/api/types';
 import { cn } from '@/lib/utils';
@@ -31,6 +32,7 @@ export function CoachChatSection({ sessionId }: { sessionId: string }) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (!token || sessionStatus !== 'ready') {
@@ -67,6 +69,13 @@ export function CoachChatSection({ sessionId }: { sessionId: string }) {
     () => session?.messages.filter((message) => message.role === 'user' || message.role === 'assistant') ?? [],
     [session],
   );
+
+  useEffect(() => {
+    messageEndRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'end',
+    });
+  }, [chatMessages.length]);
 
   const handleSend = async () => {
     if (!session || !question.trim()) {
@@ -147,7 +156,7 @@ export function CoachChatSection({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <div className="app-page space-y-4 px-4 pt-4">
+    <div className="app-page flex min-h-[calc(var(--app-viewport-height)-var(--app-tab-bar-offset))] flex-col space-y-4 px-4 pb-[calc(20px+var(--app-safe-area-bottom)+var(--native-keyboard-inset))] pt-4">
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>
@@ -184,14 +193,14 @@ export function CoachChatSection({ sessionId }: { sessionId: string }) {
         </CardContent>
       </Card>
 
-      <Card className="glass-card border-none">
-        <CardContent className="space-y-4 p-5">
+      <Card className="glass-card flex min-h-0 flex-1 border-none">
+        <CardContent className="flex min-h-0 flex-1 flex-col gap-4 p-5">
           <div className="rounded-[24px] bg-cyan-50/70 p-4">
             <p className="text-[13px] font-medium text-cyan-700">本次分析摘要</p>
             <p className="mt-2 text-[15px] leading-7 text-slate-900">{session.analysisSummary.bodyTypeSummary}</p>
           </div>
 
-          <div className="max-h-[52vh] space-y-3 overflow-y-auto pr-1">
+          <div className="min-h-[220px] flex-1 space-y-3 overflow-y-auto pr-1">
             {chatMessages.length === 0 ? (
               <div className="rounded-[24px] border border-dashed border-slate-200 px-4 py-6 text-sm leading-6 text-slate-500">
                 还没有追问内容。你可以试试：
@@ -217,15 +226,16 @@ export function CoachChatSection({ sessionId }: { sessionId: string }) {
                 </div>
               ))
             )}
+            <div ref={messageEndRef} />
           </div>
 
           <div className="space-y-3 border-t border-white/40 pt-4">
-            <textarea
+            <Textarea
               value={question}
               onChange={(event) => setQuestion(event.target.value)}
               rows={4}
               placeholder="继续追问，例如：我应该先从腰腹训练开始，还是先提高日常活动量？"
-              className="w-full resize-none rounded-[22px] border border-border/70 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-primary/50 focus:ring-2 focus:ring-primary/20"
+              className="min-h-[112px] resize-none rounded-[22px] border-border/70 bg-white px-4 py-3 text-sm text-slate-900 shadow-sm focus-visible:ring-primary/20"
             />
 
             <div className="flex justify-end">

@@ -1,5 +1,14 @@
 # Module Changelog: native
 
+## 2026-03-19 | 2026-03-19-keyboard-plugin-config-for-ios-prep
+- Summary: 为后续 iOS 接入补齐 `@capacitor/keyboard` 的显式依赖声明，并在 Capacitor 配置中加入 Keyboard 插件策略，约定 iOS 使用 `native` resize、Android 保留 `resizeOnFullScreen` 兼容项，为后续 `cap sync ios` / `cap sync android` 提前收口键盘行为。
+- Files:
+  - `apps/native/package.json`
+  - `apps/native/capacitor.config.ts`
+  - `docs/tech/changelog/conversations/2026-03-19.md`
+  - `docs/tech/changelog/modules/native.md`
+- Notes: 当前阶段仍未生成 `apps/native/ios`；本条主要是为后续原生工程同步准备配置基线。
+
 ## 2026-03-18 | 2026-03-18-ios-prep-cross-platform-native-shell
 - Summary: 将 `apps/native` 收口为 Android / iOS 共用的原生壳配置：默认 bundle id 改为平台中性值，补齐分环境样例文件，并新增 iOS 工程创建 / 同步 / 打开脚本入口，为后续 TestFlight 接入做仓库级准备。
 - Files:

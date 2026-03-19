@@ -2,6 +2,7 @@
 
 import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
+import { Keyboard } from '@capacitor/keyboard';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { StatusBar, Style } from '@capacitor/status-bar';
 import { useEffect } from 'react';
@@ -14,6 +15,7 @@ type NativePlatform = 'android' | 'ios';
 type NativeViewportSyncController = {
   sync: () => void;
   cleanup: () => void;
+  setKeyboardInset: (height: number) => void;
 };
 
 function isSupportedNativePlatform(platform: string): platform is NativePlatform {
@@ -64,12 +66,14 @@ function createNativeViewportSyncController(): NativeViewportSyncController {
     return {
       sync: () => undefined,
       cleanup: () => undefined,
+      setKeyboardInset: () => undefined,
     };
   }
 
   const root = document.documentElement;
   const visualViewport = window.visualViewport;
   let baselineViewportHeight = 0;
+  let pluginKeyboardInset = 0;
   let frameId: number | null = null;
   let focusTimeoutId: number | null = null;
 
@@ -87,8 +91,9 @@ function createNativeViewportSyncController(): NativeViewportSyncController {
     }
 
     const rawKeyboardInset = Math.max(0, baselineViewportHeight - viewportHeight);
-    const keyboardInset =
+    const derivedKeyboardInset =
       rawKeyboardInset > KEYBOARD_INSET_THRESHOLD_PX ? rawKeyboardInset : 0;
+    const keyboardInset = Math.max(pluginKeyboardInset, derivedKeyboardInset);
 
     root.style.setProperty('--app-viewport-height', `${viewportHeight}px`);
     root.style.setProperty('--native-keyboard-inset', `${keyboardInset}px`);
@@ -128,6 +133,10 @@ function createNativeViewportSyncController(): NativeViewportSyncController {
 
   return {
     sync: scheduleSync,
+    setKeyboardInset: (height: number) => {
+      pluginKeyboardInset = Math.max(0, Math.round(height));
+      scheduleSync();
+    },
     cleanup: () => {
       visualViewport?.removeEventListener('resize', scheduleSync);
       visualViewport?.removeEventListener('scroll', scheduleSync);
@@ -143,6 +152,65 @@ function createNativeViewportSyncController(): NativeViewportSyncController {
       if (focusTimeoutId !== null) {
         window.clearTimeout(focusTimeoutId);
       }
+    },
+  };
+}
+
+function createNativeKeyboardSyncController(
+  platform: NativePlatform,
+  viewportSyncController: NativeViewportSyncController,
+) {
+  let disposed = false;
+  const listenerHandles: AppListenerHandle[] = [];
+  const attachListener = (promise: Promise<AppListenerHandle>) => {
+    void promise.then((handle) => {
+      if (disposed) {
+        void handle.remove();
+        return;
+      }
+
+      listenerHandles.push(handle);
+    }).catch(() => {
+      // Keyboard plugin listeners are a best-effort enhancement over visualViewport fallback.
+    });
+  };
+
+  const registerShowListener = () => {
+    const onShow = (info: { keyboardHeight: number }) => {
+      viewportSyncController.setKeyboardInset(info.keyboardHeight);
+    };
+
+    if (platform === 'ios') {
+      attachListener(Keyboard.addListener('keyboardWillShow', onShow));
+      return;
+    }
+
+    attachListener(Keyboard.addListener('keyboardDidShow', onShow));
+  };
+
+  const registerHideListener = () => {
+    const onHide = () => {
+      viewportSyncController.setKeyboardInset(0);
+    };
+
+    if (platform === 'ios') {
+      attachListener(Keyboard.addListener('keyboardWillHide', onHide));
+      return;
+    }
+
+    attachListener(Keyboard.addListener('keyboardDidHide', onHide));
+  };
+
+  registerShowListener();
+  registerHideListener();
+
+  return {
+    cleanup: () => {
+      disposed = true;
+      viewportSyncController.setKeyboardInset(0);
+      listenerHandles.forEach((handle) => {
+        void handle.remove();
+      });
     },
   };
 }
@@ -199,6 +267,10 @@ export function NativeShellController() {
     applyNativeDocumentState(platform);
 
     const viewportSyncController = createNativeViewportSyncController();
+    const keyboardSyncController = createNativeKeyboardSyncController(
+      platform,
+      viewportSyncController,
+    );
 
     void applyNativeShellChrome(platform);
     void hideNativeSplash();
@@ -213,6 +285,7 @@ export function NativeShellController() {
     });
 
     return () => {
+      keyboardSyncController.cleanup();
       viewportSyncController.cleanup();
       clearNativeDocumentState();
       void listener?.remove();

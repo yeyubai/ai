@@ -68,6 +68,29 @@ declare module '@capacitor/status-bar' {
   };
 }
 
+declare module '@capacitor/keyboard' {
+  import type { PluginListenerHandle } from '@capacitor/core';
+
+  export type KeyboardInfo = {
+    keyboardHeight: number;
+  };
+
+  export type KeyboardAddListener = {
+    (
+      eventName: 'keyboardWillShow' | 'keyboardDidShow',
+      listenerFunc: (info: KeyboardInfo) => void,
+    ): Promise<PluginListenerHandle>;
+    (
+      eventName: 'keyboardWillHide' | 'keyboardDidHide',
+      listenerFunc: () => void,
+    ): Promise<PluginListenerHandle>;
+  };
+
+  export const Keyboard: {
+    addListener: KeyboardAddListener;
+  };
+}
+
 declare module '@aparajita/capacitor-secure-storage' {
   export const SecureStorage: {
     getItem: (key: string) => Promise<string | null>;

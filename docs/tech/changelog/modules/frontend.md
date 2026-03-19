@@ -1,5 +1,29 @@
 ﻿# Module Changelog: frontend
 
+## 2026-03-19 | 2026-03-19-ios-chat-form-viewport-followup
+- Summary: 继续清理 iOS WebView 下残留的页面级高度与键盘问题：教练聊天页改为动态视口布局并补上消息自动滚底，体重录入页与通用记录表单增加键盘态底部缓冲，日记空态和编辑页则移除固定 `vh` 依赖，统一转向 `--app-viewport-height`。
+- Files:
+  - `apps/web/features/coach/ui/sections/coach-chat-section.tsx`
+  - `apps/web/features/weight-diary/ui/sections/weight-entry-form-section.tsx`
+  - `apps/web/features/checkins/ui/components/checkin-form-layout.tsx`
+  - `apps/web/features/diary/ui/sections/diary-section.tsx`
+  - `apps/web/features/diary/ui/sections/diary-editor-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-19.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 这一轮重点是收口具体页面层的 iOS 输入体验，优先修掉固定高度和原生输入未继承通用策略的缺口；真实 iOS 模拟器与真机手感仍需后续在 Xcode 环境验证。
+
+## 2026-03-19 | 2026-03-19-ios-keyboard-dialog-input-adaptation
+- Summary: 继续推进 iOS 逻辑适配：正式接入 `@capacitor/keyboard`，让原生键盘事件参与底部 inset 计算；通用 `DialogContent` 改为可跟随键盘和 safe-area 调整的底部弹层；全局输入样式补充原生滚动边距与 iOS 16px 字号规则，减少聚焦放大与键盘遮挡。
+- Files:
+  - `apps/web/package.json`
+  - `apps/web/types/capacitor-shims.d.ts`
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/components/ui/dialog.tsx`
+  - `apps/web/app/globals.css`
+  - `docs/tech/changelog/conversations/2026-03-19.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 这一轮属于通用交互层补强，目标是让更多页面天然继承 iOS 友好的键盘与弹层行为，而不是逐页打补丁。
+
 ## 2026-03-18 | 2026-03-18-ios-viewport-keyboard-adaptation
 - Summary: 为 iOS 首次接入补齐 Web 壳层的动态视口、safe-area 和键盘态适配：根布局输出 `viewport-fit=cover`，`NativeShellController` 同步原生平台/键盘状态到 CSS 变量，底部 Tab 与悬浮按钮在键盘弹起时自动隐藏，日记编辑器等页面改为基于统一视口变量计算高度与底部间距；同时为 Native 安全存储增加失败不炸页面的兜底。
 - Files:

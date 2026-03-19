@@ -186,7 +186,10 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
     return (
       <div className="app-page bg-white px-4">
         <Skeleton className="h-12 rounded-2xl" />
-        <Skeleton className="mt-6 h-[60vh] rounded-[32px]" />
+        <Skeleton
+          className="mt-6 rounded-[32px]"
+          style={{ height: 'max(24rem, calc(var(--app-viewport-height) - 16rem))' }}
+        />
       </div>
     );
   }
@@ -230,8 +233,9 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
             contentEditable
             suppressContentEditableWarning
             onInput={syncEditorContent}
-            className="min-h-[52vh] outline-none [&_img]:mx-auto [&_li]:ml-5 [&_p]:min-h-[1.75rem]"
+            className="outline-none [&_img]:mx-auto [&_li]:ml-5 [&_p]:min-h-[1.75rem]"
             style={{
+              minHeight: 'max(20rem, calc(var(--app-viewport-height) - 21rem - var(--native-keyboard-inset)))',
               fontSize: '17px',
               lineHeight: '1.95',
               color: '#0f172a',

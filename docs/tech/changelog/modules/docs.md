@@ -1,5 +1,14 @@
 # Module Changelog: docs
 
+## 2026-03-19 | 2026-03-19-ios-keyboard-adaptation-log-sync
+- Summary: 新增 2026-03-19 会话留痕，记录 iOS 继续适配阶段中对键盘插件、底部弹层与输入交互的仓库级收口。
+- Files:
+  - `docs/tech/changelog/conversations/2026-03-19.md`
+  - `docs/tech/changelog/modules/frontend.md`
+  - `docs/tech/changelog/modules/native.md`
+  - `docs/tech/changelog/modules/docs.md`
+- Notes: 本条主要同步日志与模块记录；具体实现分别落在 frontend 与 native 模块。
+
 ## 2026-03-18 | 2026-03-18-ios-prep-doc-sync
 - Summary: 更新根 README、原生壳 README、混合 App 联调手册与架构文档，将文档口径从 Android-only 收口为 Android / iOS 共用方案，并补充 TestFlight 前置约束与 iOS 无 Mac 阶段的执行边界。
 - Files:
