@@ -434,7 +434,7 @@ export function WeightEntryDetailSection({ entryId }: { entryId: string }) {
   };
 
   return (
-    <div className="app-page space-y-4 px-4 pt-4">
+    <div className="app-page app-safe-top-compact space-y-4 px-4">
       <section className="hero-panel overflow-hidden px-4 pb-5 pt-4">
         <div className="flex items-center justify-between text-white">
           <button

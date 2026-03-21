@@ -18,9 +18,35 @@ import {
   Underline,
 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { buttonVariants } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useAuthStore } from '@/features/auth/model/auth.store';
+import { cn } from '@/lib/utils';
 import { fetchDiaryEntry, saveDiaryEntry } from '../../api/diary.api';
+
+type EditorToolbarAction = {
+  key: string;
+  ariaLabel: string;
+  onClick: () => void;
+  icon?: typeof Bold;
+  label?: string;
+  tone?: 'default' | 'accent' | 'muted';
+  labelClassName?: string;
+};
+
+const editorHeaderActionClassName = cn(
+  buttonVariants({ variant: 'ghost', size: 'icon-lg' }),
+  'rounded-full text-cyan-500 hover:bg-cyan-50',
+);
+
+const editorToolbarActionClassName =
+  'inline-flex h-11 w-full items-center justify-center rounded-xl border border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-100 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-40 hover:bg-slate-100';
+
+const editorToolbarToneClassName: Record<NonNullable<EditorToolbarAction['tone']>, string> = {
+  default: 'text-slate-700',
+  accent: 'text-cyan-500',
+  muted: 'text-slate-300',
+};
 
 function formatDiaryMeta(value: string): string {
   return new Date(value).toLocaleTimeString('zh-CN', {
@@ -182,6 +208,121 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
     }
   };
 
+  const primaryToolbarActions: EditorToolbarAction[] = [
+    {
+      key: 'clear-formatting',
+      ariaLabel: 'Clear formatting',
+      label: 'A',
+      labelClassName: 'text-[1.25rem] font-medium tracking-[-0.03em]',
+      onClick: () => applyCommand('removeFormat'),
+    },
+    {
+      key: 'paragraph',
+      ariaLabel: 'Paragraph style',
+      label: 'Aa',
+      labelClassName: 'text-[1.05rem] font-semibold tracking-[-0.02em]',
+      onClick: () => applyCommand('formatBlock', 'p'),
+    },
+    {
+      key: 'bold',
+      ariaLabel: 'Bold',
+      icon: Bold,
+      onClick: () => applyCommand('bold'),
+    },
+    {
+      key: 'italic',
+      ariaLabel: 'Italic',
+      icon: Italic,
+      onClick: () => applyCommand('italic'),
+    },
+    {
+      key: 'underline',
+      ariaLabel: 'Underline',
+      icon: Underline,
+      onClick: () => applyCommand('underline'),
+    },
+    {
+      key: 'strike-through',
+      ariaLabel: 'Strike through',
+      icon: Strikethrough,
+      onClick: () => applyCommand('strikeThrough'),
+    },
+    {
+      key: 'unordered-list',
+      ariaLabel: 'Bullet list',
+      icon: List,
+      onClick: () => applyCommand('insertUnorderedList'),
+    },
+    {
+      key: 'checklist',
+      ariaLabel: 'Checklist',
+      icon: ListChecks,
+      onClick: handleChecklist,
+    },
+  ];
+
+  const secondaryToolbarActions: EditorToolbarAction[] = [
+    {
+      key: 'insert-time',
+      ariaLabel: 'Insert time',
+      icon: Clock3,
+      tone: 'accent',
+      onClick: () => applyCommand('insertText', ` ${formatDiaryMeta(new Date().toISOString())} `),
+    },
+    {
+      key: 'insert-image',
+      ariaLabel: 'Insert image',
+      icon: ImagePlus,
+      tone: 'accent',
+      onClick: () => fileInputRef.current?.click(),
+    },
+    {
+      key: 'undo',
+      ariaLabel: 'Undo',
+      icon: RotateCcw,
+      tone: 'muted',
+      onClick: () => applyCommand('undo'),
+    },
+    {
+      key: 'redo',
+      ariaLabel: 'Redo',
+      icon: RotateCw,
+      tone: 'muted',
+      onClick: () => applyCommand('redo'),
+    },
+  ];
+
+  const renderToolbarAction = ({
+    key,
+    ariaLabel,
+    onClick,
+    icon: Icon,
+    label,
+    tone = 'default',
+    labelClassName,
+  }: EditorToolbarAction) => (
+    <button
+      key={key}
+      type="button"
+      aria-label={ariaLabel}
+      className={cn(editorToolbarActionClassName, editorToolbarToneClassName[tone])}
+      onClick={onClick}
+    >
+      {Icon ? (
+        <Icon className="h-5 w-5 shrink-0" aria-hidden="true" />
+      ) : (
+        <span
+          className={cn(
+            'inline-flex min-w-[1.5rem] items-center justify-center leading-none',
+            labelClassName,
+          )}
+        >
+          {label}
+        </span>
+      )}
+    </button>
+  );
+
   if (sessionStatus !== 'ready' || isLoading) {
     return (
       <div className="app-page bg-white px-4">
@@ -196,14 +337,14 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
 
   return (
     <div className="min-h-[var(--app-viewport-height)] bg-white pb-[calc(138px+var(--app-safe-area-bottom)+var(--native-keyboard-inset))]">
-      <div className="mx-auto flex min-h-[var(--app-viewport-height)] w-full max-w-md flex-col px-4 pt-4">
+      <div className="app-safe-top-compact mx-auto flex min-h-[var(--app-viewport-height)] w-full max-w-md flex-col px-4">
         <div className="flex items-center justify-between">
           <Link
             href="/diary"
             aria-label="返回日记列表"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-cyan-500 transition hover:bg-cyan-50"
+            className={editorHeaderActionClassName}
           >
-            <ArrowLeft className="h-6 w-6" />
+            <ArrowLeft className="h-5 w-5" />
           </Link>
 
           <button
@@ -211,9 +352,9 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
             onClick={() => void handleSave()}
             disabled={isSaving}
             aria-label="保存日记"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-full text-cyan-500 transition hover:bg-cyan-50 disabled:opacity-50"
+            className={editorHeaderActionClassName}
           >
-            <Check className="h-6 w-6" />
+            <Check className="h-5 w-5" />
           </button>
         </div>
 
@@ -254,20 +395,10 @@ export function DiaryEditorSection({ entryId }: { entryId?: string }) {
 
       <div className="native-keyboard-surface fixed inset-x-0 bottom-[calc(16px+var(--app-safe-area-bottom)+var(--native-keyboard-inset))] z-30 mx-auto w-full max-w-md border-t border-slate-100 bg-white/96 px-4 pb-3 pt-2 backdrop-blur">
         <div className="grid grid-cols-8 gap-1">
-          <button type="button" className="h-11 rounded-xl text-[22px] text-slate-700" onClick={() => applyCommand('removeFormat')}>A</button>
-          <button type="button" className="h-11 rounded-xl text-[18px] text-slate-700" onClick={() => applyCommand('formatBlock', 'p')}>Aa</button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-700" onClick={() => applyCommand('bold')}><Bold className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-700" onClick={() => applyCommand('italic')}><Italic className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-700" onClick={() => applyCommand('underline')}><Underline className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-700" onClick={() => applyCommand('strikeThrough')}><Strikethrough className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-700" onClick={() => applyCommand('insertUnorderedList')}><List className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-700" onClick={handleChecklist}><ListChecks className="h-5 w-5" /></button>
+          {primaryToolbarActions.map(renderToolbarAction)}
         </div>
         <div className="mt-1 grid grid-cols-4 gap-1 border-t border-slate-100 pt-2">
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-cyan-500" onClick={() => applyCommand('insertText', ` ${formatDiaryMeta(new Date().toISOString())} `)}><Clock3 className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-cyan-500" onClick={() => fileInputRef.current?.click()}><ImagePlus className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-300" onClick={() => applyCommand('undo')}><RotateCcw className="h-5 w-5" /></button>
-          <button type="button" className="flex h-11 items-center justify-center rounded-xl text-slate-300" onClick={() => applyCommand('redo')}><RotateCw className="h-5 w-5" /></button>
+          {secondaryToolbarActions.map(renderToolbarAction)}
         </div>
       </div>
     </div>

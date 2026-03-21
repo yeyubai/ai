@@ -156,7 +156,7 @@ export function CoachChatSection({ sessionId }: { sessionId: string }) {
   }
 
   return (
-    <div className="app-page flex min-h-[calc(var(--app-viewport-height)-var(--app-tab-bar-offset))] flex-col space-y-4 px-4 pb-[calc(20px+var(--app-safe-area-bottom)+var(--native-keyboard-inset))] pt-4">
+    <div className="app-page app-safe-top-compact flex min-h-[calc(var(--app-viewport-height)-var(--app-tab-bar-offset))] flex-col space-y-4 px-4 pb-[calc(20px+var(--app-safe-area-bottom)+var(--native-keyboard-inset))]">
       {error ? (
         <Alert variant="destructive">
           <AlertDescription>{error}</AlertDescription>

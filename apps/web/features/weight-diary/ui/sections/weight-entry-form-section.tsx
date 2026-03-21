@@ -203,7 +203,7 @@ export function WeightEntryFormSection({ entryId }: { entryId?: string }) {
                   className="rounded-2xl text-destructive"
                   onClick={() => void handleDelete()}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="h-4 w-4 shrink-0" />
                   删除
                 </Button>
               ) : null}
