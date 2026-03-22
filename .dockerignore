@@ -11,8 +11,9 @@ apps/web/.next
 apps/web/.next-dev
 apps/web/.next-prod
 backend/dist
+backend/.env
+apps/web/.env
 tmp
 docs
 apps/native
 npm-debug.log*
-
