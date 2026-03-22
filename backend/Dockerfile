@@ -1,4 +1,4 @@
-FROM node:20-bookworm-slim AS builder
+FROM  node:20-slim AS builder
 
 WORKDIR /app
 
@@ -15,7 +15,7 @@ ENV NODE_ENV=production
 RUN npm --prefix backend run prisma:generate
 RUN npm --prefix backend run build
 
-FROM node:20-bookworm-slim AS runner
+FROM  node:20-slim AS runner
 
 WORKDIR /app
 

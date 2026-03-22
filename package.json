@@ -25,6 +25,8 @@
     "build:web": "npm --prefix apps/web run build",
     "build:backend": "npm --prefix backend run build",
     "build": "npm run build:web && npm run build:backend",
+    "docker:build:web": "docker build -t ai-weight-coach-web:latest -f apps/web/Dockerfile .",
+    "docker:build:backend": "docker build -t ai-weight-coach-backend:latest -f backend/Dockerfile .",
     "requirement:finish": "node ./scripts/requirement-finish.cjs",
     "requirement:merge-master": "node ./scripts/requirement-merge-master.cjs",
     "requirement:ship": "node ./scripts/requirement-ship.cjs",
