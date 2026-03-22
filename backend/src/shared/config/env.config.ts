@@ -14,6 +14,8 @@ function parseCorsOrigins(raw: string | undefined): string[] {
 export const envConfig = {
   port: Number(process.env.PORT ?? 3001),
   databaseUrl: process.env.DATABASE_URL ?? '',
+  dbConnectMaxRetries: Number(process.env.DB_CONNECT_MAX_RETRIES ?? 15),
+  dbConnectRetryDelayMs: Number(process.env.DB_CONNECT_RETRY_DELAY_MS ?? 2000),
   dashscopeApiKey: process.env.DASHSCOPE_API_KEY ?? '',
   dashscopeBaseUrl:
     process.env.DASHSCOPE_BASE_URL ?? 'https://dashscope.aliyuncs.com/compatible-mode/v1',

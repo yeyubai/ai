@@ -1,4 +1,10 @@
-FROM  node:20-slim AS builder
+FROM node:20-slim AS base
+
+RUN apt-get update \
+  && apt-get install -y --no-install-recommends openssl \
+  && rm -rf /var/lib/apt/lists/*
+
+FROM base AS builder
 
 WORKDIR /app
 
@@ -15,7 +21,7 @@ ENV NODE_ENV=production
 RUN npm --prefix backend run prisma:generate
 RUN npm --prefix backend run build
 
-FROM  node:20-slim AS runner
+FROM base AS runner
 
 WORKDIR /app
 
@@ -30,4 +36,3 @@ WORKDIR /app/backend
 EXPOSE 3001
 
 CMD ["node", "dist/main"]
-
