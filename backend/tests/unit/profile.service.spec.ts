@@ -6,7 +6,9 @@ import { JourneyStateService } from 'src/shared/state/journey-state.service';
 
 type FindUserById = ProfileRepository['findUserById'];
 type FindActiveProfileByUserId = ProfileRepository['findActiveProfileByUserId'];
+type FindActiveGoalByUserId = ProfileRepository['findActiveGoalByUserId'];
 type UpsertProfile = ProfileRepository['upsertProfile'];
+type UpsertGoal = ProfileRepository['upsertGoal'];
 type MarkProfileCompleted = ProfileRepository['markProfileCompleted'];
 
 type ProfileRepositoryMock = {
@@ -15,8 +17,13 @@ type ProfileRepositoryMock = {
     ReturnType<FindActiveProfileByUserId>,
     Parameters<FindActiveProfileByUserId>
   >;
+  findActiveGoalByUserId: jest.Mock<
+    ReturnType<FindActiveGoalByUserId>,
+    Parameters<FindActiveGoalByUserId>
+  >;
   runInTransaction: ProfileRepository['runInTransaction'];
   upsertProfile: jest.Mock<ReturnType<UpsertProfile>, Parameters<UpsertProfile>>;
+  upsertGoal: jest.Mock<ReturnType<UpsertGoal>, Parameters<UpsertGoal>>;
   markProfileCompleted: jest.Mock<
     ReturnType<MarkProfileCompleted>,
     Parameters<MarkProfileCompleted>
@@ -34,10 +41,15 @@ function createProfileRepositoryMock(): ProfileRepositoryMock {
       ReturnType<FindActiveProfileByUserId>,
       Parameters<FindActiveProfileByUserId>
     >(),
+    findActiveGoalByUserId: jest.fn<
+      ReturnType<FindActiveGoalByUserId>,
+      Parameters<FindActiveGoalByUserId>
+    >(async () => null),
     runInTransaction,
     upsertProfile: jest.fn<ReturnType<UpsertProfile>, Parameters<UpsertProfile>>(
       async () => undefined,
     ),
+    upsertGoal: jest.fn<ReturnType<UpsertGoal>, Parameters<UpsertGoal>>(async () => undefined),
     markProfileCompleted: jest.fn<
       ReturnType<MarkProfileCompleted>,
       Parameters<MarkProfileCompleted>
@@ -54,6 +66,7 @@ describe('ProfileService', () => {
       profileCompleted: false,
     });
     repository.findActiveProfileByUserId.mockResolvedValue(null);
+    repository.findActiveGoalByUserId.mockResolvedValue(null);
     const service = new ProfileService(
       repository as unknown as ProfileRepository,
       new JourneyStateService(),
