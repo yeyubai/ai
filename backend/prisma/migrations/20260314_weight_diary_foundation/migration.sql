@@ -18,18 +18,6 @@ CREATE TABLE `weight_goals` (
   PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-CREATE TABLE `user_settings` (
-  `id` BIGINT NOT NULL AUTO_INCREMENT,
-  `user_id` BIGINT NOT NULL,
-  `diary_name` VARCHAR(64) NOT NULL DEFAULT '体重日记',
-  `theme` VARCHAR(32) NOT NULL DEFAULT 'aqua-mist',
-  `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  `updated_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
-  `deleted_at` DATETIME(3) NULL,
-  UNIQUE INDEX `user_settings_user_id_key`(`user_id`),
-  PRIMARY KEY (`id`)
-) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-
 CREATE TABLE `weight_entries` (
   `id` BIGINT NOT NULL AUTO_INCREMENT,
   `user_id` BIGINT NOT NULL,
@@ -50,11 +38,6 @@ CREATE TABLE `weight_entries` (
 
 ALTER TABLE `weight_goals`
   ADD CONSTRAINT `weight_goals_user_id_fkey`
-  FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
-  ON DELETE RESTRICT ON UPDATE CASCADE;
-
-ALTER TABLE `user_settings`
-  ADD CONSTRAINT `user_settings_user_id_fkey`
   FOREIGN KEY (`user_id`) REFERENCES `users`(`id`)
   ON DELETE RESTRICT ON UPDATE CASCADE;
 

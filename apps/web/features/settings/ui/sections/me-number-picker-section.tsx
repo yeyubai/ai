@@ -309,7 +309,7 @@ export function MeNumberPickerSection({ field }: { field: MeNumberPickerField })
   const displayValue = `${formatPreview(config.mode, normalizedValue)} ${displayUnit}`;
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-var(--app-tab-bar-offset))] w-full max-w-md flex-col bg-[linear-gradient(180deg,#ffffff_0%,#f8fcfd_100%)]">
+    <div className="mx-auto flex min-h-[calc(var(--app-viewport-height)-var(--app-tab-bar-offset))] w-full max-w-md flex-col bg-[linear-gradient(180deg,#ffffff_0%,#f8fcfd_100%)]">
       <header className="border-b border-slate-100/90 bg-white/88 px-5 py-4 backdrop-blur">
         <div className="flex items-center justify-between">
           <button

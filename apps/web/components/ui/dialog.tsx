@@ -28,17 +28,28 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, style, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[75] flex justify-center">
+    <div
+      className="native-keyboard-surface pointer-events-none fixed inset-x-0 z-[75] flex justify-center px-3"
+      style={{
+        bottom: 'var(--native-keyboard-inset)',
+        paddingBottom: 'var(--app-safe-area-bottom)',
+      }}
+    >
       <DialogPrimitive.Content
         ref={ref}
         className={cn(
-          'dialog-sheet-animated pointer-events-auto flex h-[80dvh] flex-col rounded-t-[34px] bg-white shadow-[0_-20px_60px_-24px_rgba(15,23,42,0.35)] will-change-transform',
+          'dialog-sheet-animated pointer-events-auto flex w-full flex-col overflow-hidden rounded-[34px] bg-white shadow-[0_-20px_60px_-24px_rgba(15,23,42,0.35)] will-change-transform',
           className,
         )}
-        style={{ width: 'min(375px, 100vw)' }}
+        style={{
+          width: 'min(375px, 100%)',
+          height: 'min(80dvh, calc(var(--app-viewport-height) - var(--app-safe-area-top) - 12px))',
+          maxHeight: 'calc(var(--app-viewport-height) - var(--app-safe-area-top) - 12px)',
+          ...style,
+        }}
         {...props}
       >
         {children}

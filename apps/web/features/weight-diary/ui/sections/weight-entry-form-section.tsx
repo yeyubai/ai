@@ -150,7 +150,7 @@ export function WeightEntryFormSection({ entryId }: { entryId?: string }) {
   }
 
   return (
-    <div className="app-page space-y-4">
+    <div className="app-page flex min-h-[calc(var(--app-viewport-height)-var(--app-tab-bar-offset))] flex-col space-y-4 pb-[calc(1.75rem+var(--app-safe-area-bottom)+var(--native-keyboard-inset))]">
       <div>
         <p className="text-sm text-slate-500">{isEdit ? '编辑记录' : '新增记录'}</p>
         <h1 className="mt-1 text-4xl font-semibold text-slate-950">
@@ -181,7 +181,7 @@ export function WeightEntryFormSection({ entryId }: { entryId?: string }) {
             </div>
             <div className="space-y-2">
               <Label>备注（可选）</Label>
-              <Textarea value={note} onChange={(event) => setNote(event.target.value)} />
+              <Textarea value={note} onChange={(event) => setNote(event.target.value)} rows={4} />
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -203,7 +203,7 @@ export function WeightEntryFormSection({ entryId }: { entryId?: string }) {
                   className="rounded-2xl text-destructive"
                   onClick={() => void handleDelete()}
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="h-4 w-4 shrink-0" />
                   删除
                 </Button>
               ) : null}

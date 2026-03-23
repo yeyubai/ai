@@ -1,28 +1,11 @@
 import axios, { AxiosError, AxiosHeaders } from 'axios';
+import {
+  getStoredSession,
+  hasUsableSession,
+} from '@/lib/session/session-storage';
 import type { ApiError, ApiResponse } from './types';
 
 type ApiErrorPayload = Partial<Pick<ApiResponse<null>, 'code' | 'message' | 'traceId'>>;
-type PersistedAuthStore = {
-  state?: {
-    token?: string | null;
-    expiresAt?: number | null;
-  };
-};
-
-function hasUsableSession(
-  token: string | null | undefined,
-  expiresAt: number | null | undefined,
-): boolean {
-  if (!token) {
-    return false;
-  }
-
-  if (typeof expiresAt !== 'number') {
-    return false;
-  }
-
-  return expiresAt > Date.now();
-}
 
 function createTraceId(): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
@@ -32,37 +15,39 @@ function createTraceId(): string {
   return `${Date.now()}-${Math.random().toString(16).slice(2, 10)}`;
 }
 
-function readAccessTokenFromStorage(): string | null {
-  if (typeof window === 'undefined') {
+async function readAccessTokenFromStorage(): Promise<string | null> {
+  const session = await getStoredSession();
+  if (!session || !hasUsableSession(session.token, session.expiresAt)) {
     return null;
   }
 
-  const rawAuthStore = window.localStorage.getItem('auth-store');
-  if (!rawAuthStore) {
-    return null;
+  return session.token;
+}
+
+function resolveApiBaseUrl(): string {
+  const configuredBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+  if (configuredBaseUrl) {
+    return configuredBaseUrl;
   }
 
-  try {
-    const parsed = JSON.parse(rawAuthStore) as PersistedAuthStore;
-    if (!hasUsableSession(parsed.state?.token, parsed.state?.expiresAt)) {
-      return null;
-    }
-
-    return parsed.state?.token ?? null;
-  } catch {
-    return null;
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol === 'https:' ? 'https:' : 'http:';
+    const host = window.location.hostname || 'localhost';
+    return `${protocol}//${host}:3001/api/v1`;
   }
+
+  return 'http://localhost:3001/api/v1';
 }
 
 export const apiClient = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_BASE_URL ?? 'http://localhost:3001/api/v1',
+  baseURL: resolveApiBaseUrl(),
   timeout: 10000,
 });
 
-apiClient.interceptors.request.use((config) => {
+apiClient.interceptors.request.use(async (config) => {
   const traceId = createTraceId();
   const headers = AxiosHeaders.from(config.headers);
-  const accessToken = readAccessTokenFromStorage();
+  const accessToken = await readAccessTokenFromStorage();
 
   headers.set('x-trace-id', traceId);
   if (accessToken && !headers.get('authorization')) {

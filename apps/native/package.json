@@ -1,0 +1,39 @@
+{
+  "name": "@ai/native",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "postinstall": "node ./scripts/fix-gradle-deprecations.cjs",
+    "android:add": "node ./scripts/ensure-android-project.cjs",
+    "android:sync": "cap sync android",
+    "android:assemble:debug": "node ./scripts/run-android-gradle.cjs assembleDebug",
+    "android:assemble:release": "node ./scripts/run-android-gradle.cjs assembleRelease",
+    "android:build:release": "node ./scripts/cap-build-android-release.cjs APK",
+    "android:build:release:aab": "node ./scripts/cap-build-android-release.cjs AAB",
+    "ios:add": "node ./scripts/ensure-ios-project.cjs",
+    "ios:sync": "node ./scripts/sync-ios-project.cjs",
+    "cap:copy": "cap copy android",
+    "cap:sync": "cap sync android",
+    "cap:sync:android": "cap sync android",
+    "cap:open:ios": "cap open ios",
+    "cap:open:android": "cap open android",
+    "doctor": "cap doctor"
+  },
+  "dependencies": {
+    "@aparajita/capacitor-secure-storage": "^8.0.0",
+    "@capacitor/android": "^8.2.0",
+    "@capacitor/app": "^8.0.1",
+    "@capacitor/browser": "^8.0.2",
+    "@capacitor/core": "^8.2.0",
+    "@capacitor/keyboard": "^8.0.0",
+    "@capacitor/ios": "^8.0.2",
+    "@capacitor/share": "^8.0.1",
+    "@capacitor/splash-screen": "^8.0.1",
+    "@capacitor/status-bar": "^8.0.1"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.2.0",
+    "dotenv": "^16.6.1",
+    "typescript": "^5.7.2"
+  }
+}

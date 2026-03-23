@@ -1,5 +1,143 @@
 ﻿# Module Changelog: frontend
 
+## 2026-03-19 | 2026-03-19-ios-chat-form-viewport-followup
+- Summary: 继续清理 iOS WebView 下残留的页面级高度与键盘问题：教练聊天页改为动态视口布局并补上消息自动滚底，体重录入页与通用记录表单增加键盘态底部缓冲，日记空态和编辑页则移除固定 `vh` 依赖，统一转向 `--app-viewport-height`。
+- Files:
+  - `apps/web/features/coach/ui/sections/coach-chat-section.tsx`
+  - `apps/web/features/weight-diary/ui/sections/weight-entry-form-section.tsx`
+  - `apps/web/features/checkins/ui/components/checkin-form-layout.tsx`
+  - `apps/web/features/diary/ui/sections/diary-section.tsx`
+  - `apps/web/features/diary/ui/sections/diary-editor-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-19.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 这一轮重点是收口具体页面层的 iOS 输入体验，优先修掉固定高度和原生输入未继承通用策略的缺口；真实 iOS 模拟器与真机手感仍需后续在 Xcode 环境验证。
+
+## 2026-03-19 | 2026-03-19-ios-keyboard-dialog-input-adaptation
+- Summary: 继续推进 iOS 逻辑适配：正式接入 `@capacitor/keyboard`，让原生键盘事件参与底部 inset 计算；通用 `DialogContent` 改为可跟随键盘和 safe-area 调整的底部弹层；全局输入样式补充原生滚动边距与 iOS 16px 字号规则，减少聚焦放大与键盘遮挡。
+- Files:
+  - `apps/web/package.json`
+  - `apps/web/types/capacitor-shims.d.ts`
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/components/ui/dialog.tsx`
+  - `apps/web/app/globals.css`
+  - `docs/tech/changelog/conversations/2026-03-19.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 这一轮属于通用交互层补强，目标是让更多页面天然继承 iOS 友好的键盘与弹层行为，而不是逐页打补丁。
+
+## 2026-03-18 | 2026-03-18-ios-viewport-keyboard-adaptation
+- Summary: 为 iOS 首次接入补齐 Web 壳层的动态视口、safe-area 和键盘态适配：根布局输出 `viewport-fit=cover`，`NativeShellController` 同步原生平台/键盘状态到 CSS 变量，底部 Tab 与悬浮按钮在键盘弹起时自动隐藏，日记编辑器等页面改为基于统一视口变量计算高度与底部间距；同时为 Native 安全存储增加失败不炸页面的兜底。
+- Files:
+  - `apps/web/app/layout.tsx`
+  - `apps/web/app/globals.css`
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/features/navigation/ui/components/app-shell.tsx`
+  - `apps/web/features/navigation/ui/components/bottom-tab-bar.tsx`
+  - `apps/web/features/diary/ui/components/diary-floating-add-button.tsx`
+  - `apps/web/features/weight-diary/ui/components/floating-add-button.tsx`
+  - `apps/web/features/diary/ui/sections/diary-editor-section.tsx`
+  - `apps/web/features/diary/ui/sections/diary-section.tsx`
+  - `apps/web/features/settings/ui/sections/me-number-picker-section.tsx`
+  - `apps/web/features/weight-diary/ui/sections/home-overview-section.tsx`
+  - `apps/web/lib/session/session-storage.ts`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 这一轮只处理仓库中可先迁移的跨端逻辑，不依赖 Xcode；真实 iOS 模拟器与真机表现仍需后续在 macOS 环境实测。
+
+## 2026-03-18 | 2026-03-18-ios-shell-status-bar-guard
+- Summary: 为原生壳控制器补齐平台分支，明确状态栏背景色仅在 Android 路径设置，避免后续 iOS 接入时继续沿用 Android 风格背景色策略。
+- Files:
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该改动不改变现有 Android 样式，只是为 iOS 首版接入提前收口平台差异。
+
+## 2026-03-18 | 2026-03-18-weight-detail-range-fallback-tone
+- Summary: 修正记录详情页体重区间轴的降级态展示，避免缺少判定条件时整条轴变成纯灰，并让其直接复用体脂区间轴的同组颜色值；同时收紧提示文案说明当前为通用分段样式。
+- Files:
+  - `apps/web/features/weight-diary/ui/sections/weight-entry-detail-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 仅调整详情页前端表现层，不影响 BMI / 体脂计算和后端返回结构。
+
+## 2026-03-18 | 2026-03-18-root-loading-error-fallback
+- Summary: 为首页根路由补充混合 App 初始化中的可见加载态与失败重试兜底，避免 guest session 初始化失败时页面只呈现白屏。
+- Files:
+  - `apps/web/app/page.tsx`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 根路由仍保留原有“会话就绪后跳转 `/home`”逻辑，只是在等待或失败时提供可见反馈。
+
+## 2026-03-18 | 2026-03-18-emulator-api-base-url-fallback
+- Summary: 为 Android 模拟器本地联调调整 API client 默认地址解析逻辑，在未显式配置 `NEXT_PUBLIC_API_BASE_URL` 时自动跟随当前页面 hostname 并默认指向 `:3001`。
+- Files:
+  - `apps/web/lib/api/client.ts`
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/types/capacitor-shims.d.ts`
+  - `docs/tech/changelog/conversations/2026-03-18.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该改动兼容宿主机浏览器的 `localhost` 和 Android 模拟器的 `10.0.2.2`，不影响已有显式环境变量配置；同时补充 Capacitor shim 类型以打通当前前端类型检查。
+
+## 2026-03-17 | 2026-03-17-session-storage-adapter-p1
+- Summary: 为混合 App P1 落地 Web 侧 `SessionStorageAdapter`，收口 `auth-store` 读写、兼容旧持久化格式，并让 API client 不再直接访问 `localStorage`。
+- Files:
+  - `apps/web/lib/session/session-storage.ts`
+  - `apps/web/features/auth/model/auth.store.ts`
+  - `apps/web/lib/api/client.ts`
+  - `docs/tech/design/requirements/index.md`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 本次优先完成会话访问抽象，暂未接入 Native 安全存储实现。
+
+## 2026-03-17 | 2026-03-17-platform-bridge-p2
+- Summary: 新增 Web 侧 `PlatformBridge` 抽象，统一封装分享、外链与 App 信息读取，并在“我的”页接入导出任务分享与环境展示作为首批混合能力落点。
+- Files:
+  - `apps/web/lib/platform/platform-bridge.ts`
+  - `apps/web/lib/platform/index.ts`
+  - `apps/web/features/settings/ui/sections/me-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 当前 bridge 已切到官方 Capacitor JS API，并保留浏览器降级路径。
+
+## 2026-03-17 | 2026-03-17-native-secure-session-p3
+- Summary: 为混合 App P3 接入 Native 会话安全存储，在 Capacitor 容器中通过 `@aparajita/capacitor-secure-storage` 持久化登录态，并调整根路由 hydration 时序与 API client 的异步 token 读取。
+- Files:
+  - `apps/web/lib/session/session-storage.ts`
+  - `apps/web/features/auth/model/auth.store.ts`
+  - `apps/web/lib/api/client.ts`
+  - `apps/web/app/page.tsx`
+  - `apps/web/package.json`
+  - `apps/web/package-lock.json`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该实现仅在 Native 容器中启用 secure storage；浏览器环境仍保留现有 `localStorage` 路径。
+
+## 2026-03-17 | 2026-03-17-web-version-meta-p3
+- Summary: 为 Web 端 metadata 增加 `ai-web-app-version`，供 Native release 闸门读取当前 Web 版本并执行最低兼容检查。
+- Files:
+  - `apps/web/app/layout.tsx`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该版本标记目前用于 Native release 兼容检查，不影响现有 Web 页面行为。
+
+## 2026-03-17 | 2026-03-17-app-build-display-p3
+- Summary: 在“我的”页补充 App build 信息展示，便于混合 App 联调时快速确认当前运行环境和版本。
+- Files:
+  - `apps/web/features/settings/ui/sections/me-section.tsx`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 版本信息仍来自 `PlatformBridge.getAppInfo()`，Web 环境下会按降级路径展示。
+
+## 2026-03-17 | 2026-03-17-native-shell-controller-p2
+- Summary: 新增 `NativeShellController`，在 Native 容器中统一设置状态栏样式并在页面准备好后隐藏启动页。
+- Files:
+  - `apps/web/shared/native-shell/native-shell-controller.tsx`
+  - `apps/web/app/layout.tsx`
+  - `apps/web/package.json`
+  - `apps/web/package-lock.json`
+  - `docs/tech/changelog/conversations/2026-03-17.md`
+  - `docs/tech/changelog/modules/frontend.md`
+- Notes: 该能力只在 Capacitor Native 容器中生效，浏览器环境会直接跳过。
+
 ## 2026-03-12 | 2026-03-12-prd-design-first-workflow
 - Summary: 前端规则新增“设计先行 + 后端先行”约束，前端编码必须依赖后端契约定稿与前端设计文档。
 - Files:

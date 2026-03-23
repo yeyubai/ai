@@ -258,7 +258,7 @@ export function HomeOverviewSection() {
       ) : null}
 
       <div
-        className="h-[calc(100dvh-var(--app-tab-bar-offset)-16px)] overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="h-[calc(var(--app-viewport-height)-var(--app-tab-bar-offset)-16px)] overflow-x-hidden overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
       >
         <header className="sticky top-0 z-30 mb-[-76px] h-[76px] text-white">
@@ -366,7 +366,7 @@ export function HomeOverviewSection() {
         </section>
 
         <section
-          className="sticky z-20 mt-3 min-h-[calc(100dvh-var(--app-tab-bar-offset)-76px-16px)] rounded-[30px] bg-[linear-gradient(180deg,rgba(242,246,248,0.995),rgba(233,238,241,0.995))] px-4 pb-[calc(var(--app-tab-bar-offset)+86px)] pt-5 shadow-[0_-18px_60px_-40px_rgba(15,23,42,0.35)]"
+          className="sticky z-20 mt-3 min-h-[calc(var(--app-viewport-height)-var(--app-tab-bar-offset)-76px-16px)] rounded-[30px] bg-[linear-gradient(180deg,rgba(242,246,248,0.995),rgba(233,238,241,0.995))] px-4 pb-[calc(var(--app-tab-bar-offset)+86px)] pt-5 shadow-[0_-18px_60px_-40px_rgba(15,23,42,0.35)]"
           style={{ top: `${HEADER_HEIGHT}px` }}
         >
           <div className="mx-auto max-w-md space-y-4">
@@ -427,7 +427,7 @@ export function HomeOverviewSection() {
 
       <Dialog open={isRecordOpen} onOpenChange={handleRecordOpenChange}>
         <DialogTrigger asChild>
-          <div className="pointer-events-none fixed inset-x-0 bottom-[calc(var(--app-tab-bar-offset)+14px)] z-[65] flex justify-center px-3">
+          <div className="native-hide-on-keyboard pointer-events-none fixed inset-x-0 bottom-[calc(var(--app-tab-bar-offset)+14px)] z-[65] flex justify-center px-3">
             <div className="flex w-full max-w-[375px] justify-end">
               <button
                 type="button"

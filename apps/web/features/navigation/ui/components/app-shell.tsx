@@ -89,10 +89,10 @@ export function AppShell({ children }: Props) {
           pageContent
         ) : (
           <div
-            className="relative min-h-screen"
+            className="app-shell-frame relative"
             style={
               {
-                '--app-tab-bar-offset': `calc(${TAB_BAR_OFFSET} + env(safe-area-inset-bottom))`,
+                '--app-tab-bar-offset': `calc(${TAB_BAR_OFFSET} + var(--app-safe-area-bottom))`,
               } as CSSProperties
             }
           >

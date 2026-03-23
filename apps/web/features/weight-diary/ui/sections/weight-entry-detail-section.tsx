@@ -311,12 +311,7 @@ function MetricRangePanel({
                         {displaySegments.map((segment) => (
                           <div
                             key={`${title}-${segment.label}`}
-                            className={cn(
-                              'h-full flex-1 bg-gradient-to-r',
-                              isFallbackAxis
-                                ? 'from-slate-200 to-slate-300'
-                                : segmentColor(segment.color),
-                            )}
+                            className={cn('h-full flex-1 bg-gradient-to-r', segmentColor(segment.color))}
                           />
                         ))}
                       </div>
@@ -352,8 +347,9 @@ function MetricRangePanel({
               </div>
 
               <div className="mt-4 rounded-2xl bg-slate-50 px-3 py-2 text-[12px] text-slate-500">
-                当前数值 {markerValue}，判定为{range.level ?? '暂无'}。
-                {isFallbackAxis ? ' 补充判定条件后，将展示更准确的区间位置。' : ''}
+                {isFallbackAxis
+                  ? `当前数值 ${markerValue}。缺少个性化判定条件，当前按通用分段样式展示；补充后将展示更准确的区间位置。`
+                  : `当前数值 ${markerValue}，判定为${range.level ?? '暂无'}。`}
               </div>
             </div>
           </div>
@@ -438,7 +434,7 @@ export function WeightEntryDetailSection({ entryId }: { entryId: string }) {
   };
 
   return (
-    <div className="app-page space-y-4 px-4 pt-4">
+    <div className="app-page app-safe-top-compact space-y-4 px-4">
       <section className="hero-panel overflow-hidden px-4 pb-5 pt-4">
         <div className="flex items-center justify-between text-white">
           <button

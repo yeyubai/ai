@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <title>体重日记维护页</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: "Segoe UI", Arial, sans-serif;
+        --ink: #123241;
+        --muted: #53707d;
+        --line: rgba(18, 50, 65, 0.12);
+        --brand: #1499a3;
+        --brand-soft: rgba(20, 153, 163, 0.12);
+        --surface: rgba(255, 255, 255, 0.84);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+        background:
+          radial-gradient(circle at top, rgba(20, 153, 163, 0.16), transparent 42%),
+          linear-gradient(180deg, #f5fbfc 0%, #edf5f8 100%);
+        color: var(--ink);
+      }
+
+      main {
+        width: min(100%, 460px);
+        padding: 28px;
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        background: var(--surface);
+        box-shadow: 0 24px 60px -34px rgba(18, 50, 65, 0.26);
+        backdrop-filter: blur(16px);
+      }
+
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 6px 12px;
+        background: var(--brand-soft);
+        color: var(--brand);
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        margin: 18px 0 10px;
+        font-size: 28px;
+        line-height: 1.1;
+      }
+
+      p {
+        margin: 0;
+        line-height: 1.7;
+        color: var(--muted);
+      }
+
+      dl {
+        margin: 22px 0 0;
+        padding: 0;
+      }
+
+      .detail-row {
+        display: grid;
+        grid-template-columns: 110px 1fr;
+        gap: 12px;
+        padding: 12px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      dt {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--ink);
+      }
+
+      dd {
+        margin: 0;
+        font-size: 13px;
+        color: var(--muted);
+        word-break: break-word;
+      }
+
+      .actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 24px;
+      }
+
+      button {
+        appearance: none;
+        border: 0;
+        border-radius: 18px;
+        padding: 12px 18px;
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .primary {
+        background: var(--brand);
+        color: white;
+        box-shadow: 0 18px 32px -22px rgba(20, 153, 163, 0.72);
+      }
+
+      .secondary {
+        background: white;
+        color: var(--ink);
+        border: 1px solid var(--line);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="badge">降级页</div>
+      <h1 id="title">当前应用暂时不可用</h1>
+      <p id="description">
+        当前原生容器无法正常打开 Web 内容。你可以先重试，或等待 App 与 Web 版本重新对齐后再进入。
+      </p>
+
+      <dl>
+        <div class="detail-row">
+          <dt>原因</dt>
+          <dd id="reason">未知</dd>
+        </div>
+        <div class="detail-row">
+          <dt>期望版本</dt>
+          <dd id="expectedVersion">未设置</dd>
+        </div>
+        <div class="detail-row">
+          <dt>实际版本</dt>
+          <dd id="actualVersion">未上报</dd>
+        </div>
+        <div class="detail-row">
+          <dt>目标地址</dt>
+          <dd id="targetUrl">不可用</dd>
+        </div>
+      </dl>
+
+      <div class="actions">
+        <button id="retryButton" class="primary" type="button">重新尝试</button>
+        <button id="updateButton" class="secondary" type="button">更新应用</button>
+        <button id="supportButton" class="secondary" type="button">获取帮助</button>
+        <button id="reloadButton" class="secondary" type="button">刷新降级页</button>
+      </div>
+    </main>
+
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const reason = params.get('reason') || 'unknown';
+      const target = params.get('target') || '';
+      const expectedVersion = params.get('expectedVersion') || '未设置';
+      const actualVersion = params.get('actualVersion') || '未上报';
+      const updateUrl = params.get('updateUrl') || '';
+      const supportUrl = params.get('supportUrl') || '';
+
+      const copy = {
+        load_error: {
+          title: '无法连接到 Web 应用',
+          description:
+            '原生壳无法加载当前配置的 Web 入口。请检查 release 地址、网络连通性，或等待服务恢复后再试。',
+        },
+        http_error: {
+          title: 'Web 应用返回了错误',
+          description:
+            '当前 release 入口返回了 HTTP 错误。请在服务恢复正常后重试。',
+        },
+        version_mismatch: {
+          title: '当前 App 版本与 Web 不兼容',
+          description:
+            '已安装的原生壳要求更高的兼容 Web 版本。请先更新 App，或等待 release Web 部署完成后再试。',
+        },
+      }[reason] || {
+        title: '当前应用暂时不可用',
+        description:
+          '原生容器暂时无法打开当前 Web 内容。',
+      };
+
+      document.getElementById('title').textContent = copy.title;
+      document.getElementById('description').textContent = copy.description;
+      document.getElementById('reason').textContent = reason;
+      document.getElementById('expectedVersion').textContent = expectedVersion;
+      document.getElementById('actualVersion').textContent = actualVersion;
+      document.getElementById('targetUrl').textContent = target || '不可用';
+
+      document.getElementById('retryButton').addEventListener('click', () => {
+        if (target) {
+          window.location.href = target;
+        }
+      });
+
+      document.getElementById('reloadButton').addEventListener('click', () => {
+        window.location.reload();
+      });
+
+      document.getElementById('updateButton').addEventListener('click', () => {
+        if (updateUrl) {
+          window.location.href = updateUrl;
+        }
+      });
+
+      document.getElementById('supportButton').addEventListener('click', () => {
+        if (supportUrl) {
+          window.location.href = supportUrl;
+        }
+      });
+
+      if (!target) {
+        document.getElementById('retryButton').disabled = true;
+      }
+
+      if (!updateUrl) {
+        document.getElementById('updateButton').disabled = true;
+      }
+
+      if (!supportUrl) {
+        document.getElementById('supportButton').disabled = true;
+      }
+    </script>
+  </body>
+</html>

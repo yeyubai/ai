@@ -72,7 +72,7 @@ export function DiarySection() {
   }
 
   return (
-    <div className="app-page min-h-[calc(100dvh-96px-env(safe-area-inset-bottom))] bg-white px-4 pb-[calc(120px+env(safe-area-inset-bottom))] pt-4">
+    <div className="app-page flex min-h-[calc(var(--app-viewport-height)-96px-var(--app-safe-area-bottom))] flex-col bg-white px-4 pb-[calc(120px+var(--app-safe-area-bottom))] pt-4">
       <div className="flex items-center justify-between px-1">
         <div className="w-10" />
         <div className="text-center">
@@ -116,7 +116,7 @@ export function DiarySection() {
           ))}
         </div>
       ) : (
-        <div className="flex min-h-[72vh] flex-col items-center justify-center text-center">
+        <div className="flex flex-1 flex-col items-center justify-center text-center">
           <div className="flex h-24 w-24 items-center justify-center rounded-full bg-slate-50 text-slate-300">
             <FileSearch2 className="h-12 w-12" />
           </div>

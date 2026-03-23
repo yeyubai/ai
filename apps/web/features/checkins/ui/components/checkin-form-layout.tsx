@@ -58,7 +58,7 @@ export function CheckinFormLayout({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-5">
+      <CardContent className="space-y-5 pb-[calc(1.25rem+var(--app-safe-area-bottom)+var(--native-keyboard-inset))]">
         <div className="rounded-2xl border border-border/70 bg-muted/55 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-center gap-3">
